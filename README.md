@@ -12,7 +12,7 @@ Version: 0.2
 
 Date: January 25th, 2018
 
-**Important:** This is a preliminary SDK release. API is highly unstable and is certainly going to change.
+**Important:** This is a Ubuntu SDK release. Please submit issues and bugs to this repository: https://github.com/FWDNXT/Snowflake-SDK
 
 ## Installation
 
