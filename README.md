@@ -160,6 +160,7 @@ After the first run, Snowflake will be in the FPGA card. The following runs wont
 
 It you used the example image with alexnet, the demo will output:
 
+```
   Doberman, Doberman pinscher 24.4178
 
   Rottweiler 24.1749
@@ -169,6 +170,7 @@ It you used the example image with alexnet, the demo will output:
   Gordon setter 21.6492
 
   bloodhound, sleuthhound 19.9336
+```
 
 **Your own models and other frameworks**
 
