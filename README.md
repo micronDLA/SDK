@@ -18,7 +18,7 @@ Date: January 25th, 2018
 
 After unpackaging the SDK, it can be installed on Ubuntu with this command:
 
-sudo ./install.sh
+```sudo ./install.sh```
 
 This script will take care of everything, it will install pytorch, thnets, protobufs and everything required to run the tests. It has been tested on Ubuntu 14.04 and Ubuntu 16.04.
 
@@ -62,7 +62,7 @@ sudo apt-get install libprotobuf-dev
 
 **Install Thnets with ONNX support**
 
-git clone https://github.com/mvitez/thnets/
+```git clone https://github.com/mvitez/thnets/
 
 cd thnets
 
@@ -76,7 +76,7 @@ git clone [https://github.com/mvitez/thnets/](https://github.com/mvitez/thnets/)
 
 cd thnets
 
-sudo make install
+sudo make install```
 
 **Snowflake SDK**
 
@@ -114,13 +114,13 @@ Now we need to get the pretrained model. This tutorial will use models created f
 
 First use the genonnx.py utility to create an onnx file. The generated onnx file will contain the network in the ONNX format that our API will be able to load. This utility requires the latest pytorch and can create such a file from most networks present in the torchvision package and also from some of our networks in the pth format.
 
-./genonnx.py alexnet
+`./genonnx.py alexnet`
 
 It will create the file alexnet.onnx that our compiler will be able to load.
 
 If you have an older version of pytorch that does not include ONNX, then you can use the genpymodel.py utility to create a pynet file. The generated pynet file will contain the network in our proprietary format that our API will be able to load. This utility can create such a file for two pretrained networks already present in pytorch: alexnet and resnet18. Otherwise it can also load a pth file that contains the network definition and weights.
 
-./genpymodel.py alexnet
+`./genpymodel.py alexnet`
 
 **Running inference on Snowflake for one image**
 
@@ -138,7 +138,7 @@ The user may modify steps 1 and 4 according to users/application needs. Check ou
 
 First run the demo using this command.  -l option will make it load the Snowflake into a FPGA card:
 
-./simpledemo.py alexnet.onnx picture -c categoriesfile -l
+`./simpledemo.py alexnet.onnx picture -c categoriesfile -l`
 
 Loading the FPGA and bringing up the HMC will take at max 2 min. Loading the FPGA only fails when there are no FPGA cards available. Bringing up the HMC may get stuck sometimes. This shouldnt take more than 5 min. It may throw bad flit alignment message, but this is fine, no need to worry.
 
