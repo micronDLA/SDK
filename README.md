@@ -48,9 +48,9 @@ micron **picocomputing-6.0.1.25**
 
 **Install pytorch - tested with pytorch (version 0.4.0a0-8c69eac)**
 
-`git clone --recursive https://github.com/pytorch/pytorch.git
+`git clone --recursive https://github.com/pytorch/pytorch.git`
 
-sudo python3 setup.py install`
+`sudo python3 setup.py install`
 
 Check torch version with: pip3 list
 
@@ -58,25 +58,30 @@ Note: you may need to update cmake: [https://askubuntu.com/questions/829310/how-
 
 **Install protobuf to use ONNX support**
 
-sudo apt-get install libprotobuf-dev
+`sudo apt-get install libprotobuf-dev`
 
 **Install Thnets with ONNX support**
 
-`git clone https://github.com/mvitez/thnets/
+```
+git clone https://github.com/mvitez/thnets/
 
 cd thnets
 
 make ONNX=1
 
 sudo make install
+```
 
 **Install Thnets without ONNX support (pyTorch only)**
 
+```
 git clone [https://github.com/mvitez/thnets/](https://github.com/mvitez/thnets/)
 
 cd thnets
 
-sudo make install`
+sudo make install
+```
+
 
 **Snowflake SDK**
 
@@ -151,19 +156,19 @@ The solution for these two issues is to run ./simpledemo.py again with the load 
 
 After the first run, Snowflake will be in the FPGA card. The following runs wont need to load Snowflake anymore. You can run the network on Snowflake with this command, which will find the FPGA card that was loaded with Snowflake:
 
-./simpledemo.py alexnet.onnx picturefile -c categoriesfile
+`./simpledemo.py alexnet.onnx picturefile -c categoriesfile`
 
 It you used the example image with alexnet, the demo will output:
 
-Doberman, Doberman pinscher 24.4178
+  Doberman, Doberman pinscher 24.4178
 
-Rottweiler 24.1749
+  Rottweiler 24.1749
 
-black-and-tan coonhound 23.6127
+  black-and-tan coonhound 23.6127
 
-Gordon setter 21.6492
+  Gordon setter 21.6492
 
-bloodhound, sleuthhound 19.9336
+  bloodhound, sleuthhound 19.9336
 
 **Your own models and other frameworks**
 
