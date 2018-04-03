@@ -18,7 +18,7 @@ Date: January 25th, 2018
 
 After unpackaging the SDK, it can be installed on Ubuntu with this command:
 
-```sudo ./install.sh```
+`sudo ./install.sh`
 
 This script will take care of everything, it will install pytorch, thnets, protobufs and everything required to run the tests. It has been tested on Ubuntu 14.04 and Ubuntu 16.04.
 
@@ -48,9 +48,9 @@ micron **picocomputing-6.0.1.25**
 
 **Install pytorch - tested with pytorch (version 0.4.0a0-8c69eac)**
 
-git clone --recursive https://github.com/pytorch/pytorch.git
+`git clone --recursive https://github.com/pytorch/pytorch.git
 
-sudo python3 setup.py install
+sudo python3 setup.py install`
 
 Check torch version with: pip3 list
 
@@ -62,7 +62,7 @@ sudo apt-get install libprotobuf-dev
 
 **Install Thnets with ONNX support**
 
-```git clone https://github.com/mvitez/thnets/
+`git clone https://github.com/mvitez/thnets/
 
 cd thnets
 
@@ -76,7 +76,7 @@ git clone [https://github.com/mvitez/thnets/](https://github.com/mvitez/thnets/)
 
 cd thnets
 
-sudo make install```
+sudo make install`
 
 **Snowflake SDK**
 
