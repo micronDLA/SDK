@@ -14,7 +14,7 @@ Date: January 25th, 2018
 
 **Important:** This is a Ubuntu SDK release. Please submit issues and bugs to this repository: https://github.com/FWDNXT/Snowflake-SDK
 
-## Installation
+# Installation
 
 After unpackaging the SDK, it can be installed on Ubuntu with this command:
 
@@ -22,7 +22,7 @@ After unpackaging the SDK, it can be installed on Ubuntu with this command:
 
 This script will take care of everything, it will install pytorch, thnets, protobufs and everything required to run the tests. It has been tested on Ubuntu 14.04 and Ubuntu 16.04.
 
-## Manual installation
+# Manual installation
 
 **Dependencies list**
 
@@ -87,27 +87,19 @@ sudo make install
 
 Unpack the package. You should have these files in the snowflake directory:
 
+```
 libsnowflake.so (the snowflake compiler and runtime)
-
 bitfile.bit (the snowflake code to be uploaded on the FPGA)
-
 snowflake.py (the python wrapper for libsnowflake.so)
-
 genpymodel.py (generate the pymodel.net file for a network)
-
 genonnx.py (generate the onnx file for a network)
-
 simpledemo.py (a simple python demo)
-
 thexport.py (exports pytorch model to  something we can load)
-
 EULA (EULA of the package)
-
 install.sh (installer)
+```
 
-snowflake-sdk.pdf (this file)
-
-## Tutorial - Inference on Snowflake
+# Tutorial - Inference on Snowflake
 
 This tutorial will run inference on a network pretrained on ImageNet. The program will process an image and return the top-5 classification of the image.
 
@@ -176,76 +168,82 @@ It you used the example image with alexnet, the demo will output:
 
 Our framework supports the standard ONNX format, which several machine learning frameworks can generate. Just export your model in this format. Keep in mind that our compiler currently supports only a limited set of layer types.
 
-## Python API
+# Python API
 
 The python Snowflake class has these functions:
 
-**Init**
+## Init
 
 Loads a network and prepares to run it.
 
-**Parameters:**
+***Parameters:***
 
-Image:  it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up Snowflake's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Planes. Example: width=224, heigh=256 planes=3 becomes a string "224x256x3".
+**Image**:  it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up Snowflake's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Planes. Example: width=224, heigh=256 planes=3 becomes a string "224x256x3".    
+**Modeldir**: path to the model file    
+**Bitfile**: path to the bitfile. Send empty string &quot;&quot; if you want to bypass load bitfile phase. In this case, it will use Snowflake that was loaded in a previous run.    
+**Numcard**: number of FPGA cards to use    
+**Numclus**: number of clusters    
+**Nlayers**: number of layers to run in the model. Use -1 if you want to run the entire model.    
 
-Modeldir: path to the model file
+**Return value:** Number of results returned by the network
 
-Bitfile: path to the bitfile. Send empty string &quot;&quot; if you want to bypass load bitfile phase. In this case, it will use Snowflake that was loaded in a previous run.
-
-Numcard: number of FPGA cards to use
-
-Numclus: number of clusters
-
-Nlayers: number of layers to run in the model. Use -1 if you want to run the entire model.
-
-**Return value:**
-
-Number of results returned by the network
-
-**Free**
+## Free
 
 Frees the network
 
-**Parameters:**
+***Parameters:***
 
 None
 
-**Run**
+## SetFlag
+
+Set some flags that change the behaviour of the API.
+
+***Parameters:***
+
+**Name** as a numpy string    
+**Value** as a numpy string    
+
+Currently available flags are:
+
+**hwlinear**, can be 0 or 1, default is 0. 1 will enable the linear layer in hardware. This will increase performance, but reduce precision.    
+**convalgo**, can be 0, 1 or 2, default is 0. 1 and 2 should be faster, but don't always work.    
+**paddingalgo**, can be 0 or 1, default is 0. 1 is faster, but does not always work.    
+**debug**, default w, which prints only warnings. An empty string will remove those warnings. bw will add some basic information.    
+
+## Run
 
 Runs a single inference on snowflake
 
-**Parameters:**
+***Parameters:***
 
-Image as a numpy array of type float32
+**Image** as a numpy array of type float32    
+**Result** as a preallocated numpy array of type float32    
 
-Result as a preallocated numpy array of type float32
-
-**Run\_sw**
+## Run\_sw
 
 Runs a single inference in the software snowflake simulator
 
-**Parameters:**
+***Parameters:***
 
-Image as a numpy array of type float32
+**Image** as a numpy array of type float32    
+**Result** as a preallocated numpy array of type float32    
 
-Result as a preallocated numpy array of type float32
-
-**Run\_th**
+## Run\_th
 
 Runs a single inference using thnets
 
-**Parameters:**
+***Parameters:***
 
-Image as a numpy array of type float32
+**Image** as a numpy array of type float32    
+**Result** as a preallocated numpy array of type float32    
 
-Result as a preallocated numpy array of type float32
-
-**Run\_function**
+## Run\_function
 
 Internal, for testing, dont use.
 
 
-## Supported Models
+# Supported Models
 
 Currently supported models are:
 
@@ -263,19 +261,19 @@ ResNet18/34/50
 
 All derivatives with minor changes from these model architecture are supported.
 
-##
+#
 
-## Submit Issues
+# Submit Issues
 
 Please submit all issues to our customer portal: [https://github.com/FWDNXT/Snowflake-SDK/tree/master/](https://github.com/FWDNXT/Snowflake-SDK/tree/master/)
 
 We monitor and reply to issues on a daily basis.
 
-##
+#
 
-##
+#
 
-## Supported Frameworks
+# Supported Frameworks
 
 We currently support all the frameworks in the ONNX format: [https://onnx.ai/](https://onnx.ai/)
 
@@ -287,7 +285,7 @@ See this manual.
 
 For any help with unsupported frameworks or issues, please submit an Issue (section: Submit Issues)
 
-## Questions and answers
+# Questions and answers
 
 Q: Can I run my own model?
 
