@@ -10,6 +10,7 @@ parser = ArgumentParser()
 _ = parser.add_argument
 _('--input_graph', type=str, help='Path to the input graph')
 _('--output_graph', type=str, help='Path to the output graph')
+_('--num_classes', type=int, help='Number of output classes')
 
 args = parser.parse_args()
 
@@ -20,7 +21,11 @@ inH=graph_def.node[0].attr["shape"].shape.dim[1].size
 inW=graph_def.node[0].attr["shape"].shape.dim[2].size
 inC=graph_def.node[0].attr["shape"].shape.dim[3].size
 model=onnx.ModelProto()
+model.ir_version=3
+model.opset_import.add()
+model.opset_import[0].version=6
 graph_out=model.graph
+graph_out.name="my_graph"
 graph_out.input.add()
 dtype=graph_def.node[0].attr["dtype"].type
 graph_out.input[0].type.tensor_type.elem_type=dtype
@@ -35,6 +40,7 @@ dim=graph_out.input[0].type.tensor_type.shape.dim.add()
 dim.dim_value=inH
 dim=graph_out.input[0].type.tensor_type.shape.dim.add()
 dim.dim_value=inW
+graph_out.input[0].name="input"
 
 def get_padding_value(inS, kS, dS, type_):
     if type_==b'SAME':
@@ -141,7 +147,7 @@ for i in range(len(graph_def.node)):
         if initializer.data_type!=1:
             print("Parameters are only accepted in 32-bit floating point format. Please convert them to this precision or retrain your model.",file=sys.stderr)
             sys.exit()
-        initializer.raw_data=tf.make_tensor_proto(np.moveaxis(tf.make_ndarray(graph_def.node[i-w_offset].attr["value"].tensor),[0,1,2,3],[3,2,0,1])).tensor_content
+        initializer.raw_data=tf.make_tensor_proto(np.moveaxis(tf.make_ndarray(graph_def.node[i-w_offset].attr["value"].tensor),[0,1,2,3],[2,3,1,0])).tensor_content
         if bias:
             initializer=graph_out.initializer.add()
             initializer.name=bias_name
@@ -195,6 +201,9 @@ for i in range(len(graph_def.node)):
     elif node_in.op=="FusedBatchNorm":
         node_out=graph_out.node.add()
         node_out.op_type="BatchNormalization"
+        attribute=node_out.attribute.add()
+        attribute.name="is_test"
+        attribute.i=1
         node_out.input.append(node_in.input[0])
         node_out.input.append(node_in.input[1]) #gamma/scale
         node_out.input.append(node_in.input[2]) #beta/bias
@@ -304,10 +313,38 @@ for i in range(len(graph_def.node)):
 
     elif ((node_in.op=="Identity" and node_in.name[-4:]!="read") or node_in.op=="Reshape"):
         graph_out.node[len(graph_out.node)-1].output[0]=node_in.name
-        
+
+for i in range(len(graph_out.initializer)):
+    my_init=graph_out.initializer[i]
+    my_input=graph_out.input.add()
+    my_input.name=my_init.name
+    my_input.type.tensor_type.elem_type=1
+    init_dims=my_init.dims
+    for j in range(len(init_dims)):
+        input_dim=my_input.type.tensor_type.shape.dim.add()
+        input_dim.dim_value=my_init.dims[j]
+
+out=graph_out.output.add()
+out.name=graph_out.node[len(graph_out.node)-1].output[0]
+out.type.tensor_type.elem_type=1
+dim=out.type.tensor_type.shape.dim.add()
+dim.dim_value=1
+dim=out.type.tensor_type.shape.dim.add()
+dim.dim_value=args.num_classes
+
+for i in range(len(graph_out.node)):
+    my_node=graph_out.node[i]
+    for j in range(len(my_node.attribute)):
+        my_attr=my_node.attribute[j]
+        if len(my_attr.ints)>1:
+            my_attr.type=7
+        else:
+            my_attr.type=2
+
 f = open(args.output_graph, "wb")
 f.write(model.SerializeToString())
 f.close()
 
+onnx.checker.check_model(model)
 #print(onnx.helper.printable_graph(model.graph))
         
