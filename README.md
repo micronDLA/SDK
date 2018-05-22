@@ -46,19 +46,26 @@ Kernel 4.13.0-32-generic
 
 micron **picocomputing-6.0.1.25**
 
-**Install pytorch - tested with pytorch (version 0.4.0a0-8c69eac)**
+**Install pytorch**
 
-`git clone --recursive https://github.com/pytorch/pytorch.git`
+`sudo -H pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl`
 
-`sudo python3 setup.py install`
+On ARM CPU you will have to install pytorch from source.
 
-Check torch version with: pip3 list
-
-Note: you may need to update cmake: [https://askubuntu.com/questions/829310/how-to-upgrade-cmake-in-ubuntu](https://askubuntu.com/questions/829310/how-to-upgrade-cmake-in-ubuntu)
+Check torch version with: pip3 show torch
 
 **Install protobuf to use ONNX support**
 
-`sudo apt-get install libprotobuf-dev`
+```
+wget https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-all-3.5.1.zip
+unzip protobuf-all-3.5.1.zip
+cd protobuf-3.5.1
+./configure
+make -j4
+make check -j4
+sudo make install
+sudo ldconfig
+```
 
 **Install Thnets with ONNX support**
 
