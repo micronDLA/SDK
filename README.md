@@ -252,20 +252,7 @@ Internal, for testing, dont use.
 
 # Supported Models
 
-Currently supported models are:
-
-AlexNet
-
-[https://github.com/pytorch/vision/blob/master/torchvision/models/alexnet.py](https://github.com/pytorch/vision/blob/master/torchvision/models/alexnet.py)
-
-LightCNN9
-
-[https://github.com/AlfredXiangWu/LightCNN](https://github.com/AlfredXiangWu/LightCNN)
-
-ResNet18/34/50
-
-[https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py](https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py)
-
+Currently supported models are listed [here](Supported_layers.md)
 All derivatives with minor changes from these model architecture are supported.
 
 #
