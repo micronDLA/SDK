@@ -10,7 +10,7 @@ parser = ArgumentParser()
 _ = parser.add_argument
 _('--input_graph', type=str, help='Path to the input graph')
 _('--output_graph', type=str, help='Path to the output graph')
-_('--num_classes', type=int, help='Number of output classes')
+#_('--num_classes', type=int, help='Number of output classes')
 
 args = parser.parse_args()
 
@@ -49,7 +49,10 @@ def get_padding_value(inS, kS, dS, type_):
             pS=max(kS-dS,0)
         else:
             pS=max(kS-(inS % dS),0)
-        pS=int(pS)//2
+        pS_orig=int(pS)
+        pS=pS_orig//2
+        if pS_orig%2!=0:
+            pS+=1
         return (outS, pS)
     elif type_==b'VALID':
         outS=int(math.ceil((inS-kS+1)/dS)+0.01)
@@ -330,7 +333,7 @@ out.type.tensor_type.elem_type=1
 dim=out.type.tensor_type.shape.dim.add()
 dim.dim_value=1
 dim=out.type.tensor_type.shape.dim.add()
-dim.dim_value=args.num_classes
+dim.dim_value=1000 #args.num_classes #value does not matter
 
 for i in range(len(graph_out.node)):
     my_node=graph_out.node[i]
