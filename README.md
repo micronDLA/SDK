@@ -14,6 +14,8 @@ Date: January 25th, 2018
 
 **Important:** This is a Ubuntu SDK release. Please submit issues and bugs to this repository: https://github.com/FWDNXT/Snowflake-SDK
 
+**Important:** This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (Ac510 and EX-750 for example). For any other hardware configuration, please submit an issue and, if needed, contact FWDNXT support team.
+
 # Installation
 
 After unpackaging the SDK, it can be installed on Ubuntu with this command:
