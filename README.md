@@ -31,8 +31,8 @@ This script will take care of everything, it will install pytorch, thnets, proto
 These are the things that is needed to use the Snowflake SDK.
 
 - Python3 together with numpy, pytorch.
-- Thnets ( [https://github.com/mvitez/thnets/](https://github.com/mvitez/thnets/))
-- Pico-computing tools ( [https://picocomputing.zendesk.com/hc/en-us/signin?return\_to=https%3A%2F%2Fpicocomputing.zendesk.com%2Fhc%2Fen-us%2Fsections%2F115001370668-Picocomputing-5-6-0-0-Release](https://picocomputing.zendesk.com/hc/en-us/signin?return_to=https%3A%2F%2Fpicocomputing.zendesk.com%2Fhc%2Fen-us%2Fsections%2F115001370668-Picocomputing-5-6-0-0-Release))
+- [Thnets](https://github.com/mvitez/thnets/)
+- [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/)
 
 If you find issues installing these contact us ( [http://fwdnxt.com/](http://fwdnxt.com/))
 
