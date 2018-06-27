@@ -33,6 +33,7 @@ These are the things that is needed to use the Snowflake SDK.
 - Python3 together with numpy, pytorch.
 - [Thnets](https://github.com/mvitez/thnets/)
 - [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/)
+- GCC 5.1 or higher
 
 If you find issues installing these contact us ( [http://fwdnxt.com/](http://fwdnxt.com/))
 
