@@ -8,13 +8,13 @@ Please report issues and bugs here.
 
 # Snowflake SDK manual
 
-Version: 0.2
+Version: 0.3.1
 
-Date: January 25th, 2018
+Date: June 28th, 2018
 
-**Important:** This is a Ubuntu SDK release. Please submit issues and bugs to this repository: https://github.com/FWDNXT/Snowflake-SDK
+**Important:** This is an Ubuntu SDK release. Please submit issues and bugs to this repository: https://github.com/FWDNXT/Snowflake-SDK
 
-**Important:** This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (Ac510 and EX-750 for example). For any other hardware configuration, please submit an issue and, if needed, contact FWDNXT support team.
+**Important:** This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example). For any other hardware configuration, please submit an issue and, if needed, contact FWDNXT support team.
 
 # Installation
 
@@ -28,34 +28,30 @@ This script will take care of everything, it will install pytorch, thnets, proto
 
 **Dependencies list**
 
-These are the things that is needed to use the Snowflake SDK.
+These are the things that are needed to use the Snowflake SDK.
 
-- Python3 together with numpy, pytorch.
+- Python 3 together with numpy and pytorch.
 - [Thnets](https://github.com/mvitez/thnets/)
 - [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/)
 - GCC 5.1 or higher
 
-If you find issues installing these contact us ( [http://fwdnxt.com/](http://fwdnxt.com/))
+If you find issues installing these contact us ([http://fwdnxt.com/](http://fwdnxt.com/))
 
 This steps were tested using:
 
-Ubuntu 14.04.5 LTS Release 14.04 trusty.
+Ubuntu 14.04.5 LTS Release, Kernel 4.4.0-96-generic
 
-Kernel 4.4.0-96-generic
+Ubuntu 16.04.1 LTS Release, Kernel 4.13.0-32-generic
 
-Ubuntu 16.04.1 LTS Release 14.04 trusty.
-
-Kernel 4.13.0-32-generic
-
-micron **picocomputing-6.0.1.25**
+picocomputing-6.0.0.21 and picocomputing-6.0.1.25 drivers
 
 **Install pytorch**
 
-`sudo -H pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl`
+`sudo -H pip install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl`
 
 On ARM CPU you will have to install pytorch from source.
 
-Check torch version with: pip3 show torch
+Check torch version with: pip show torch
 
 **Install protobuf to use ONNX support**
 
@@ -74,24 +70,10 @@ sudo ldconfig
 
 ```
 git clone https://github.com/mvitez/thnets/
-
 cd thnets
-
 make ONNX=1
-
 sudo make install
 ```
-
-**Install Thnets without ONNX support (pyTorch only)**
-
-```
-git clone [https://github.com/mvitez/thnets/](https://github.com/mvitez/thnets/)
-
-cd thnets
-
-sudo make install
-```
-
 
 **Snowflake SDK**
 
@@ -101,10 +83,8 @@ Unpack the package. You should have these files in the snowflake directory:
 libsnowflake.so (the snowflake compiler and runtime)
 bitfile.bit (the snowflake code to be uploaded on the FPGA)
 snowflake.py (the python wrapper for libsnowflake.so)
-genpymodel.py (generate the pymodel.net file for a network)
 genonnx.py (generate the onnx file for a network)
 simpledemo.py (a simple python demo)
-thexport.py (exports pytorch model to  something we can load)
 EULA (EULA of the package)
 install.sh (installer)
 ```
@@ -124,10 +104,6 @@ First use the genonnx.py utility to create an onnx file. The generated onnx file
 `./genonnx.py alexnet`
 
 It will create the file alexnet.onnx that our compiler will be able to load.
-
-If you have an older version of pytorch that does not include ONNX, then you can use the genpymodel.py utility to create a pynet file. The generated pynet file will contain the network in our proprietary format that our API will be able to load. This utility can create such a file for two pretrained networks already present in pytorch: alexnet and resnet18. Otherwise it can also load a pth file that contains the network definition and weights.
-
-`./genpymodel.py alexnet`
 
 **Running inference on Snowflake for one image**
 
@@ -182,24 +158,35 @@ Our framework supports the standard ONNX format, which several machine learning 
 
 The python Snowflake class has these functions:
 
-## Init
+## Compile
 
-Loads a network and prepares to run it.
+Loads a network and prepares it for Snowflake.
 
 ***Parameters:***
 
-**Image**:  it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up Snowflake's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Planes. Example: width=224, heigh=256 planes=3 becomes a string "224x256x3".    
-**Modeldir**: path to the model file    
-**Bitfile**: path to the bitfile. Send empty string &quot;&quot; if you want to bypass load bitfile phase. In this case, it will use Snowflake that was loaded in a previous run.    
+**Image**:  it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up Snowflake's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".    
+**Modeldir**: path to a model file in ONNX format 
+**Outfile**: path to a file where a model in Snowflake ready format will be saved 
 **Numcard**: number of FPGA cards to use    
 **Numclus**: number of clusters    
 **Nlayers**: number of layers to run in the model. Use -1 if you want to run the entire model.    
 
-**Return value:** Number of results returned by the network
+**Return value:** Number of results to be returned by the network
+
+## Init
+
+Loads a bitfile on an FPGA if necessary and prepares to run Snowflake.
+
+***Parameters:***
+  
+**Infile**: path to a file with a model in Snowflake ready format    
+**Bitfile**: path to the bitfile. Send empty string &quot;&quot; if you want to bypass loading a bitfile. In this case it will use a bitfile that is already loaded on the FPGA.    
+
+**Return value:** Number of results to be returned by the network
 
 ## Free
 
-Frees the network
+Frees the network.
 
 ***Parameters:***
 
@@ -223,7 +210,7 @@ Currently available flags are:
 
 ## Run
 
-Runs a single inference on snowflake
+Runs a single inference on snowflake.
 
 ***Parameters:***
 
@@ -232,7 +219,7 @@ Runs a single inference on snowflake
 
 ## Run\_sw
 
-Runs a single inference in the software snowflake simulator
+Runs a single inference on the snowflake simulator.
 
 ***Parameters:***
 
@@ -241,7 +228,7 @@ Runs a single inference in the software snowflake simulator
 
 ## Run\_th
 
-Runs a single inference using thnets
+Runs a single inference using thnets.
 
 ***Parameters:***
 
@@ -250,13 +237,13 @@ Runs a single inference using thnets
 
 ## Run\_function
 
-Internal, for testing, dont use.
+Internal, for testing, do not use.
 
 
 # Supported Models
 
-Currently supported models are listed [here](Supported_layers.md)
-All derivatives with minor changes from these model architecture are supported.
+Currently supported models are listed [here](Supported_layers.md). 
+All derivatives with minor changes from these model architectures are supported.
 
 #
 
@@ -272,15 +259,7 @@ We monitor and reply to issues on a daily basis.
 
 # Supported Frameworks
 
-We currently support all the frameworks in the ONNX format: [https://onnx.ai/](https://onnx.ai/)
-
-**Pytorch:**
-
-See this manual.
-
-**Tensorflow:**
-
-For any help with unsupported frameworks or issues, please submit an Issue (section: Submit Issues)
+We currently support all the frameworks in the ONNX format: [https://onnx.ai/](https://onnx.ai/). We have run models from PyTorch, Tensorflow and Caffe2. For any help with unsupported frameworks or issues, please submit an Issue (section: Submit Issues).
 
 # Questions and answers
 
