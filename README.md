@@ -165,10 +165,15 @@ Loads a network and prepares it for Snowflake.
 ***Parameters:***
 
 **Image**:  it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up Snowflake's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".    
-**Modeldir**: path to a model file in ONNX format 
-**Outfile**: path to a file where a model in Snowflake ready format will be saved 
-**Numcard**: number of FPGA cards to use    
-**Numclus**: number of clusters    
+
+**Modeldir**: path to a model file in ONNX format.
+
+**Outfile**: path to a file where a model in Snowflake ready format will be saved. 
+
+**Numcard**: number of FPGA cards to use.
+
+**Numclus**: number of clusters to be used.    
+
 **Nlayers**: number of layers to run in the model. Use -1 if you want to run the entire model.    
 
 **Return value:** Number of results to be returned by the network
@@ -179,7 +184,8 @@ Loads a bitfile on an FPGA if necessary and prepares to run Snowflake.
 
 ***Parameters:***
   
-**Infile**: path to a file with a model in Snowflake ready format    
+**Infile**: path to a file with a model in Snowflake ready format.
+
 **Bitfile**: path to the bitfile. Send empty string &quot;&quot; if you want to bypass loading a bitfile. In this case it will use a bitfile that is already loaded on the FPGA.    
 
 **Return value:** Number of results to be returned by the network
@@ -203,9 +209,14 @@ Set some flags that change the behaviour of the API.
 
 Currently available flags are:
 
+**nobatch**, can be 0 or 1, default is 0. 1 will spread the input to multiple clusters. Example: if nobatch is 1 and nclus is 2, one image is processed using 2 clusters. If nobatch is 0 and nclus is 2, then it will process 2 images.
+
 **hwlinear**, can be 0 or 1, default is 0. 1 will enable the linear layer in hardware. This will increase performance, but reduce precision.    
-**convalgo**, can be 0, 1 or 2, default is 0. 1 and 2 should be faster, but don't always work.    
-**paddingalgo**, can be 0 or 1, default is 0. 1 is faster, but does not always work.    
+
+**convalgo**, can be 0, 1 or 2, default is 0. 1 and 2 should be faster, but don't always work.  
+
+**paddingalgo**, can be 0 or 1, default is 0. 1 is faster, but does not always work.   
+
 **debug**, default w, which prints only warnings. An empty string will remove those warnings. bw will add some basic information.    
 
 ## Run
