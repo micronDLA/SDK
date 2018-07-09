@@ -6,12 +6,12 @@
   * Conv 
   * ConvTranspose 
   * Flatten
+  * Gemm
   * GlobalAveragePool
   * LogSoftmax
   * MatMul 
   * Max
   * MaxPool 
-  * Upsample
   * Relu 
   * Reshape
   * Sigmoid
@@ -19,9 +19,10 @@
   * Split
   * Tanh
   * Transpose
+  * Upsample
 
 ## Tested models
-  * Alexnet OWT 
+  * Alexnet OWT (versions without LRN)
   * Resnet 18, 34, 50
   * Inception v1, v3 
   * VGG 16, 19
