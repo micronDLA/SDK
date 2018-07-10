@@ -33,7 +33,7 @@ inC=size[3].value
 model=onnx.ModelProto()
 model.ir_version=3
 model.opset_import.add()
-model.opset_import[0].version=6
+model.opset_import[0].version=7
 graph_out=model.graph
 graph_out.name="my_graph"
 graph_out.input.add()
@@ -249,9 +249,6 @@ for i in range(start_ind,len(graph_def.node)):
     elif node_in.op=="FusedBatchNorm":
         node_out=graph_out.node.add()
         node_out.op_type="BatchNormalization"
-        attribute=node_out.attribute.add()
-        attribute.name="is_test"
-        attribute.i=1
         node_out.input.append(node_in.input[0])
         node_out.input.append(node_in.input[1]) #gamma/scale
         node_out.input.append(node_in.input[2]) #beta/bias
@@ -382,6 +379,12 @@ for i in range(start_ind,len(graph_def.node)):
         values=tf.make_ndarray(graph_def.node[i-1].attr["value"].tensor)
         pH=values[1,0] 
         pW=values[2,0]
+        attribute.ints.append(0)
+        attribute.ints.append(0)
+        attribute.ints.append(pH)
+        attribute.ints.append(pW)
+        attribute.ints.append(0)
+        attribute.ints.append(0)
         attribute.ints.append(pH)
         attribute.ints.append(pW)
         node_out.input.append(node_in.input[0])
