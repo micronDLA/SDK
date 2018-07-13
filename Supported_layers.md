@@ -22,6 +22,8 @@
   * Upsample
 
 ## Tested models
+These models are available [here](http://fwdnxt.com/models/).  
+
   * Alexnet OWT (versions without LRN)
   * Resnet 18, 34, 50
   * Inception v1, v3 
