@@ -23,6 +23,8 @@ Below are links that describes the SDK in more detail
 
 [**Tutorial - Inference on Snowflake**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/GettingStarted_snowflake.md): getting started tutorial for running inference on Snowflake.
 
+[**Tutorial - Multi FPGA and Cluster**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/TutorialMultiFPGACluster.md): tutorial for running inference on multiple FPGAs and clusters.
+
 [**Python API**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/PythonAPI.md): Documentation of the python API.
 
 [**Supported Models**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/Supported_layers.md): List of supported layers and models tested on Snowflake.
