@@ -53,7 +53,7 @@ Set some flags that change the behaviour of the API.
 
 Currently available flags are:
 
-**nobatch**, can be 0 or 1, default is 0. 1 will spread the input to multiple clusters. Example: if nobatch is 1 and numclus is 2, one image is processed using 2 clusters. If nobatch is 0 and numclus is 2, then it will process 2 images.
+**nobatch**, can be 0 or 1, default is 0. 1 will spread the input to multiple clusters. Example: if nobatch is 1 and numclus is 2, one image is processed using 2 clusters. If nobatch is 0 and numclus is 2, then it will process 2 images. Do not set nobatch to 1 when using one cluster (numclus=1).
 
 **hwlinear**, can be 0 or 1, default is 0. 1 will enable the linear layer in hardware. This will increase performance, but reduce precision.    
 
