@@ -8,8 +8,7 @@ To register and download, please send a request to info@fwdnxt.com
 
 Version: 0.3.1  
 Date: June 28th, 2018
-
-**Important:** This is an Ubuntu SDK release. Please [submit issues and bugs](https://github.com/FWDNXT/Snowflake-SDK/issues).
+Ubuntu SDK release
 
 **Important:** This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example). For any other hardware configuration, please submit an issue and, if needed, contact FWDNXT support team.
 
