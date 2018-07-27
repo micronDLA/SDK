@@ -2,9 +2,7 @@
 
 Snowflake HW Software Developement Kit - SDK  
 To register and download, please send a request to info@fwdnxt.com   
-Please report issues and bugs [here](https://github.com/FWDNXT/Snowflake-SDK/issues). 
 
-The SDK was tested on [these](https://github.com/FWDNXT/Snowflake-SDK/blob/master/Supported_layers.md) models and you can download them [here](http://fwdnxt.com/models/).
 
 # Snowflake SDK manual
 
@@ -33,5 +31,8 @@ Below are links that describes the SDK in more detail
 
 [**Troubleshooting**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/Troubleshooting.md): Troubleshooting common issues and answering common questions.
 
+
+
+Please report issues and bugs [here](https://github.com/FWDNXT/Snowflake-SDK/issues). 
 
 
