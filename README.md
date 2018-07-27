@@ -15,7 +15,8 @@ Ubuntu SDK release
 
 **Important:** This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example). For any other hardware configuration, please submit an issue and, if needed, contact FWDNXT support team.
 
-Below are links that describes the SDK in more detail
+
+**Below are links that describes the SDK in more detail**
 
 [**Installation**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/Installation.md): install SDK
 
