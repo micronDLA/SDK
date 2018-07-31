@@ -13,7 +13,8 @@ In this tutorial you will need:
 
 **Running inference on Snowflake for one image**
 
-In the SDK folder, there is simpledemo.py, which is a python demo application using Snowflake. Its main parts are:
+In the SDK folder, there is simpledemo.py, which is a python demo application using Snowflake.  
+Its main parts are:
 
 1) Parse the model and generate Snowflake instructions
 2) Get and preprocess input data
@@ -27,7 +28,7 @@ First run the demo using this command:
 
 `./simpledemo.py alexnet.onnx picture -c categoriesfile -l`
 
-`-l` option will load the Snowflake into a FPGA card.  
+`-l` option will load the Snowflake into a FPGA card. Note: make sure the bitfile is in same directory of `simpledemo.py`, or change the path [here](https://github.com/FWDNXT/Snowflake-SDK/blob/master/sdk/examples/python/simpledemo.py#L51).   
 Loading the FPGA and bringing up the HMC will take at max 5 min.
 Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](https://github.com/FWDNXT/Snowflake-SDK/blob/master/Troubleshooting.md).  
 After the first run, Snowflake will be loaded in the FPGA card. The following runs will not need to load Snowflake anymore.
