@@ -27,6 +27,8 @@ Tested on: Ubuntu 16.04, CentOS 7
 
 [**Python API**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/PythonAPI.md): Documentation of the python API.
 
+[**C API**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/C%20API.md): Documentation of the C/C++ API.
+
 [**Supported Models**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/Supported_layers.md): List of supported layers and models tested on Snowflake.
 
 [**Using with Tensorflow**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/Tensorflow.md): Tutorial on using tensorflow with Snowflake.
