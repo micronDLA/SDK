@@ -21,6 +21,8 @@ Tested on: Ubuntu 16.04, CentOS 7
 
 [**Tutorial - Inference on Snowflake**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/GettingStarted_snowflake.md): getting started tutorial for running inference on Snowflake.
 
+[**Tutorial - Inference on Snowflake using C**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/GettingStarted_snowflake_in_C.md): getting started tutorial for running inference on Snowflake using C.
+
 [**Tutorial - Multi FPGA and Cluster**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/TutorialMultiFPGACluster.md): tutorial for running inference on multiple FPGAs and clusters.
 
 [**Python API**](https://github.com/FWDNXT/Snowflake-SDK/blob/master/PythonAPI.md): Documentation of the python API.
