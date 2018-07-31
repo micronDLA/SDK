@@ -1,0 +1,157 @@
+FWDNXT, INC.
+End-User License Agreement
+
+
+By downloading software of FWDNXT, Inc., an Indiana corporation ("FWDNXT"), you agree to the following terms and conditions (“Agreement”).  If you do not agree with such terms and conditions do not install this software.
+
+WHEREAS:
+
+(A)   Licensor has certain proprietary software to be licensed to Licensee under this Agreement.
+
+(B)  Licensee wishes to obtain the right to download Licensor’s software on a FPGA board purchased by Licensee from Micron Technology and to use such software for.
+
+
+NOW, WHEREFORE, IT IS HEREBY AGREED as follows:
+
+
+1	Definitions  The words listed in Section 1 shall have the stated meanings.
+
+“Agreement” means this End-User License Agreement.
+
+	“Authorized Device” means the Micron FPGA boards.
+
+	“Documentation” means those items of documentation identified as Snowflake inference engine, software development kit and training documents.
+
+“Effective Date” means the date on which Licensee first downloads Licensor’s software pursuant to this Agreement.
+
+“Intellectual Property” means all intellectual property, including, but not limited to, trade secrets, databases, know how, inventions, improvements, discoveries, conceptions, ideas, techniques, designs, products, developments, diagrams, specifications, drawings methods, models, software programs (including source code, object code and commenting), data, data analysis, data interpretation, written reports, and all rights herein including copyright, patent rights, database rights, rights in designs and all registrations and applications therefore, and all continuations, continuations in part, divisional applications, and renewals of any of the foregoing, in any part of the world.
+
+“Licensed Technology” means (a) the particular technology that is delivered by Licensor to Licensee under this Agreement, (b) all Intellectual Property of Licensor in any of the technology delivered hereunder, including, without limitation, techniques for customizing the protocols, command sets, and interfaces, and (c) any new enhancements and extensions thereto. 
+
+“Proprietary Information” means all confidential, proprietary, or secret information, including, without limitation, the terms and conditions of this Agreement, Intellectual Property, Licensed Technology, algorithms, components, data, drawings, inventions, processes, programs, specifications, techniques, and other information or material, however stored, relating to a party, or a third-party licensor’s business, customers, finances, personnel, plans, or products, that is owned, possessed, or used by a party, but only to the extent disclosed by a party (“Disclosing Party”) to the other party (“Receiving Party”) and marked confidential or proprietary; provided, however, that if such information is disclosed orally or visually, it is identified by the Disclosing Party at the time of disclosure to be confidential and confirmed as such by a written summary to the Receiving Party within thirty (30) days after the disclosure, then such information shall be Proprietary Information notwithstanding the fact that it was not marked confidential or proprietary.
+
+
+
+
+
+
+2	License Grant
+
+2.1	Subject to the terms and conditions of this Agreement, Licensor grants to Licensee the non-exclusive, worldwide, non-transferable and non-assignable right and license to use the Licensed Technology in connection with Snowflake inference engine and software development kit. 
+
+2.2	Licensee shall have no other rights with respect to the Licensed Technology, in particular and without limitation, except as may be explicitly allowed in this Agreement, Licensee shall not have the right to sublicense, distribute, lease, encumber, sell, or make or have made derivative works of the Licensed Technology. Licensee shall not, and shall not permit any person within its control to, use the Licensed Technology for any purpose other than as expressly set forth in this Agreement.
+
+2.3	The Licensed Technology is not designed, intended, or certified for use in components of systems intended for the operation of weapons, weapons systems, nuclear installations, means of mass transportation, aviation, life-support computers or equipment (including resuscitation equipment and surgical implants), hazardous substances management, pollution control, or any other dangerous, medical or other application in which failure would likely result in personal injury or death. Licensee understands that use of the Licensed Technology in such applications is fully at the risk of Licensee.
+
+
+3	Intellectual Property Rights
+
+3.1	Licensee shall not obtain or claim any right, title, or ownership interest in the Licensed Technology, or any portion thereof or any Intellectual Property rights therein, except as otherwise set forth in this Agreement. Licensee shall not agree not reverse engineer or decompile, decrypt, disassemble or otherwise reduce the software to human-readable form.
+
+
+4	Source Code
+
+4.1	Licensee, based on Licensor’s representation, recognizes that part of the Intellectual Property includes source code and that such source code is Proprietary Information of Licensor or its licensor in which Licensor or its licensor owns the Intellectual Property rights.
+
+4.2	Licensee shall take security measures in accordance with normal business practice for companies developing and licensing the source code to Intellectual Property to protect the rights of Licensor in its source code including, without limit, by keeping reasonably detailed records of the location of any source code and of any copies made, by giving access of the source code to its employees, independent contractors and third-party companies, but only on a need-to-know basis.
+
+5	Warranty and Limitations of Liability
+
+5.1	Licensor represents and warrants to Licensee that:
+
+(a) 	it has the full right, power, and authority to enter into this Agreement and to grant the licenses and rights granted to Licensee pursuant to this Agreement;
+
+(b)	no consent of any third parties is required for Licensor to enter into this Agreement or perform its obligations hereunder;
+
+(c)	the Licensed Technology conforms all material respects to the specifications set forth Snowflake inference engine and software development kit; Licensee’s exclusive remedy for breach of this Section 5.1(c) is set out in Section 5.1(d);
+
+(d)	it will, with no lower priority than other licensees, promptly repair any nonconformities between the Licensed Technology and Specifications discovered within one (1) month from the date of delivery; 
+
+(e)	it will make reasonable efforts promptly to repair any material nonconformities discovered by Licensee between the Licensed Technology and the Specifications.
+
+(f)	the Licensed Technology and other work performed hereunder will be the original work of Licensor or Licensor’s licensors or in the public domain, will be free and clear of any and all restrictions, and will not infringe Intellectual Property rights in the United States of America. 
+
+
+
+5.2	Licensee represents and warrants to Licensor that:
+
+	(a)	it has the full right, power, and authority to enter into this Agreement; and
+
+(b)  	no consent of any third parties is required for Licensee to enter into this Agreement or perform its obligations hereunder; and
+
+(c) 	all and any use of the Licensed Technology by Licensee shall at all times be in accordance with all relevant and applicable laws and regulations.
+
+5.3	If in Licensor’s judgment a claim of infringement of third party Intellectual Property rights is likely to result in a judicial finding that the Licensed Technology or the use of the Licensed Technology infringes on Intellectual Property rights, Licensor shall at its own option and expense either: (a) procure the right for Licensee to continue its licensed activities with the Licensed Technology, or (b) if such procurement is not reasonably available, make the Licensed Technology non-infringing without diminishing its functionality in relation to the Specifications. If the foregoing remedies are not reasonably available, Licensor will accept the return of the Licensed Technology and refund license fees and royalties paid therefor.
+
+5.4	EXCEPT AS PROVIDED IN SECTION 5.1, AND TO THE FULLEST EXTENT PERMISSIBLE BY LAW, LICENSOR MAKES NO EXPRESS OR IMPLIED WARRANTY, STATUTORY OR OTHERWISE, WITH RESPECT TO THE LICENSED TECHNOLOGY INCLUDING, WITHOUT LIMITATION, NO WARRANTY OF FITNESS FOR A PARTICULAR PURPOSE, NO WARRANTY OF MERCHANTABILITY, AND NO WARRANTY AS TO QUALITY. LICENSOR SPECIFICALLY DISCLAIMS ANY WARRANTY THAT THE OPERATION OF THE LICENSED TECHNOLOGY WILL BE UNINTERRUPTED OR ERROR FREE, INCLUDING THOSE THAT COULD ARISE FROM THE USE OF THE LICENSED TECHNOLOGY BY LICENSEE.
+
+	EXCEPT AS PROVIDED IN SECTION 5.2, AND TO THE FULLEST EXTENT PERMISSIBLE BY LAW, LICENSEE MAKES NO EXPRESS OR IMPLIED WARRANTY, STATUTORY OR OTHERWISE, UNDER THIS AGREEMENT INCLUDING WITHOUT LIMITATION, NO WARRANTY OF FITNESS FOR A PARTICULAR PURPOSE, NO WARRANTY OF MERCHANTABILITY, AND NO WARRANTY AS TO QUALITY.
+
+5.5	EXCEPT FOR INTENTIONAL OR WILLFUL BREACHES OF SECTION 2 (LICENSE GRANT) AND 4 (SOURCE CODE), AND EXCEPT FOR LICENSOR’S INDEMNITY OBLIGATIONS, (i) IN NO EVENT SHALL EITHER PARTY HERUNDER BE LIABLE FOR ANY INCIDENTAL OR CONSEQUENTIAL DAMAGES RESULTING FROM, ARISING OUT OF, OR IN CONNECTION WITH THIS AGREEMENT OR THE PERFORMANCE OR BREACH THEREOF, AND (ii) IN NO EVENT WILL THE AGGREGATE LIABILITY OF EITHER PARTY (AND ITS NON-PARTY LICENSORS) UNDER THIS AGREEMENT EXCEED $1 MILLION, OR THE AGGREGATE FEES AND ROYALTIES PAID BY LICENSEE HEREUNDER, WHICHEVER IS LOWER IRRESPECTIVE OF THE THEORY OF LIABILITY, AND IRRESPECTIVE OF THE TYPE OF ACTION OR NUMBER OF CLAIMS.
+
+5.6	NOTWITHSTANDING THE FOREGOING, NOTHING IN THIS AGREEMENT SHALL PREJUDICE LICENSOR’S RIGHT TO COLLECT IN FULL ALL SUMS PAYABLE BY LICENSEE UNDER THE TERMS OF THIS AGREEMENT.
+
+
+
+
+6	Term and Termination
+
+6.1	Term and Renewal. This Agreement shall become effective upon the Effective Date and shall remain in force until terminated pursuant to Section 6.2 or 6.3 or 6.4.
+
+6.2	Termination for Breach. Either party may terminate this Agreement on thirty (30) days written notice to the other if other is in material default or breach of any material provision of this Agreement; provided, however, that if the party receiving such notice cures the material breach or default within such thirty (30) day period, this Agreement shall continue in full force and effect.
+
+6.3	Termination for Insolvency. This Agreement may be immediately terminated by either party without prejudice to any other rights that the terminating party may have, whether under this Agreement, in law, equity, or otherwise, as follows:
+
+(i) if the other party ceases doing business as a going concern, makes assignment for the benefit of creditors, files a voluntary petition in bankruptcy, is adjudicated as bankrupt or insolvent, files a petition seeking for itself creditor relief by any composition, dissolution, liquidation, readjustment, reorganization, or similar arrangement under any present or future statute, law, or regulation, or files an answer admitting the material allegations of such petition against it, consents to or acquiesces in the appointment of a trustee, receiver, or liquidator of it, or of all or substantially all of its assets or properties, or if it or its shareholders shall take any action requiring its dissolution or liquidation; or
+
+(ii)  if within sixty (60) days after the commencement of any proceedings against the other party seeking creditor relief by composition, dissolution, liquidation, readjustment, reorganization, or similar arrangement under any present or future statute, law, or regulation, such proceedings shall not have been dismissed, or if within sixty (60) days after the appointment without such party’s consent or acquiescence of any trustee, receiver, or liquidator of it or of all or any substantial part of its assets and properties, such appointment shall not be vacated.
+
+
+7	Effects of Termination
+
+7.1	Except as otherwise expressly provided herein, upon any rightful termination of this Agreement by Licensor, Licensor will have no further obligation to provide any service to Licensee. Licensee agrees to the extent requested by Licensor after rightful termination of this Agreement by Licensor, to promptly return to Licensor or destroy all Intellectual Property, and all copies of thereof, in Licensee’s possession, custody or control and confirm in writing to Licensor that such return or destruction have occurred. Termination of this Agreement will not relieve or release either party from making payments that may be owing to the other party as of the date of termination under the terms of this Agreement.
+
+7.2	Except as specified elsewhere in Section 7, all other provisions of this Agreement will survive beyond such termination in accordance with their terms and conditions.
+
+7.3	Termination shall be in addition to, and shall not be prejudice, any of the parties’ remedies at law or in equity.
+
+
+8	Indemnification
+
+8.1		By Licensor.   Licensor will defend, hold harmless, and indemnify Licensee, its directors, officers, shareholders, employees, representatives, agents, successors and assigns (collectively, the “Indemnified Parties”), from and against will hold Licensee harmless from a final judgment awarding damages to a third party based on a third-party claim alleging that the Intellectual Property infringes, violates, misappropriates any United States patent issued or published on or before the Effective Date or any, copyright, trade secret or other property right or intellectual property right of a third party (an “Infringement Claim”), provided that: (i) Licensor is notified within thirty (30) days of Licensee’s receipt of any written claim, but in any event within a time such that Licensor is not prejudiced in its ability to respond, (ii) Licensor is given control of the defense and/or settlement thereof, and (iii) Licensee gives Licensor information and reasonable assistance for the defense. Licensor shall indemnify the Indemnified parties against all liabilities, costs, losses, damages and expenses (including reasonable attorneys’ and experts’ fees and expenses) in connection with any claim or action threatened or brought against Licensee or the Indemnified Parties based upon an Infringement Claim.
+
+	By Licensee.   Licensee will defend, hold harmless, and indemnify Licensor, its directors, officers, shareholders, employees, representatives, agents, successors and assigns (collectively, the “Indemnified Parties”) from and against any third-party claim alleging that Other Technology (defined below) infringes, violates, misappropriates any patent, copyright, trade secret, or other property right or intellectual property right of a third party (an “Infringement Claim”), provided that: (i) Licensee is notified within a reasonable time following Licensor’s receipt of any written claims, but in any event within a time such that Licensee is not prejudiced in its ability to respond, (ii) Licensee is given control of the defense and/or settlement thereof, and (iii) Licensor gives Licensee information and reasonable assistance for the defense.  Licensee shall indemnify the Indemnified parties against all liabilities, costs, losses, damages and expenses (including reasonable attorneys’ and experts’ fees and expenses in connection with any claim or action threatened or brought against Licensor or the Indemnified Parties based upon an Infringement Claim.
+
+
+8.2	“Other Technology” means software or other technology: (a) necessarily required for compliance with Licensee’s specifications but not part of Licensed Technology, where alleged infringements or misappropriation would not have arisen but for the use of such Other Technology; (b) modified by Licensee after delivery by Licensor, where the alleged infringement or misappropriation would not have arisen but for Licensee’s modification, (c) combined by Licensee with the Licensed Technology, where the alleged infringement or misappropriation would not have arisen but for such combination, or (d) used by Licensee in breach of the rights granted in this Agreement, where the alleged infringement or misappropriation would not have arisen but for such breach. THE FOREGOING IS IN LIEU OF ANY REMEDIES FOR WARRANTIES OF NONINFRINGEMENT, WHICH ARE HEREBY DISCLAIMED.
+
+8.3	The indemnification and other remedies set forth in this Section 11 and in Section 8.3 shall constitute the exclusive remedies of each party from the other party with respect to Infringement Claims.
+
+
+9	Governing Law
+
+9.1	Choice of Law.  This Agreement shall be governed by the laws of the State of  Indiana, United States of America, without giving effect to the conflict of law provisions thereof, and excluding (even if applicable) any application of the United Nations Convention of Contracts for the International Sale of Goods.
+
+9.2	Jurisdiction. The federal and state courts within Tippecanoe County, Indiana, shall have non-exclusive jurisdiction to adjudicate any dispute arising out of this Agreement. Each party hereto expressly consents to the personal jurisdiction of, and venue in, such courts.
+
+9.3	Equitable Relief.  Notwithstanding anything in this Section 13, each party shall have the right to institute judicial proceedings against the other party to seek specific performance, injunctive relief, or similar equitable relief.
+
+9.4	Legal Fees.  If either party brings a legal action to enforce the provisions of this Agreement or otherwise reasonably incurs attorneys’ fees or other legal expenses to enforce this Agreement, the substantially prevailing party will be entitled to recover from the party all costs and expenses including but not limited to attorneys’ fees and disbursements, reasonably incurred by the substantially prevailing party or parties in connection with such action or enforcement including but not limited to those incurred in connection with trial and appellate court proceedings, post-judgment collection proceedings, settlement negotiations, and bankruptcy or other insolvency proceedings.
+
+10	General Provisions
+
+10.1	This Agreement constitutes the entire agreement between the Licensor and Licensee with respect to the obligations of the parties with respect to its subject matter, and supersedes and terminates any prior or contemporaneous agreements or understandings relating to such subject matter. There are no prior or contemporaneous representations, warranties, or agreements between the parties, written or oral, not contained in this Agreement. No addendum, waiver, consent, modification, amendment, or change of the terms of this Agreement shall bind either party unless in writing and signed by duly authorized officers of Licensor and Licensee.
+
+10.2	In the performance of its obligations hereunder, Licensee is, and at all times will be, completely independent from Licensor, and this Agreement shall not constitute, or be deemed to constitute, either party as an employee, agent, or joint venture of the other.
+
+10.3	 Licensee and Licensor agree to issue a press release at a time suitable to both parties, the timing and content of which will be acceptable to both parties in their sole discretion.  Unless otherwise agreed between the parties in writing, neither party may use any trademark, trade name or logo the other party or third party licensors in any advertising or promotional material, press release or public disclosure.  Neither party shall issue any press release concerning this Agreement or the relationship between the parties without the prior written consent of the other party.
+
+10.4	In the event any provision of this Agreement is held by a court of competent jurisdiction to be unenforceable because it is invalid or in conflict with any law of any relevant jurisdiction, the validity of the remaining provisions shall not be affected, and the rights and obligations of the parties shall be construed and enforced as if the Agreement did not contain the particular provisions held to be unenforceable, unless such construction would materially alter the meaning of this Agreement.
+
+10.5	Neither this Agreement nor any rights, obligations, or licenses granted hereunder may be assigned, delegated, or subcontracted by Licensee without prior written consent of Licensor. Notwithstanding the foregoing or anything else to the contrary in this Agreement, irrespective of Licensor’s consent, Licensee may assign or transfer this Agreement in its entirety to (i) an entity succeeding by operation of law, by purchase, or otherwise by acquisition, to substantially all of Licensee’s business relating to this Agreement, or (ii) an entity that is Licensee’s subsidiary; provided, however, that such entity (under (i) or (ii)) expressly assumes in writing all of the Licensee’s rights and obligations under this Agreement. Under this Agreement, an assigning party will promptly give the other party notice of its assignment or transfer. This Agreement will be binding upon and inure to the benefit of a party’s direct and indirect successors, assignees and transferees. In case of a permitted assignment, there shall be no additional costs associated with the reassignment.
+
+10.6	The parties agree that no technical information, including software, programs, documentation, chips, or other computer material, furnished under this Agreement, is intended to or will be exported or re-exported, directly or indirectly, to any destination restricted or prohibited by export control regulations without the required authorization or license from the appropriate governmental or other regulatory authorities.
+
+10.7	The waiver by either party of a breach of a default of any provision of this Agreement by the other party shall not be construed as a waiver of any succeeding breach of the same or any other provision, nor shall any delay or omission on the part of either party to exercise or avail itself of any right, power, or privilege that it has, or may have hereunder, operate as a waiver of any right, power, or privilege by such party.
+
+10.8	Neither party shall be liable for failures to perform due to acts of God or the public enemy, acts of terrorism, acts of civil or military authority, fires, floods, epidemics, quarantine restrictions, armed hostilities, riots, and other unavoidable natural disasters beyond the control of the parties, and the time for performance of obligations hereunder by the party subject to such event shall be extended for the duration of the event.
