@@ -3,11 +3,13 @@
 This tutorial will teach you how to run inference on Snowflake. We will use a neural network pre-trained on ImageNet.
 The program will process an image and return the top-5 classification of the image. A neural network trained for an object 
 categorization task will output a probability vector. Each element of the vector contains the probability to its correspondent 
-category that is listed in a [categories file](https://github.com/FWDNXT/Snowflake-SDK/blob/master/test-files/categories.txt)
+category that is listed in a [categories file](https://github.com/FWDNXT/Snowflake-SDK/blob/master/test-files/categories.txt).  
 In this tutorial you will need:
 * One of the [pre-trained models](http://fwdnxt.com/models/)
 * Input image. Some image samples are [here](https://github.com/FWDNXT/Snowflake-SDK/tree/master/test-files)
 * [Categories file](https://github.com/FWDNXT/Snowflake-SDK/blob/master/test-files/categories.txt)
+* [simpledemo.py](https://github.com/FWDNXT/Snowflake-SDK/blob/master/sdk/examples/python/simpledemo.py)
+* libsnowflake.so: add libsnowflake to the [sdk folder](https://github.com/FWDNXT/Snowflake-SDK/tree/master/sdk). You can get the libsnowflake.so by a request to [FWDNXT](http://fwdnxt.com/)
 
 **Running inference on Snowflake for one image**
 
