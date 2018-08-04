@@ -53,15 +53,13 @@ def get_padding_value(inS, kS, dS, type_):
         if (inS % dS==0):
             pS=max(kS-dS,0)
         else:
-            pS=max(kS-(inS % dS),0)
-        pS_orig=pS
-        pS=pS_orig//2
-        if pS_orig%2!=0:
-            pS+=1
-        return pS
+            pS=max(kS-(inS % dS),0)        
+        pS1=pS//2
+        pS2=pS-pS1
+        return (pS1, pS2)
     elif type_==b'VALID':
         pS=0
-        return pS
+        return (pS, pS)
 
 def get_batchnorm_params(node_in,i):
     _,scale_node=find_node(node_in.input[1])
@@ -186,12 +184,14 @@ for i in range(start_ind,len(graph_def.node)):
         attribute.ints.append(dW)
         inH = tf.graph_util.tensor_shape_from_node_def_name(graph,'import/'+node_in.input[0])[1].value
         inW = tf.graph_util.tensor_shape_from_node_def_name(graph,'import/'+node_in.input[0])[2].value
-        pH = get_padding_value(inH, kH, dH, node_in.attr["padding"].s)
-        pW = get_padding_value(inW, kW, dW, node_in.attr["padding"].s)
+        pH1, pH2 = get_padding_value(inH, kH, dH, node_in.attr["padding"].s)
+        pW1, pW2 = get_padding_value(inW, kW, dW, node_in.attr["padding"].s)
         attribute=node_out.attribute.add()
         attribute.name="pads"
-        attribute.ints.append(pH)
-        attribute.ints.append(pW)
+        attribute.ints.append(pH1)
+        attribute.ints.append(pW1)
+        attribute.ints.append(pH2)
+        attribute.ints.append(pW2)
         initializer=graph_out.initializer.add()
         initializer.name=weights_name      
         initializer.dims.append(weights_node.attr["value"].tensor.tensor_shape.dim[3].size)
@@ -288,12 +288,14 @@ for i in range(start_ind,len(graph_def.node)):
         attribute.ints.append(dW)
         inH = tf.graph_util.tensor_shape_from_node_def_name(graph,'import/'+node_in.input[0])[1].value
         inW = tf.graph_util.tensor_shape_from_node_def_name(graph,'import/'+node_in.input[0])[2].value
-        pH = get_padding_value(inH, kH, dH, node_in.attr["padding"].s)
-        pW = get_padding_value(inW, kW, dW, node_in.attr["padding"].s)
+        pH1, pH2 = get_padding_value(inH, kH, dH, node_in.attr["padding"].s)
+        pW1, pW2 = get_padding_value(inW, kW, dW, node_in.attr["padding"].s)
         attribute=node_out.attribute.add()
         attribute.name="pads"
-        attribute.ints.append(pH)
-        attribute.ints.append(pW)
+        attribute.ints.append(pH1)
+        attribute.ints.append(pW1)
+        attribute.ints.append(pH2)
+        attribute.ints.append(pW2)
         node_out.input.append(node_in.input[0])
         node_out.output.append(node_in.name)
       
@@ -314,12 +316,14 @@ for i in range(start_ind,len(graph_def.node)):
         attribute.ints.append(dW)
         inH = tf.graph_util.tensor_shape_from_node_def_name(graph,'import/'+node_in.input[0])[1].value
         inW = tf.graph_util.tensor_shape_from_node_def_name(graph,'import/'+node_in.input[0])[2].value
-        pH = get_padding_value(inH, kH, dH, node_in.attr["padding"].s)
-        pW = get_padding_value(inW, kW, dW, node_in.attr["padding"].s)
+        pH1, pH2 = get_padding_value(inH, kH, dH, node_in.attr["padding"].s)
+        pW1, pW2 = get_padding_value(inW, kW, dW, node_in.attr["padding"].s)
         attribute=node_out.attribute.add()
         attribute.name="pads"
-        attribute.ints.append(pH)
-        attribute.ints.append(pW)
+        attribute.ints.append(pH1)
+        attribute.ints.append(pW1)
+        attribute.ints.append(pH2)
+        attribute.ints.append(pW2)
         node_out.input.append(node_in.input[0])
         node_out.output.append(node_in.name)
 
@@ -422,7 +426,7 @@ out.type.tensor_type.elem_type=1
 dim=out.type.tensor_type.shape.dim.add()
 dim.dim_value=1
 dim=out.type.tensor_type.shape.dim.add()
-dim.dim_value=1000 #value does not matter
+dim.dim_value = tf.graph_util.tensor_shape_from_node_def_name(graph, 'import/' + graph_def.node[len(graph_def.node)-1].name)[1].value
 
 for i in range(len(graph_out.node)):
     my_node=graph_out.node[i]
