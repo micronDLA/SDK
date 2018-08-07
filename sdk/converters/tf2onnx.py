@@ -260,9 +260,6 @@ for i in range(start_ind,len(graph_def.node)):
     elif node_in.op=="BatchNormWithGlobalNormalization":
         node_out=graph_out.node.add()
         node_out.op_type="BatchNormalization"
-        attribute=node_out.attribute.add()
-        attribute.name="is_test"
-        attribute.i=1
         node_out.input.append(node_in.input[0])
         node_out.input.append(node_in.input[4]) #gamma/scale
         node_out.input.append(node_in.input[3]) #beta/bias
