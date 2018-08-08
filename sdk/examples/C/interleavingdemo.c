@@ -7,8 +7,8 @@ Test Snowflake and compiler for some layers
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
 #include <dirent.h>
+#include <unistd.h>
 #include "../../api.h"
 //#define STB_IMAGE_IMPLEMENTATION
 #include "../../stb_image.h"
@@ -40,6 +40,10 @@ float *sortdata;
 unsigned outsize = 0;
 void *sf_handle;
 const char *categ = "./categories.txt";
+char **categories;
+float *output;
+
+void getresult();
 
 struct info
 {
@@ -57,15 +61,12 @@ int sortcmp(const void *a, const void *b)
     return 0;
 }
 
-void *getresults_thread(void *dummy);
-
 int main(int argc, char **argv)
 {
     const char *imagesdir = "images";
     const char *f_bitfile = "";
     const char *outbin = "save.bin";
-    int i, netwidth = 224, netheight = 224;
-    pthread_t tid;
+    int i, netwidth = 224, netheight = 224, nimages = 0;
 
     // start argc ------------------------
     for(i = 1; i < argc; i++) {
@@ -105,7 +106,24 @@ int main(int argc, char **argv)
     }
 
     sf_handle = snowflake_init(NULL, f_bitfile, outbin, &outsize);
-    pthread_create(&tid, 0, getresults_thread, 0);
+
+    categories = (char **)calloc(outsize, sizeof(char *));
+    FILE *fp = fopen(categ, "r");
+    if(fp)
+    {
+        char line[300];
+        int i = 0;
+        while (i < outsize && fgets(line, sizeof(line), fp))
+        {
+            char *p = strchr(line, '\n');
+            if(p)
+                *p = 0;
+            categories[i++] = strdup(line);
+        }
+        fclose(fp);
+    }
+    output = (float*) malloc(outsize * sizeof(float));
+
     DIR *dir = opendir(imagesdir);
     if (!dir)
     {
@@ -144,64 +162,44 @@ int main(int argc, char **argv)
             fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
             return -1;
         }
+        nimages++;
+        if(nimages > 1)
+            getresult();
     }
-    // Notify we finished
-    snowflake_putinput(sf_handle, 0, 0, 0);
+    if(nimages > 0)
+        getresult();
     closedir(dir);
-    pthread_join(tid, 0);
+    free(output);
+    for(i = 0; i < outsize; i++)
+        if(categories[i])
+            free(categories[i]);
+    free(categories);
+
     snowflake_free(sf_handle);
     printf("\ndone\n");
     return 0;
 }
 
-
-void *getresults_thread(void *dummy)
+void getresult()
 {
+    struct info *info;
     int i;
-    int output_elements = outsize;
-    char **categories = (char **)calloc(output_elements, sizeof(char *));
-    FILE *fp = fopen(categ, "r");
-    if(fp)
+    int err = snowflake_getresult(sf_handle, output, outsize, (void **)&info);
+    if(err==-1)
     {
-        char line[300];
-        int i = 0;
-        while (i < output_elements && fgets(line, sizeof(line), fp))
-        {
-            char *p = strchr(line, '\n');
-            if(p)
-                *p = 0;
-            categories[i++] = strdup(line);
-        }
-        fclose(fp);
+        fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
+        exit(-1);
     }
-    float *output = (float*) malloc(output_elements*sizeof(float));
-    for (;;)
-    {
-        struct info *info;
-        int err = snowflake_getresult(sf_handle, output, output_elements, (void **)&info);
-        if(err==-1)
-        {
-            fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
-            exit(-1);
-        }
-        if (!info) // We sent an empty input to notify that we finished
-            break;
-        printf("-------------- %s --------------\n", info->filename);
-        int* idxs = (int *)malloc(sizeof(int) * output_elements);
-        for(i = 0; i < output_elements; i++)
-            idxs[i] = i;
-        sortdata = output;
-        qsort(idxs, outsize, sizeof(int), sortcmp);
-        for(i = 0; i < 5; i++)
-            printf("%s (%d) -- %.4f\n", categories[idxs[i]] ? categories[idxs[i]] : "", idxs[i], output[idxs[i]]);
-        free(idxs);
-        free(info->input);
-        free(info->filename);
-        free(info);
-    }
-    free(output);
-    for(i = 0; i < output_elements; i++)
-        if(categories[i])
-            free(categories[i]);
-    free(categories);
+    printf("-------------- %s --------------\n", info->filename);
+    int* idxs = (int *)malloc(sizeof(int) * outsize);
+    for(i = 0; i < outsize; i++)
+        idxs[i] = i;
+    sortdata = output;
+    qsort(idxs, outsize, sizeof(int), sortcmp);
+    for(i = 0; i < 5; i++)
+        printf("%s (%d) -- %.4f\n", categories[idxs[i]] ? categories[idxs[i]] : "", idxs[i], output[idxs[i]]);
+    free(idxs);
+    free(info->input);
+    free(info->filename);
+    free(info);
 }

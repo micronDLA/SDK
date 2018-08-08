@@ -1,4 +1,4 @@
-all: simpledemo threadeddemo threadedbatchdemo pollingdemo compile
+all: simpledemo threadeddemo threadedbatchdemo pollingdemo interleavingdemo compile
 
 compile: compile.c
 	$(CC) -o $@ $< -lm ../../libsnowflake.so
@@ -15,6 +15,9 @@ threadedbatchdemo: threadedbatchdemo.c
 pollingdemo: pollingdemo.c
 	$(CC) -o $@ $< -lm ../../libsnowflake.so
 
+interleavingdemo: interleavingdemo.c
+	$(CC) -o $@ $< -lm ../../libsnowflake.so
+
 clean:
-	rm -rf compile simpledemo threadeddemo threadedbatchdemo pollingdemo
+	rm -rf compile simpledemo threadeddemo threadedbatchdemo pollingdemo interleavingdemo
 

@@ -15,7 +15,8 @@ Test Snowflake and compiler for some layers
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "../../stb_image_resize.h"
 
-static void print_help(){
+static void print_help()
+{
     printf("Syntax: simpledemo\n");
     printf("\t-i <directory with image files>\n");
     printf("\t-c <categories file>\t-b <bitfile>\t-s <snowflake.bin file>\n");
@@ -74,37 +75,32 @@ int main(int argc, char **argv)
         switch(argv[i][1])
         {
         case 'b': // bitfile
-            if(i+1 < argc){
+            if(i+1 < argc)
                 f_bitfile = argv[++i];
-            }
             break;
         case 'i':// imagesdir
-            if(i+1 < argc){
+            if(i+1 < argc)
                 imagesdir = argv[++i];
-            }
             break;
         case 'r':// resolution WxH
-            if(i+1 < argc){
+            if(i+1 < argc)
                 sscanf(argv[++i], "%dx%d", &netwidth, &netheight);
-            }
             break;
         case 'c':// categories
-            if(i+1 < argc){
+            if(i+1 < argc)
                 categ = argv[++i];
-            }
             break;
         case 's':// output file
-            if(i+1 < argc){
+            if(i+1 < argc)
                 outbin = argv[++i];
-            }
             break;
         default:
             print_help();
             return -1;
-            break;
         }
     }
-    if(argc==1){
+    if(argc==1)
+    {
         print_help();
         return -1;
     }
@@ -165,7 +161,8 @@ int main(int argc, char **argv)
         for(;;)
         {
             int err = snowflake_putinput(sf_handle, input, input_elements, info);
-            if(err==-1){
+            if(err==-1)
+            {
                 fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
                 return -1;
             }
@@ -202,7 +199,8 @@ int getresult()
     struct info *info;
     int i;
     int err = snowflake_getresult(sf_handle, output, outsize, (void **)&info);
-    if(err==-1){
+    if(err==-1)
+    {
         fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
         exit(-1);
     }
