@@ -18,6 +18,10 @@ int snowflake_run(void *cmemo, const float *input, unsigned input_elements, floa
 
 int snowflake_run_sim(void *cmemo, const float *input, unsigned input_elements, float *output, unsigned output_elements);//only runs the SF_INT precision in software (naive)
 
+int snowflake_putinput(void *cmemo, const float *input, unsigned input_elements, void *userparam);
+
+int snowflake_getresult(void *cmemo, float *output, unsigned output_elements, void **userparam);
+
 int thnets_run_sim(void *cmemo, const float *input, unsigned input_elements, float *output, unsigned output_elements);
 
 int test_functions(void *cmemo, const float *input, unsigned input_elements, float *output, unsigned output_elements);

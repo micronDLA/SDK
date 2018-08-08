@@ -1,11 +1,13 @@
 import sys
 from ctypes import *
+import numpy
 from numpy.ctypeslib import ndpointer
-f = CDLL("../../libsnowflake.so")
+f = CDLL("libsnowflake.so")
 
 class Snowflake:
     def __init__(self):
         self.handle = c_void_p()
+        self.userobjs = {}
 
         self.snowflake_compile = f.snowflake_compile
         self.snowflake_compile.restype = c_void_p
@@ -23,6 +25,12 @@ class Snowflake:
 
         self.snowflake_run = f.snowflake_run
         self.snowflake_run.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint]
+
+        self.snowflake_putinput = f.snowflake_putinput
+        self.snowflake_putinput.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, c_long]
+
+        self.snowflake_getresult = f.snowflake_getresult
+        self.snowflake_getresult.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, c_void_p]
 
         self.snowflake_run_sim = f.snowflake_run_sim
         self.snowflake_run_sim.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint]
@@ -66,6 +74,31 @@ class Snowflake:
         rc = self.snowflake_run(self.handle, image, image.size, result, result.size)
         if rc != 0:
             raise Exception(rc)
+
+    def PutInput(self, image, userobj):
+        userobj = py_object(userobj)
+        key = c_long(addressof(userobj))
+        self.userobjs[key.value] = userobj
+        if image is None:
+            rc = self.snowflake_putinput(self.handle, numpy.empty(0, dtype=numpy.float32), 0, key)
+        else:
+            rc = self.snowflake_putinput(self.handle, image, image.size, key)
+        if rc == -99:
+            return False
+        if rc != 0:
+            raise Exception(rc)
+        return True
+
+    def GetResult(self, result):
+        userobj = c_long()
+        rc = self.snowflake_getresult(self.handle, result, result.size, byref(userobj))
+        if rc == -99:
+            return None
+        if rc != 0:
+            raise Exception(rc)
+        retuserobj = self.userobjs[userobj.value]
+        del self.userobjs[userobj.value]
+        return retuserobj.value
 
     def Run_sw(self, image, result):
         rc = self.snowflake_run_sim(self.handle, image, image.size, result, result.size)

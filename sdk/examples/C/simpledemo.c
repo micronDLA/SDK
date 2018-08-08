@@ -152,6 +152,7 @@ int main(int argc, char **argv)
                 *p = 0;
             categories[i++] = strdup(line);
         }
+        fclose(fp);
     }
 //print out the results
     printf("-------------- Snowflake results --------------\n");
@@ -160,9 +161,8 @@ int main(int argc, char **argv)
         idxs[i] = i;
     sortdata = output;
     qsort(idxs, outsize, sizeof(int), sortcmp);
-    for(i=0;i<5;i++){
-        printf("%s -- %.4f\n", categories[idxs[i]], output[idxs[i]]);
-    }
+    for(i = 0; i < 5; i++)
+        printf("%s (%d) -- %.4f\n", categories[idxs[i]] ? categories[idxs[i]] : "", idxs[i], output[idxs[i]]);
 //free allocated memory
     free(idxs);
     for(i = 0; i < output_elements; i++)
