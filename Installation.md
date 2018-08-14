@@ -22,26 +22,17 @@ These are the things that are needed to use the Snowflake SDK.
 
 This steps were tested using:
 
-Ubuntu 14.04.5 LTS Release, Kernel 4.4.0-96-generic
+Ubuntu 14.04 LTS Release, Kernel 4.4.0
 
-Ubuntu 16.04.1 LTS Release, Kernel 4.13.0-32-generic
+Ubuntu 16.04 LTS Release, Kernel 4.13.0
 
 picocomputing-6.0.0.21
 
 
 **Snowflake SDK**
 
-Unpack the package. You should have these files in the snowflake directory:
+Clone this repository and move bitfile.bit and libsnowflake.so we provided you into Snowflake-SDK/sdk directory.
 
-```
-libsnowflake.so (the snowflake compiler and runtime)
-bitfile.bit (the snowflake code to be uploaded on the FPGA)
-snowflake.py (the python wrapper for libsnowflake.so)
-genonnx.py (generate the onnx file for a network)
-simpledemo.py (a simple python demo)
-EULA (EULA of the package)
-install.sh (installer)
-```
 Run the self-installation command:
 
 `./install.sh`
