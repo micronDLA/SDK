@@ -3,20 +3,12 @@
 
 **Dependencies list**
 
-These are the things that are needed to use the Snowflake SDK.
-
 - Python 3 together with numpy and pytorch.
 - [Thnets](https://github.com/mvitez/thnets/)
 - [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/)
 - GCC 5.1 or higher
 
-This steps were tested using:
-
-Ubuntu 14.04 LTS Release, Kernel 4.4.0
-
-Ubuntu 16.04 LTS Release, Kernel 4.13.0
-
-picocomputing-6.0.0.21
+Thested on: Ubuntu 14.04 LTS Release, Kernel 4.4.0, Ubuntu 16.04 LTS Release, Kernel 4.13.0, picocomputing-6.0.0.21
 
 After unpackaging the SDK, it can be installed on Ubuntu with this command:
 
