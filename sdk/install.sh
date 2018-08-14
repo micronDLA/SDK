@@ -42,8 +42,6 @@ then
 		else
 			cp libsnowflake-gcc5.4.so /usr/local/lib
 			ln -s libsnowflake-gcc5.4.so libsnowflake.so
-			apt-get -y install libprotobuf-dev
-			apt-get -y install protobuf-compiler
 			PYVERSION=`python3 --version|cut -d. -f2`
 			if [ $PYVERSION == 6 ]
 			then
