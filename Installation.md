@@ -65,7 +65,9 @@ sudo make install
 ```
 
 
-**Install pytorch (optional; not required by SDK)**
+**Install pytorch (optional for sdk/genonnx.py; not required by SDK)**
+
+Install this if you want to convert models from PyTorch to ONNX on your own.
 
 Choose your system configuration at pytorch.org and install the corresponding package.
 
