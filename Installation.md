@@ -1,15 +1,5 @@
 # Installation
 
-After unpackaging the SDK, it can be installed on Ubuntu with this command:
-
-`sudo ./install.sh`
-
-This script will take care of everything, it will install pytorch, thnets, protobufs and everything required to run the tests. It has been tested on Ubuntu 14.04 and Ubuntu 16.04.
-
-This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example).  
-You can find picocomputing-6.0.0.21 release [here](https://picocomputing.zendesk.com/hc/en-us).
-
-# Script-based installation
 
 **Dependencies list**
 
@@ -28,16 +18,15 @@ Ubuntu 16.04 LTS Release, Kernel 4.13.0
 
 picocomputing-6.0.0.21
 
+After unpackaging the SDK, it can be installed on Ubuntu with this command:
 
-**Snowflake SDK**
+`sudo ./install.sh`
 
-Clone this repository and move bitfile.bit and libsnowflake.so we provided you into Snowflake-SDK/sdk directory.
+This script will take care of everything, it will install pytorch, thnets, protobufs and everything required to run the tests. It has been tested on Ubuntu 14.04 and Ubuntu 16.04.
 
-Run the self-installation command:
+This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example).  
+You can find picocomputing-6.0.0.21 release [here](https://picocomputing.zendesk.com/hc/en-us).
 
-`./install.sh`
-
-This will install the SDK and all required packages below. 
 
 
 # Manual Installation:
