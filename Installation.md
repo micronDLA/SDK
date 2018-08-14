@@ -76,9 +76,9 @@ sudo make install
 
 **Install pytorch (optional; not required by SDK)**
 
-`sudo -H pip install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl`
+Choose your system configuration at pytorch.org and install the corresponding package.
 
 On ARM CPU you will have to install pytorch from source.
 
-Check torch version with: pip show torch
+Check torch version with: `pip show torch`
 
