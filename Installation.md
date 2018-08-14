@@ -71,3 +71,9 @@ simpledemo.py (a simple python demo)
 EULA (EULA of the package)
 install.sh (installer)
 ```
+Run installation command:
+
+`./install.sh`
+
+This will install the SDK!
+
