@@ -39,8 +39,6 @@ then
 	read -p "Do you accept this EULA (y/n)? " -r
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
-		cp libsnowflake-gcc4.8.so /usr/local/lib
-		ln -s libsnowflake-gcc4.8.so libsnowflake.so
 		yum install unzip
 		yum install yum-utils
 		yum-builddep python
@@ -52,13 +50,11 @@ then
 		./configure
 		make
 		make install
-		pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp36-cp36m-linux_x86_64.whl
-		pip3 install --upgrade torchvision
 		echo "Installing protobuf from source"
 		cd /tmp
-		curl -LO https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-all-3.5.1.tar.gz
-		tar xf protobuf-all-3.5.1.tar.gz
-		cd protobuf-3.5.1
+		curl -LO https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
+		tar xf protobuf-all-3.6.1.tar.gz
+		cd protobuf-3.6.1
 		./configure
 		make
 		make install
