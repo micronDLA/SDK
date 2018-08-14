@@ -29,10 +29,17 @@ First run the demo using this command:
 `./simpledemo.py alexnet.onnx picture -c categoriesfile -l`
 
 `-l` option will load the Snowflake into a FPGA card. Note: make sure the bitfile is in same directory of `simpledemo.py`, or change the path [here](https://github.com/FWDNXT/Snowflake-SDK/blob/master/sdk/examples/python/simpledemo.py#L51).   
+
+An example is here:
+`~/Snowflake-SDK/sdk/examples/python $ ./simpledemo.py ../../resnet18.onnx ../../../test-files/dog.jpg -c ../../../test-files/categories.txt`
+
+
 Loading the FPGA and bringing up the HMC will take at max 5 min.
 Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](https://github.com/FWDNXT/Snowflake-SDK/blob/master/Troubleshooting.md).  
 After the first run, Snowflake will be loaded in the FPGA card. The following runs will not need to load Snowflake anymore.
 You can run the network on Snowflake with this command, which will find the FPGA card that was loaded with Snowflake:
+
+
 
 `./simpledemo.py alexnet.onnx picturefile -c categoriesfile`
 
