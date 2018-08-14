@@ -9,7 +9,7 @@ This script will take care of everything, it will install pytorch, thnets, proto
 This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example).  
 You can find picocomputing-6.0.0.21 release [here](https://picocomputing.zendesk.com/hc/en-us).
 
-# Manual installation
+# Script-based installation
 
 **Dependencies list**
 
@@ -28,35 +28,6 @@ Ubuntu 16.04.1 LTS Release, Kernel 4.13.0-32-generic
 
 picocomputing-6.0.0.21
 
-**Install pytorch**
-
-`sudo -H pip install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl`
-
-On ARM CPU you will have to install pytorch from source.
-
-Check torch version with: pip show torch
-
-**Install protobuf to use ONNX support**
-
-```
-wget https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-all-3.5.1.zip
-unzip protobuf-all-3.5.1.zip
-cd protobuf-3.5.1
-./configure
-make -j4
-make check -j4
-sudo make install
-sudo ldconfig
-```
-
-**Install Thnets with ONNX support**
-
-```
-git clone https://github.com/mvitez/thnets/
-cd thnets
-make ONNX=1
-sudo make install
-```
 
 **Snowflake SDK**
 
@@ -71,9 +42,43 @@ simpledemo.py (a simple python demo)
 EULA (EULA of the package)
 install.sh (installer)
 ```
-Run installation command:
+Run the self-installation command:
 
 `./install.sh`
 
-This will install the SDK!
+This will install the SDK and all required packages below. 
+
+
+# Manual Installation:
+
+**Install protobuf to use ONNX support (required by SDK)**
+
+```
+wget https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-all-3.5.1.zip
+unzip protobuf-all-3.5.1.zip
+cd protobuf-3.5.1
+./configure
+make -j4
+make check -j4
+sudo make install
+sudo ldconfig
+```
+
+**Install Thnets with ONNX support (required by SDK)**
+
+```
+git clone https://github.com/mvitez/thnets/
+cd thnets
+make ONNX=1
+sudo make install
+```
+
+
+**Install pytorch (optional; not required by SDK)**
+
+`sudo -H pip install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl`
+
+On ARM CPU you will have to install pytorch from source.
+
+Check torch version with: pip show torch
 
