@@ -59,7 +59,7 @@ If you used the example image with alexnet, the demo will output:
 
 **Pytorch and torchvision pretrained model on ImageNet**
 
-In the SDK folder, there is genonnx.py. This script will create an ONNX file from [torchvision models](https://github.com/pytorch/vision/tree/master/torchvision).
+In the SDK folder, there is `genonnx.py`. This script will create an ONNX file from [torchvision models](https://github.com/pytorch/vision/tree/master/torchvision).
 This utility requires the latest pytorch and can create such a file from most networks present in the
 torchvision package and also from networks in the pth format.
 
@@ -67,4 +67,5 @@ torchvision package and also from networks in the pth format.
 
 It will create the file alexnet.onnx that our SDK will be able to parse.
 
+Many ONNX models can also be found [here](https://github.com/onnx/models).
 
