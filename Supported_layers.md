@@ -32,3 +32,14 @@ These models are available [here](http://fwdnxt.com/models/).
   * [Linknet](https://arxiv.org/pdf/1707.03718.pdf)
   * [Neural Style Transfer Network](https://arxiv.org/pdf/1603.08155.pdf)
  
+
+### ONNX model zoo:
+
+https://github.com/onnx/models
+
+ * Resnet v1 all models work, Resnet v2 not yet
+ * Squeezenet
+ * VGG all models
+ 
+Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not support the LRN layer. Emotion FerPlus, MNIST does not work because it looks like reshape layer is not considered properly before a linear layer.
+ 
