@@ -41,5 +41,4 @@ https://github.com/onnx/models
  * Squeezenet
  * VGG all models
  
-Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not support the LRN layer. Emotion FerPlus, MNIST does not work because it looks like reshape layer is not considered properly before a linear layer.
- 
+Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not support the LRN layer.
