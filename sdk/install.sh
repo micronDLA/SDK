@@ -13,14 +13,19 @@ then
 		apt-get -y install python3-pip
 		pip3 install --upgrade numpy
 		# Protobuf
-		echo "Installing protobuf from source"
-		cd /tmp
-		wget https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
-		tar xf protobuf-all-3.6.1.tar.gz
-		cd protobuf-3.6.1
-		./configure
-		make -j4
-		make install
+		if hash protoc 2>/dev/null
+		then 
+			echo "protobuf compiler is installed, skipping protobuf installation"
+		else
+		        echo "Installing protobuf from source"
+			cd /tmp
+			wget https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
+			tar xf protobuf-all-3.6.1.tar.gz
+			cd protobuf-3.6.1
+			./configure
+			make -j4
+			make install
+		fi
 		echo "Installing thnets from source"
 		cd /tmp
 		git clone https://github.com/mvitez/thnets
