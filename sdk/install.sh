@@ -14,7 +14,7 @@ then
 		pip3 install --upgrade numpy
 		# Protobuf
 		if hash protoc 2>/dev/null
-		then 
+		then
 			echo "protobuf compiler is installed, skipping protobuf installation"
 		else
 		        echo "Installing protobuf from source"
