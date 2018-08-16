@@ -8,6 +8,7 @@ then
 	read -p "Do you accept this EULA (y/n)? " -r
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
+		cp libsnowflake.so /usr/local/lib
 		apt-get update
 		apt-get -y install python3-pip
 		pip3 install --upgrade numpy
@@ -39,6 +40,7 @@ then
 	read -p "Do you accept this EULA (y/n)? " -r
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
+	 	cp libsnowflake.so /usr/local/lib
 		yum install unzip
 		yum install yum-utils
 		yum-builddep python
