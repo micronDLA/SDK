@@ -1,7 +1,7 @@
 import sys
 from ctypes import *
 from numpy.ctypeslib import ndpointer
-f = CDLL("../../libsnowflake.so")
+f = CDLL("./libsnowflake.so")
 
 class Snowflake:
     def __init__(self):
