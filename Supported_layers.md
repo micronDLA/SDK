@@ -40,5 +40,7 @@ https://github.com/onnx/models
  * Resnet v1 all models work, Resnet v2 not yet
  * Squeezenet
  * VGG all models
+ * Emotion FerPlus
+ * MNIST
  
 Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not support the LRN layer.
