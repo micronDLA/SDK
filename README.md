@@ -6,11 +6,12 @@ To register and download, please send a request to info@fwdnxt.com
 
 # Snowflake SDK manual
 
-## hardware: 
+## Hardware supported: 
 This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example).
 
-## OS:
-Tested on: Ubuntu 16.04, CentOS 7
+## Operating systems supported:
+* Ubuntu 16.04
+* CentOS 7
 
 
 ## FWDNXT SDK Documentation:

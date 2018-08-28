@@ -29,10 +29,17 @@ First run the demo using this command:
 `./simpledemo.py alexnet.onnx picture -c categoriesfile -l`
 
 `-l` option will load the Snowflake into a FPGA card. Note: make sure the bitfile is in same directory of `simpledemo.py`, or change the path [here](https://github.com/FWDNXT/Snowflake-SDK/blob/master/sdk/examples/python/simpledemo.py#L51).   
+
+An example is here:
+`~/Snowflake-SDK/sdk/examples/python $ ./simpledemo.py ../../resnet18.onnx ../../../test-files/dog.jpg -c ../../../test-files/categories.txt`
+
+
 Loading the FPGA and bringing up the HMC will take at max 5 min.
 Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](https://github.com/FWDNXT/Snowflake-SDK/blob/master/Troubleshooting.md).  
 After the first run, Snowflake will be loaded in the FPGA card. The following runs will not need to load Snowflake anymore.
 You can run the network on Snowflake with this command, which will find the FPGA card that was loaded with Snowflake:
+
+
 
 `./simpledemo.py alexnet.onnx picturefile -c categoriesfile`
 
@@ -52,7 +59,7 @@ If you used the example image with alexnet, the demo will output:
 
 **Pytorch and torchvision pretrained model on ImageNet**
 
-In the SDK folder, there is genonnx.py. This script will create an ONNX file from [torchvision models](https://github.com/pytorch/vision/tree/master/torchvision).
+In the SDK folder, there is `genonnx.py`. This script will create an ONNX file from [torchvision models](https://github.com/pytorch/vision/tree/master/torchvision).
 This utility requires the latest pytorch and can create such a file from most networks present in the
 torchvision package and also from networks in the pth format.
 
@@ -60,4 +67,5 @@ torchvision package and also from networks in the pth format.
 
 It will create the file alexnet.onnx that our SDK will be able to parse.
 
+Many ONNX models can also be found [here](https://github.com/onnx/models).
 
