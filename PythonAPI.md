@@ -61,6 +61,8 @@ Currently available flags are:
 
 **paddingalgo**, can be 0 or 1, default is 0. 1 will run padding optimization on the convolution layers.  
 
+**max_instr**, set a bound for the maximum number of snowflake instructions to be generated. If this option is set, then instructions will be placed before data. Note: If the amount of data (input, output and weights) stored in memory exceeds 4GB, then this option must be set. 
+
 **debug**, default w, which prints only warnings. An empty string will remove those warnings. bw will add some basic information.    
 
 ## Run
