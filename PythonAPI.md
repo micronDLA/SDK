@@ -65,6 +65,30 @@ Currently available flags are:
 
 **debug**, default w, which prints only warnings. An empty string will remove those warnings. bw will add some basic information.    
 
+## GetInfo
+
+Gets information of the snowflake sdk options.
+
+***Parameters:***
+
+**Name** as a numpy string    
+
+Currently available values are:
+
+**hwtime**, float value of the processing time in Snowflake only
+
+**numcluster**, int value of the number of clusters to be used
+
+**numfpga**, int value of the number of FPGAs to be used
+
+**numbatch**, int value of the number of batch to be processed
+
+**freq**, int value of the Snowflake's frequency
+
+**maxcluster**, int value of the maximum number of clusters in Snowflake
+
+**maxfpga**, int value of the maximum number of FPGAs available
+
 ## Run
 
 Runs a single inference on snowflake.

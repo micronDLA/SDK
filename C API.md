@@ -142,6 +142,18 @@ Currently available variables are:
 
 **hwtime**, get Snowflake execution time.    
 
+**numcluster**, int value of the number of clusters to be used
+
+**numfpga**, int value of the number of FPGAs to be used
+
+**numbatch**, int value of the number of batch to be processed
+
+**freq**, int value of the Snowflake's frequency
+
+**maxcluster**, int value of the maximum number of clusters in Snowflake
+
+**maxfpga**, int value of the maximum number of FPGAs available
+
 ## test_functions
 
 Internal, for testing, do not use.
