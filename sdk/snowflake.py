@@ -24,16 +24,16 @@ class Snowflake:
         self.snowflake_getinfo = f.snowflake_getinfo
 
         self.snowflake_run = f.snowflake_run
-        self.snowflake_run.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint]
+        self.snowflake_run.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong]
 
         self.snowflake_putinput = f.snowflake_putinput
-        self.snowflake_putinput.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, c_long]
+        self.snowflake_putinput.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_long]
 
         self.snowflake_getresult = f.snowflake_getresult
-        self.snowflake_getresult.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, c_void_p]
+        self.snowflake_getresult.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_void_p]
 
         self.snowflake_run_sim = f.snowflake_run_sim
-        self.snowflake_run_sim.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint]
+        self.snowflake_run_sim.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong]
 
         self.thnets_run_sim = f.thnets_run_sim
         self.thnets_run_sim.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, c_bool]
@@ -41,14 +41,14 @@ class Snowflake:
         self.test_functions = f.test_functions
         self.test_functions.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint]
 
-    def Compile(self, image, modeldir, outfile, numcard = 1, numclus = 1, nlayers = -1, test = "", layer = ""):
-        self.swoutsize = c_uint()
-        self.handle = self.snowflake_compile(bytes(test, 'ascii'), bytes(layer, 'ascii'), bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
+    def Compile(self, image, modeldir, outfile, numcard = 1, numclus = 1, nlayers = -1):
+        self.swoutsize = c_ulonglong()
+        self.handle = self.snowflake_compile(bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
             bytes(outfile, 'ascii'), byref(self.swoutsize), numcard, numclus, nlayers, False)
         return self.swoutsize.value
 
     def Init(self, infile, bitfile):
-        self.outsize = c_uint()
+        self.outsize = c_ulonglong()
         self.handle = self.snowflake_init(self.handle, bytes(bitfile, 'ascii'), bytes(infile, 'ascii'), byref(self.outsize))
         return self.outsize.value
 
@@ -62,13 +62,14 @@ class Snowflake:
 
     def GetInfo(self, name):
         if name == 'hwtime':
-            hwtime = c_float()
-            rc = self.snowflake_getinfo(bytes(name, 'ascii'), byref(hwtime))
-            if rc != 0:
-                raise Exception(rc)
-            return hwtime.value
+            return_val = c_float()
         else:
-            raise Exception(-1)
+            return_val = c_int()
+        rc = self.snowflake_getinfo(self.handle, bytes(name, 'ascii'), byref(return_val))
+        if rc != 0:
+            raise Exception(rc)
+        return return_val.value
+
 
     def Run(self, image, result):
         rc = self.snowflake_run(self.handle, image, image.size, result, result.size)

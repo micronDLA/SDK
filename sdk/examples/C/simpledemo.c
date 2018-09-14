@@ -96,7 +96,7 @@ int main(int argc, char **argv)
     }
 // initialize snowflake on FPGA: load bitfile and load instructions into memory
     printf("Initialize Snowflake FPGA\n");
-    unsigned outsize = 0;//number of output values produced by snowflake
+    uint64_t outsize = 0;//number of output values produced by snowflake
     void* sf_handle = snowflake_init(NULL, f_bitfile, outbin, &outsize);
     float *input = NULL;
     int input_elements = 0;

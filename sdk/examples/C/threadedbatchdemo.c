@@ -38,7 +38,7 @@ void rgb2float_cmajor(float *dst, const unsigned char *src, int width, int heigh
 }
 
 float *sortdata;
-unsigned outsize = 0;
+uint64_t outsize = 0;
 void *sf_handle;
 const char *categ = "./categories.txt";
 int nclus = 1, nfpga = 1;

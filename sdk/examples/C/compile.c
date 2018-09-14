@@ -63,8 +63,8 @@ int main(int argc, char **argv)
         print_help();
         return -1;
     }
-    unsigned outsize;
-    void* sf_handle = snowflake_compile(NULL, NULL, image, modelpath, outbin, &outsize, nfpga, nclus, -1);
+    uint64_t outsize;
+    void* sf_handle = snowflake_compile(image, modelpath, outbin, &outsize, nfpga, nclus, -1);
     snowflake_free(sf_handle);
     printf("\ndone\n");
     return 0;

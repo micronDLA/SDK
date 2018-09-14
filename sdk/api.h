@@ -1,26 +1,26 @@
 #ifndef _SNOWFLAKE_API_H_INCLUDED_
 #define _SNOWFLAKE_API_H_INCLUDED_
-
+#include <stdint.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void *snowflake_compile(const char *test, const char *param, const char *image, const char *modeldir, const char* outbin,
-                     unsigned *swoutsize, int numcard, int numclus, int nlayers);
+void *snowflake_compile(const char *image, const char *modeldir, const char* outbin,
+                     uint64_t *swoutsize, int numcard, int numclus, int nlayers);
 
-void *snowflake_init(void *cmemo, const char* fbitfile, const char* inbin, unsigned* outsize);
+void *snowflake_init(void *cmemo, const char* fbitfile, const char* inbin, uint64_t* outsize);
 
 int snowflake_setflag(const char *name, const char *value);
 
-int snowflake_getinfo(const char *name, void *value);
+int snowflake_getinfo(void *cmemo, const char *name, void *value);
 
-int snowflake_run(void *cmemo, const float *input, unsigned input_elements, float *output, unsigned output_elements);
+int snowflake_run(void *cmemo, const float *input, uint64_t input_elements, float *output, uint64_t output_elements);
 
-int snowflake_run_sim(void *cmemo, const float *input, unsigned input_elements, float *output, unsigned output_elements);//only runs the SF_INT precision in software (naive)
+int snowflake_run_sim(void *cmemo, const float *input, uint64_t input_elements, float *output, uint64_t output_elements);//only runs the SF_INT precision in software (naive)
 
-int snowflake_putinput(void *cmemo, const float *input, unsigned input_elements, void *userparam);
+int snowflake_putinput(void *cmemo, const float *input, uint64_t input_elements, void *userparam);
 
-int snowflake_getresult(void *cmemo, float *output, unsigned output_elements, void **userparam);
+int snowflake_getresult(void *cmemo, float *output, uint64_t output_elements, void **userparam);
 
 int thnets_run_sim(void *cmemo, const float *input, unsigned input_elements, float *output, unsigned output_elements);
 
