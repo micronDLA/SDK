@@ -1,10 +1,10 @@
 # C API
 
-The [C functions](https://github.com/FWDNXT/Snowflake-SDK/blob/master/sdk/api.h) for Snowflake are:
+The [C functions](https://github.com/FWDNXT/SDK/blob/master/sdk/api.h) for the Inference Engine are:
 
 ## snowflake_compile
 
-Parse an ONNX model and generates Snowflake instructions.
+Parse an ONNX model and generates Inference Engine instructions.
 
 ***Parameters:***
 
@@ -16,7 +16,7 @@ Parse an ONNX model and generates Snowflake instructions.
 
 `const char *modeldir`: path to a model file in ONNX format.
 
-`const char* outbin`: path to a file where a model in Snowflake ready format will be saved.
+`const char* outbin`: path to a file where a model in the Inference Engine ready format will be saved.
 
 `unsigned *swoutsize`: returns number of output values that this model will produce for one input image.
 
@@ -26,23 +26,23 @@ Parse an ONNX model and generates Snowflake instructions.
 
 `int nlayers`: number of layers to run in the model. Use -1 if you want to run the entire model.  
 
-**Return value:** Pointer to Snowflake object.
+**Return value:** Pointer to the Inference Engine object.
 
 ## snowflake_init
 
-Loads a bitfile on an FPGA if necessary and prepares to run Snowflake. Load instructions and parameters.
+Loads a bitfile on an FPGA if necessary and prepares to run on the Inference Engine. Load instructions and parameters.
 
 ***Parameters:***
 
-`void *cmemo`: pointer to Snowflake object.
+`void *cmemo`: pointer to the Inference Engine object.
 
 `const char* fbitfile`: path to the bitfile. Send empty string &quot;&quot; if you want to bypass loading a bitfile. In this case it will use a bitfile that is already loaded on the FPGA.    
 
-`const char* inbin`: path to a file with Snowflake instructions.
+`const char* inbin`: path to a file with the Inference Engine instructions.
 
-`unsigned* outsize`: returns number of output values that Snowflake will return. swoutsize is number of output values for `snowflake_run`.   
+`unsigned* outsize`: returns number of output values that the Inference Engine will return. swoutsize is number of output values for `snowflake_run`.   
 
-**Return value:** Pointer to Snowflake object.
+**Return value:** Pointer to the Inference Engine object.
 
 ## snowflake_run
 
@@ -50,7 +50,7 @@ Runs inference on the Snowflake.
 
 ***Parameters:***
 
-`void *cmemo`: pointer to Snowflake object.
+`void *cmemo`: pointer to the Inference Engine object.
 
 `const float *input`: pointer to input. Arrange column first. [W][H][P][Batch]
 
@@ -64,11 +64,11 @@ Runs inference on the Snowflake.
 
 ## snowflake_run_sim
 
-Runs a single inference using Snowflake software implementation (simulator).
+Runs a single inference using the Inference Engine software implementation (simulator).
 
 ***Parameters:***  
 
-`void *cmemo`: pointer to Snowflake object.
+`void *cmemo`: pointer to the Inference Engine object.
 
 `const float *input`: pointer to input. Arrange column first. [W][H][P][Batch]
 
@@ -86,7 +86,7 @@ Runs a single inference using thnets.
 
 ***Parameters:***  
 
-`void *cmemo`: pointer to Snowflake object.
+`void *cmemo`: pointer tothe Inference Engine object.
 
 `const float *input`: pointer to input. Arrange column first. [W][H][P][Batch]
 
@@ -104,7 +104,7 @@ Frees the network.
 
 ***Parameters:***
 
-`void *cmemo`: pointer to Snowflake object.
+`void *cmemo`: pointer to the Inference Engine object.
 
 ## snowflake_setflag
 
@@ -126,7 +126,7 @@ Currently available flags are:
 
 **paddingalgo**, can be 0 or 1, default is 0. 1 will run padding optimization on the convolution layers.  
 
-**max_instr**, is a bound for the maximum number of snowflake instructions to be generated. If this option is set, then instructions will be placed before data. Note: If the amount of data (input, output and weights) stored in memory exceeds 4GB, then this option must be set. 
+**max_instr**, is a bound for the maximum number of the Inference Engine instructions to be generated. If this option is set, then instructions will be placed before data. Note: If the amount of data (input, output and weights) stored in memory exceeds 4GB, then this option must be set. 
 
 **debug**, default w, which prints only warnings. An empty string will remove those warnings. bw will add some basic information.    
 
@@ -140,7 +140,7 @@ Get value of a measurement variable.
   
 Currently available variables are:
 
-**hwtime**, get Snowflake execution time.    
+**hwtime**, get the Inference Engine execution time.    
 
 **numcluster**, int value of the number of clusters to be used
 
@@ -148,9 +148,9 @@ Currently available variables are:
 
 **numbatch**, int value of the number of batch to be processed
 
-**freq**, int value of the Snowflake's frequency
+**freq**, int value of the the Inference Engine frequency
 
-**maxcluster**, int value of the maximum number of clusters in Snowflake
+**maxcluster**, int value of the maximum number of clusters in the Inference Engine
 
 **maxfpga**, int value of the maximum number of FPGAs available
 
