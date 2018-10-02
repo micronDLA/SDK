@@ -45,6 +45,13 @@ then
 	read -p "Do you accept this EULA (y/n)? " -r
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
+		if [ -f /etc/ld.so.conf.d/local.conf ]; then
+			if ! grep -q /usr/local/bin /etc/ld.so.conf.d/local.conf; then
+				echo /usr/local/lib >>/etc/ld.so.conf.d/local.conf
+			fi
+		else
+			echo /usr/local/lib >/etc/ld.so.conf.d/local.conf
+		fi
 	 	cp libsnowflake.so /usr/local/lib
 		yum install unzip
 		yum install yum-utils
@@ -65,6 +72,7 @@ then
 		./configure
 		make
 		make install
+		ldconfig
 		echo "Installing thnets from source"
 		cd /tmp
 		curl -LO https://github.com/mvitez/thnets/archive/master.zip
@@ -72,7 +80,6 @@ then
 		cd thnets-master
 		make ONNX=1
 		make install
-		echo /usr/local/lib >/etc/ld.so.conf.d/local.conf
 		ldconfig
 		echo 'Installation finished'
 	fi
