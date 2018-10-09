@@ -7,16 +7,16 @@ In this tutorial you will need:
 * Input image. Some image samples are [here](https://github.com/FWDNXT/SDK/tree/master/test-files)
 * [Categories file](https://github.com/FWDNXT/SDK/blob/master/test-files/categories.txt)
 * Source code in [here](https://github.com/FWDNXT/SDK/tree/master/sdk/examples/C)
-* libsnowflake.so: add libsnowflake to the [sdk folder](https://github.com/FWDNXT/SDK/tree/master/sdk). You can get the libsnowflake.so by a request to [FWDNXT](http://fwdnxt.com/)
+* libfwdnxt.so: add libfwdnxt to the [sdk folder](https://github.com/FWDNXT/SDK/tree/master/sdk). You can get the libfwdnxt.so by a request to [FWDNXT](http://fwdnxt.com/)
 
 **Running inference on the Inference Engine for one image**
 
 In the SDK folder, there is compile.c, which compiles a ONNX model and outputs Inference Engine instructions into a .bin file.
 The simpledemo.c program will read this .bin file and execute it on the Inference Engine.  
 The main functions are:
-1) snowflake_compile: parse ONNX model and generate the Inference Engine instructions.
-2) snowflake_init: load the Inference Engine bitfile into FPGA and load instructions and model parameters to shared memory.
-3) snowflake_run: load input image and execute on the Inference Engine.
+1) ie_compile: parse ONNX model and generate the Inference Engine instructions.
+2) ie_init: load the Inference Engine bitfile into FPGA and load instructions and model parameters to shared memory.
+3) ie_run: load input image and execute on the Inference Engine.
 
 Check out other possible application programs using the Inference Engine [here](http://fwdnxt.com/).  
 To run the demo, first run the following commands:

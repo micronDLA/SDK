@@ -1,8 +1,5 @@
 /*
-Author:
-Andre Chang
-
-Test Snowflake and compiler for some layers
+Example to run FWDNXT inference engine using put and get_result
 */
 #include <stdbool.h>
 #include <stdlib.h>
@@ -19,7 +16,7 @@ static void print_help()
 {
     printf("Syntax: simpledemo\n");
     printf("\t-i <directory with image files>\n");
-    printf("\t-c <categories file>\t-b <bitfile>\t-s <snowflake.bin file>\n");
+    printf("\t-c <categories file>\t-b <bitfile>\t-s <fwdnxt.bin file>\n");
     printf("\t-f <number of FPGAs to use>\n\t-C <number of clusters>\n");
 }
 
@@ -118,7 +115,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    sf_handle = snowflake_init(NULL, f_bitfile, outbin, &outsize);
+    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize);
     pthread_create(&tid, 0, getresults_thread, 0);
     dir = opendir(imagesdir);
     if (!dir)
@@ -155,7 +152,7 @@ int main(int argc, char **argv)
         batchidx++;
         if(batchidx == nclus * nfpga)
         {
-            int err = snowflake_putinput(sf_handle, info->input, netwidth * netheight * 3 * nclus * nfpga, info);
+            int err = ie_putinput(sf_handle, info->input, netwidth * netheight * 3 * nclus * nfpga, info);
             if(err==-1)
             {
                 fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
@@ -167,7 +164,7 @@ int main(int argc, char **argv)
     if(batchidx)
     {
         // Process what left
-        int err = snowflake_putinput(sf_handle, info->input, netwidth * netheight * 3 * nclus * nfpga, info);
+        int err = ie_putinput(sf_handle, info->input, netwidth * netheight * 3 * nclus * nfpga, info);
         if(err==-1)
         {
             fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
@@ -175,10 +172,10 @@ int main(int argc, char **argv)
         }
     }
     // Notify we finished
-    snowflake_putinput(sf_handle, 0, 0, 0);
+    ie_putinput(sf_handle, 0, 0, 0);
     closedir(dir);
     pthread_join(tid, 0);
-    snowflake_free(sf_handle);
+    ie_free(sf_handle);
     printf("\ndone\n");
     return 0;
 }
@@ -206,7 +203,7 @@ void *getresults_thread(void *dummy)
     for (;;)
     {
         struct info *info;
-        int err = snowflake_getresult(sf_handle, output, outsize * nclus * nfpga, (void **)&info);
+        int err = ie_getresult(sf_handle, output, outsize * nclus * nfpga, (void **)&info);
         if(err==-1)
         {
             fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");

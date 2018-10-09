@@ -1,6 +1,6 @@
 /*
 Author: Andre Chang
-Run Snowflake instructions
+Run FWDNXT inference engine instructions
 */
 #include <stdbool.h>
 #include <stdlib.h>
@@ -13,7 +13,7 @@ static void print_help()
 {
     printf("Syntax: simpledemo\n");
     printf("\t-i <image file>\n");
-    printf("\t-c <categories file>\n\t-b <bitfile>\n\t-s <snowflake.bin file>\n");
+    printf("\t-c <categories file>\n\t-b <bitfile>\n\t-s <fwdnxt.bin file>\n");
     printf("\t-f <number of FPGAs to use>\n\t-C <number of clusters>\n");
 }
 
@@ -48,8 +48,8 @@ int main(int argc, char **argv)
 {
     const char *image = "./dog224.jpg";//input image
     const char *categ = "./categories.txt";//categories list
-    const char *f_bitfile = "";//FGPA bitfile with Snowflake
-    const char *outbin = "save.bin";//file with snowflake instructions
+    const char *f_bitfile = "";//FGPA bitfile with FWDNXT inference engine
+    const char *outbin = "save.bin";//file with fwdnxt inference engine instructions
     int nfpga = 1;
     int nclus = 1;
     int i;
@@ -94,10 +94,10 @@ int main(int argc, char **argv)
         print_help();
         return -1;
     }
-// initialize snowflake on FPGA: load bitfile and load instructions into memory
-    printf("Initialize Snowflake FPGA\n");
-    uint64_t outsize = 0;//number of output values produced by snowflake
-    void* sf_handle = snowflake_init(NULL, f_bitfile, outbin, &outsize);
+// initialize FPGA: load hardware and load instructions into memory
+    printf("Initialize FWDNXT inference engine FPGA\n");
+    uint64_t outsize = 0;//number of output values produced
+    void* sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize);
     float *input = NULL;
     int input_elements = 0;
 //fetch input image
@@ -123,11 +123,11 @@ int main(int argc, char **argv)
     }
     input_elements *= nfpga*nclus;
     int output_elements = outsize * nfpga*nclus;
-    float *output = (float*) malloc(output_elements*sizeof(float));//allocate memory to hold snowflake's output
+    float *output = (float*) malloc(output_elements*sizeof(float));//allocate memory to hold output
     int err = 0;
-// run inference on snowflake
-    printf("Run Snowflake\n");
-    err = snowflake_run(sf_handle, input, input_elements, output, output_elements);
+// run inference
+    printf("Run FWDNXT inference engine\n");
+    err = ie_run(sf_handle, input, input_elements, output, output_elements);
     if(err==-1)
     {
         fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
         fclose(fp);
     }
 //print out the results
-    printf("-------------- Snowflake results --------------\n");
+    printf("-------------- Results --------------\n");
     int* idxs = (int *)malloc(sizeof(int) * output_elements);
     for(i = 0; i < output_elements; i++)
         idxs[i] = i;
@@ -166,7 +166,7 @@ int main(int argc, char **argv)
         if(categories[i])
             free(categories[i]);
     free(categories);
-    snowflake_free(sf_handle);
+    ie_free(sf_handle);
     if(output)
         free(output);
     printf("\ndone\n");

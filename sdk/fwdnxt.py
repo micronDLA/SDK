@@ -2,38 +2,38 @@ import sys
 from ctypes import *
 import numpy
 from numpy.ctypeslib import ndpointer
-f = CDLL("libsnowflake.so")
+f = CDLL("libfwdnxt.so")
 
-class Snowflake:
+class FWDNXT:
     def __init__(self):
         self.handle = c_void_p()
         self.userobjs = {}
 
-        self.snowflake_compile = f.snowflake_compile
-        self.snowflake_compile.restype = c_void_p
+        self.ie_compile = f.ie_compile
+        self.ie_compile.restype = c_void_p
 
-        self.snowflake_init = f.snowflake_init
-        self.snowflake_init.restype = c_void_p
-        self.snowflake_init.argtypes = [c_void_p, c_char_p, c_char_p, c_void_p]
+        self.ie_init = f.ie_init
+        self.ie_init.restype = c_void_p
+        self.ie_init.argtypes = [c_void_p, c_char_p, c_char_p, c_void_p]
 
-        self.snowflake_free = f.snowflake_free
-        self.snowflake_free.argtypes = [c_void_p]
+        self.ie_free = f.ie_free
+        self.ie_free.argtypes = [c_void_p]
 
-        self.snowflake_setflag = f.snowflake_setflag
+        self.ie_setflag = f.ie_setflag
 
-        self.snowflake_getinfo = f.snowflake_getinfo
+        self.ie_getinfo = f.ie_getinfo
 
-        self.snowflake_run = f.snowflake_run
-        self.snowflake_run.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong]
+        self.ie_run = f.ie_run
+        self.ie_run.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong]
 
-        self.snowflake_putinput = f.snowflake_putinput
-        self.snowflake_putinput.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_long]
+        self.ie_putinput = f.ie_putinput
+        self.ie_putinput.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_long]
 
-        self.snowflake_getresult = f.snowflake_getresult
-        self.snowflake_getresult.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_void_p]
+        self.ie_getresult = f.ie_getresult
+        self.ie_getresult.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_void_p]
 
-        self.snowflake_run_sim = f.snowflake_run_sim
-        self.snowflake_run_sim.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong]
+        self.ie_run_sim = f.ie_run_sim
+        self.ie_run_sim.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong]
 
         self.thnets_run_sim = f.thnets_run_sim
         self.thnets_run_sim.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, c_bool]
@@ -43,20 +43,20 @@ class Snowflake:
 
     def Compile(self, image, modeldir, outfile, numcard = 1, numclus = 1, nlayers = -1):
         self.swoutsize = c_ulonglong()
-        self.handle = self.snowflake_compile(bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
+        self.handle = self.ie_compile(bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
             bytes(outfile, 'ascii'), byref(self.swoutsize), numcard, numclus, nlayers, False)
         return self.swoutsize.value
 
     def Init(self, infile, bitfile):
         self.outsize = c_ulonglong()
-        self.handle = self.snowflake_init(self.handle, bytes(bitfile, 'ascii'), bytes(infile, 'ascii'), byref(self.outsize))
+        self.handle = self.ie_init(self.handle, bytes(bitfile, 'ascii'), bytes(infile, 'ascii'), byref(self.outsize))
         return self.outsize.value
 
     def Free(self):
-        self.snowflake_free(self.handle)
+        self.ie_free(self.handle)
 
     def SetFlag(self, name, value):
-        rc = self.snowflake_setflag(bytes(name, 'ascii'), bytes(value, 'ascii'))
+        rc = self.ie_setflag(bytes(name, 'ascii'), bytes(value, 'ascii'))
         if rc != 0:
             raise Exception(rc)
 
@@ -65,14 +65,14 @@ class Snowflake:
             return_val = c_float()
         else:
             return_val = c_int()
-        rc = self.snowflake_getinfo(self.handle, bytes(name, 'ascii'), byref(return_val))
+        rc = self.ie_getinfo(self.handle, bytes(name, 'ascii'), byref(return_val))
         if rc != 0:
             raise Exception(rc)
         return return_val.value
 
 
     def Run(self, image, result):
-        rc = self.snowflake_run(self.handle, image, image.size, result, result.size)
+        rc = self.ie_run(self.handle, image, image.size, result, result.size)
         if rc != 0:
             raise Exception(rc)
 
@@ -81,9 +81,9 @@ class Snowflake:
         key = c_long(addressof(userobj))
         self.userobjs[key.value] = userobj
         if image is None:
-            rc = self.snowflake_putinput(self.handle, numpy.empty(0, dtype=numpy.float32), 0, key)
+            rc = self.ie_putinput(self.handle, numpy.empty(0, dtype=numpy.float32), 0, key)
         else:
-            rc = self.snowflake_putinput(self.handle, image, image.size, key)
+            rc = self.ie_putinput(self.handle, image, image.size, key)
         if rc == -99:
             return False
         if rc != 0:
@@ -92,7 +92,7 @@ class Snowflake:
 
     def GetResult(self, result):
         userobj = c_long()
-        rc = self.snowflake_getresult(self.handle, result, result.size, byref(userobj))
+        rc = self.ie_getresult(self.handle, result, result.size, byref(userobj))
         if rc == -99:
             return None
         if rc != 0:
@@ -102,7 +102,7 @@ class Snowflake:
         return retuserobj.value
 
     def Run_sw(self, image, result):
-        rc = self.snowflake_run_sim(self.handle, image, image.size, result, result.size)
+        rc = self.ie_run_sim(self.handle, image, image.size, result, result.size)
         if rc != 0:
             raise Exception(rc)
 

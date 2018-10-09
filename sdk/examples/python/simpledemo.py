@@ -2,7 +2,7 @@
 
 import sys
 sys.path.insert(0, '../../')
-import snowflake
+import fwdnxt
 import sys
 import PIL
 from PIL import Image
@@ -10,7 +10,7 @@ import numpy as np
 
 from argparse import ArgumentParser
 # argument Checking
-parser = ArgumentParser(description="FWDNXT Person Identification Demonstration")
+parser = ArgumentParser(description="FWDNXT Categorization Demonstration")
 _ = parser.add_argument
 _('modelpath', type=str, default='', help='Path to the model file')
 _('image', type=str, default='', help='An image file used as input')
@@ -39,28 +39,28 @@ for i in range(3):
     img[i] = (img[i] - stat_mean[i])/stat_std[i]
 
 #Create and initialize the snowflow object
-sf = snowflake.Snowflake()
-#sf.SetFlag('hwlinear','0')
-#sf.SetFlag('debug','bw')
+ie = fwdnxt.FWDNXT()
+#ie.SetFlag('hwlinear','0')
+#ie.SetFlag('debug','bw')
 
 #Compile to a file
-swnresults = sf.Compile("{:d}x{:d}x{:d}".format(args.res[1], args.res[2], args.res[0]), args.modelpath, 'save.bin')
+swnresults = ie.Compile("{:d}x{:d}x{:d}".format(args.res[1], args.res[2], args.res[0]), args.modelpath, 'save.bin')
 
 #Init fpga
 if args.load :
-    nresults = sf.Init('save.bin', 'bitfile.bit')
+    nresults = ie.Init('save.bin', 'bitfile.bit')
 else:
-    nresults = sf.Init('save.bin', '')
+    nresults = ie.Init('save.bin', '')
 
 #Create the storage for the result and run one inference
 result = np.ndarray(swnresults,dtype=np.float32)
-sf.Run(img, result)
+ie.Run(img, result)
 
 #Convert to numpy and print top-5
 idxs = (-result).argsort()
 
 print('')
-print('-------------- Snowflake results --------------')
+print('-------------- Results --------------')
 if args.categories != '':
     with open(args.categories) as f:
         categories = f.read().splitlines()
@@ -70,5 +70,5 @@ else:
     for i in range(5):
         print(idxs[i], result[idxs[i]])
 
-#Free snowflake
-sf.Free()
+#Free
+ie.Free()

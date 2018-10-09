@@ -1,8 +1,5 @@
 /*
-Author:
-Andre Chang
-
-Test Snowflake and compiler for some layers
+Example to run FWDNXT inference engine using put and get_result
 */
 #include <stdbool.h>
 #include <stdlib.h>
@@ -19,7 +16,7 @@ static void print_help()
 {
     printf("Syntax: simpledemo\n");
     printf("\t-i <directory with image files>\n");
-    printf("\t-c <categories file>\t-b <bitfile>\t-s <snowflake.bin file>\n");
+    printf("\t-c <categories file>\t-b <bitfile>\t-s <fwdnxt.bin file>\n");
 }
 
 #define BYTE2FLOAT 0.003921568f // 1/255
@@ -105,9 +102,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    sf_handle = snowflake_init(NULL, f_bitfile, outbin, &outsize);
+    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize);
     // Disable blockingmode, API will return -99 instead of waiting
-    snowflake_setflag("blockingmode", "0");
+    ie_setflag("blockingmode", "0");
 
     categories = (char **)calloc(outsize, sizeof(char *));
     FILE *fp = fopen(categ, "r");
@@ -160,7 +157,7 @@ int main(int argc, char **argv)
         info->filename = strdup(de->d_name);
         for(;;)
         {
-            int err = snowflake_putinput(sf_handle, input, input_elements, info);
+            int err = ie_putinput(sf_handle, input, input_elements, info);
             if(err==-1)
             {
                 fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
@@ -189,7 +186,7 @@ int main(int argc, char **argv)
             free(categories[i]);
     free(categories);
 
-    snowflake_free(sf_handle);
+    ie_free(sf_handle);
     printf("\ndone\n");
     return 0;
 }
@@ -198,7 +195,7 @@ int getresult()
 {
     struct info *info;
     int i;
-    int err = snowflake_getresult(sf_handle, output, outsize, (void **)&info);
+    int err = ie_getresult(sf_handle, output, outsize, (void **)&info);
     if(err==-1)
     {
         fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");

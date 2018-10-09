@@ -2,7 +2,7 @@
 
 The [C functions](https://github.com/FWDNXT/SDK/blob/master/sdk/api.h) for the Inference Engine are:
 
-## snowflake_compile
+## ie_compile
 
 Parse an ONNX model and generates Inference Engine instructions.
 
@@ -12,7 +12,7 @@ Parse an ONNX model and generates Inference Engine instructions.
 
 `const char *param`: select a parameters of the test. For testing, do not use. 
 
-`const char *image`: it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up Snowflake's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".    
+`const char *image`: it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up FWDNXT inference engine's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".    
 
 `const char *modeldir`: path to a model file in ONNX format.
 
@@ -28,7 +28,7 @@ Parse an ONNX model and generates Inference Engine instructions.
 
 **Return value:** Pointer to the Inference Engine object.
 
-## snowflake_init
+## ie_init
 
 Loads a bitfile on an FPGA if necessary and prepares to run on the Inference Engine. Load instructions and parameters.
 
@@ -40,13 +40,13 @@ Loads a bitfile on an FPGA if necessary and prepares to run on the Inference Eng
 
 `const char* inbin`: path to a file with the Inference Engine instructions.
 
-`unsigned* outsize`: returns number of output values that the Inference Engine will return. swoutsize is number of output values for `snowflake_run`.   
+`unsigned* outsize`: returns number of output values that the Inference Engine will return. swoutsize is number of output values for `ie_run`.   
 
 **Return value:** Pointer to the Inference Engine object.
 
-## snowflake_run
+## ie_run
 
-Runs inference on the Snowflake.
+Runs inference on the FWDNXT inference engine.
 
 ***Parameters:***
 
@@ -62,7 +62,7 @@ Runs inference on the Snowflake.
 
 **Return value:** Error or no error.
 
-## snowflake_run_sim
+## ie_run_sim
 
 Runs a single inference using the Inference Engine software implementation (simulator).
 
@@ -98,7 +98,7 @@ Runs a single inference using thnets.
 
 **Return value:** Error or no error.
 
-## snowflake_free
+## ie_free
 
 Frees the network.
 
@@ -106,7 +106,7 @@ Frees the network.
 
 `void *cmemo`: pointer to the Inference Engine object.
 
-## snowflake_setflag
+## ie_setflag
 
 Set some flags that change the behaviour of the API.
 
@@ -126,13 +126,17 @@ Currently available flags are:
 
 **paddingalgo**, can be 0 or 1, default is 0. 1 will run padding optimization on the convolution layers.  
 
+**blockingmode**, default is 1. 1 ie_getresult will wait for hardware to finish. 0 will return immediately if hardware did not finish.
+
 **max_instr**, is a bound for the maximum number of the Inference Engine instructions to be generated. If this option is set, then instructions will be placed before data. Note: If the amount of data (input, output and weights) stored in memory exceeds 4GB, then this option must be set. 
 
 **debug**, default w, which prints only warnings. An empty string will remove those warnings. bw will add some basic information.    
 
-## snowflake_getinfo
+## ie_getinfo
 
 Get value of a measurement variable.
+
+***Parameters:***  
 
 `const char *name`: name of the variable to get 
 
@@ -154,6 +158,34 @@ Currently available variables are:
 
 **maxfpga**, int value of the maximum number of FPGAs available
 
-## test_functions
+## ie_putinput
 
-Internal, for testing, do not use.
+Put an input into a buffer and start FWDNXT hardware
+
+***Parameters:***  
+
+`void *cmemo` : pointer tothe Inference Engine object.
+
+`const float *input` : pointer to input. Arrange column first. [W][H][P][Batch]
+
+`uint64_t input_elements` : input size
+
+`void *userparam` : parameters defined by the user to keep track of the inputs
+
+**Return value:** Error or no error.
+
+## ie_getresult
+
+Get an output from a buffer. If opt_blocking was set then it will wait FWDNXT hardware
+
+***Parameters:***  
+
+`void *cmemo` : pointer tothe Inference Engine object.
+
+`float *output` : pointer to allocated memory for the output. It will put the output values into this location.
+
+`uint64_t output_elements` : output size.
+
+`void **userparam` : recover the parameters set for a previously given input.
+
+**Return value:** Error or no error.

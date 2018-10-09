@@ -2,7 +2,7 @@
 
 import sys
 sys.path.insert(0, '../../')
-import snowflake
+import fwdnxt
 import sys
 import threading
 import os
@@ -49,18 +49,18 @@ xres = args.res[2]
 yres = args.res[1]
 
 #Create and initialize the snowflow object
-sf = snowflake.Snowflake()
-#sf.SetFlag('hwlinear','0')
-#sf.SetFlag('debug','bw')
+ie = fwdnxt.FWDNXT()
+#ie.SetFlag('hwlinear','0')
+#ie.SetFlag('debug','bw')
 
 #Compile to a file
-swnresults = sf.Compile("{:d}x{:d}x{:d}".format(args.res[1], args.res[2], args.res[0]), args.modelpath, 'save.bin')
+swnresults = ie.Compile("{:d}x{:d}x{:d}".format(args.res[1], args.res[2], args.res[0]), args.modelpath, 'save.bin')
 
 #Init fpga
 if args.load :
-    nresults = sf.Init('save.bin', 'bitfile.bit')
+    nresults = ie.Init('save.bin', 'bitfile.bit')
 else:
-    nresults = sf.Init('save.bin', '')
+    nresults = ie.Init('save.bin', '')
 
 categories = None
 if args.categories != '':
@@ -72,7 +72,7 @@ result = np.ndarray(swnresults, dtype=np.float32)
 nimages = 0
 
 def getresult():
-    imgname = sf.GetResult(result)
+    imgname = ie.GetResult(result)
     #Convert to numpy and print top-5
     idxs = (-result).argsort()
 
@@ -90,7 +90,7 @@ for fn in os.listdir(args.imagesdir):
         img = LoadImage(args.imagesdir + '/' + fn)
     except:
         pass
-    sf.PutInput(img, fn)
+    ie.PutInput(img, fn)
     nimages += 1
     if nimages > 1:
         getresult()
@@ -98,5 +98,5 @@ for fn in os.listdir(args.imagesdir):
 if nimages > 0:
     getresult()
 
-#Free snowflake
-sf.Free()
+#Free
+ie.Free()
