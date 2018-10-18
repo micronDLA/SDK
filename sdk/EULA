@@ -20,7 +20,7 @@ NOW, WHEREFORE, IT IS HEREBY AGREED as follows:
 
 	“Authorized Device” means the Micron FPGA boards.
 
-	“Documentation” means those items of documentation identified as Snowflake inference engine, software development kit and training documents.
+	“Documentation” means those items of documentation identified as FWDNXT inference engine, software development kit and training documents.
 
 “Effective Date” means the date on which Licensee first downloads Licensor’s software pursuant to this Agreement.
 
@@ -37,7 +37,7 @@ NOW, WHEREFORE, IT IS HEREBY AGREED as follows:
 
 2	License Grant
 
-2.1	Subject to the terms and conditions of this Agreement, Licensor grants to Licensee the non-exclusive, worldwide, non-transferable and non-assignable right and license to use the Licensed Technology in connection with Snowflake inference engine and software development kit. 
+2.1	Subject to the terms and conditions of this Agreement, Licensor grants to Licensee the non-exclusive, worldwide, non-transferable and non-assignable right and license to use the Licensed Technology in connection with FWDNXT inference engine and software development kit. 
 
 2.2	Licensee shall have no other rights with respect to the Licensed Technology, in particular and without limitation, except as may be explicitly allowed in this Agreement, Licensee shall not have the right to sublicense, distribute, lease, encumber, sell, or make or have made derivative works of the Licensed Technology. Licensee shall not, and shall not permit any person within its control to, use the Licensed Technology for any purpose other than as expressly set forth in this Agreement.
 
@@ -63,7 +63,7 @@ NOW, WHEREFORE, IT IS HEREBY AGREED as follows:
 
 (b)	no consent of any third parties is required for Licensor to enter into this Agreement or perform its obligations hereunder;
 
-(c)	the Licensed Technology conforms all material respects to the specifications set forth Snowflake inference engine and software development kit; Licensee’s exclusive remedy for breach of this Section 5.1(c) is set out in Section 5.1(d);
+(c)	the Licensed Technology conforms all material respects to the specifications set forth FWDNXT inference engine and software development kit; Licensee’s exclusive remedy for breach of this Section 5.1(c) is set out in Section 5.1(d);
 
 (d)	it will, with no lower priority than other licensees, promptly repair any nonconformities between the Licensed Technology and Specifications discovered within one (1) month from the date of delivery; 
 

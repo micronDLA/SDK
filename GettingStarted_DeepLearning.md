@@ -40,7 +40,7 @@ For example, a good starting point is to train FWDNXT supported models on an ima
 
 ## After training a neural network
 
-After training a neural network with PyTorch, you model is ready for use in FWDNXT SDK. Please refer to the SDK manual for use with FWNDXT products and SnowFlake.
+After training a neural network with PyTorch, you model is ready for use in FWDNXT SDK. Please refer to the SDK manual for use with FWNDXT products.
 
 ## Questions and answers
 

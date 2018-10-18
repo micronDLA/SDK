@@ -2,7 +2,7 @@
 
 import sys
 sys.path.insert(0, '../../')
-import snowflake
+import fwdnxt
 import sys
 import threading
 import os
@@ -31,7 +31,7 @@ def GetResult():
     #Create the storage for the result and run one inference
     result = np.ndarray(swnresults, dtype=np.float32)
     while True:
-        imgname = sf.GetResult(result)
+        imgname = ie.GetResult(result)
         if imgname == None:
             break
 
@@ -76,18 +76,18 @@ xres = args.res[2]
 yres = args.res[1]
 
 #Create and initialize the snowflow object
-sf = snowflake.Snowflake()
-#sf.SetFlag('hwlinear','0')
-#sf.SetFlag('debug','bw')
+ie = fwdnxt.FWDNXT()
+#ie.SetFlag('hwlinear','0')
+#ie.SetFlag('debug','bw')
 
 #Compile to a file
-swnresults = sf.Compile("{:d}x{:d}x{:d}".format(args.res[1], args.res[2], args.res[0]), args.modelpath, 'save.bin')
+swnresults = ie.Compile("{:d}x{:d}x{:d}".format(args.res[1], args.res[2], args.res[0]), args.modelpath, 'save.bin')
 
 #Init fpga
 if args.load :
-    nresults = sf.Init('save.bin', 'bitfile.bit')
+    nresults = ie.Init('save.bin', 'bitfile.bit')
 else:
-    nresults = sf.Init('save.bin', '')
+    nresults = ie.Init('save.bin', '')
 
 thread = threading.Thread(target = GetResult)
 thread.start()
@@ -95,11 +95,11 @@ thread.start()
 for fn in os.listdir(args.imagesdir):
     try:
         img = LoadImage(args.imagesdir + '/' + fn)
-        sf.PutInput(img, fn)
+        ie.PutInput(img, fn)
     except:
         pass
 
-sf.PutInput(None, None)
+ie.PutInput(None, None)
 thread.join()
-#Free snowflake
-sf.Free()
+#Free
+ie.Free()

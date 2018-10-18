@@ -100,7 +100,7 @@ Squeeze -&gt; Flatten
 
 Tanh -&gt; Tanh
 
-## TF-Slim models tested on Snowflake
+## TF-Slim models tested on FWDNXT inference engine
 
 * Inception V1
 * Inception V3

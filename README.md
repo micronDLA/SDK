@@ -1,12 +1,12 @@
 # FWDNXT SDK
 
-FWDNXT Software Developement Kit - SDK  
-To register and download, please send a request to info@fwdnxt.com   
+FWDNXT Software Developement Kit - SDK
+To register and download, please send a request to info@fwdnxt.com
 
 
 # FWDNXT SDK manual
 
-## Hardware supported: 
+## Hardware supported:
 This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example).
 
 ## Operating systems supported:
@@ -20,9 +20,9 @@ This SDK supposes that you are working on a desktop computer with Micron FPGA bo
 
 [**Tutorial - Deep Learning**](https://github.com/FWDNXT/SDK/blob/master/Gettingstarted_DeepLearning.md): general information about deep learning.
 
-[**Tutorial - Inference on the Inference Engine**](https://github.com/FWDNXT/SDK/blob/master/GettingStarted_snowflake.md): getting started tutorial for running inference on the Inference Engine.
+[**Tutorial - Inference on the Inference Engine**](https://github.com/FWDNXT/SDK/blob/master/GettingStarted_in_python.md): getting started tutorial for running inference on the Inference Engine.
 
-[**Tutorial - Inference on the Inference Engine using C**](https://github.com/FWDNXT/SDK/blob/master/GettingStarted_snowflake_in_C.md): getting started tutorial for running inference on the Inference Engine using C.
+[**Tutorial - Inference on the Inference Engine using C**](https://github.com/FWDNXT/SDK/blob/master/GettingStarted_in_C.md): getting started tutorial for running inference on the Inference Engine using C.
 
 [**Tutorial - Multi FPGA and Cluster**](https://github.com/FWDNXT/SDK/blob/master/TutorialMultiFPGACluster.md): tutorial for running inference on multiple FPGAs and clusters.
 
@@ -38,6 +38,6 @@ This SDK supposes that you are working on a desktop computer with Micron FPGA bo
 
 
 
-Please report issues and bugs [here](https://github.com/FWDNXT/SDK/issues). 
+Please report issues and bugs [here](https://github.com/FWDNXT/SDK/issues).
 
 

@@ -1,6 +1,6 @@
 /*
 Author:Andre Chang
-Compile a model onnx file and generate snowflake instructions
+Compile a model onnx file and generate instructions
 */
 #include <stdbool.h>
 #include <stdio.h>
@@ -64,8 +64,8 @@ int main(int argc, char **argv)
         return -1;
     }
     uint64_t outsize;
-    void* sf_handle = snowflake_compile(image, modelpath, outbin, &outsize, nfpga, nclus, -1);
-    snowflake_free(sf_handle);
+    void* sf_handle = ie_compile(image, modelpath, outbin, &outsize, nfpga, nclus, -1);
+    ie_free(sf_handle);
     printf("\ndone\n");
     return 0;
 }

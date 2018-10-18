@@ -67,23 +67,23 @@ Q: How will developers be able to develop on your platform?
 
 A: They will need to provide a neural network model only. No need to write any special code. FWDNXT will update the software periodically based on users and market needs.
 
-Q:Will using Snowflake require FPGA expertise? How much do I really have to know?
+Q:Will using FWDNXT inference engine require FPGA expertise? How much do I really have to know?
 
 A: Nothing at all, it will be all transparent to users, just like using a GPU.
 
-Q: How can I migrate my CUDA-based designs into Snowflake?
+Q: How can I migrate my CUDA-based designs into FWDNXT inference engine?
 
-A: Snowflake offer its own optimized compiler, and you only need to specify trained model file
+A: FWDNXT inference engine offer its own optimized compiler, and you only need to specify trained model file
 
 Q: What tools will I need at minimum?
 
-A: snowflake on an FPGA and FWDNXT SDK tools
+A: FWDNXT inference engine on an FPGA and FWDNXT SDK tools
 
 Q: What if my designs are in OpenCL or one of the FPGA vendor's tools?
 
-A: Snowflake will soon be available in OpenCL drivers
+A: FWDNXT inference engine will soon be available in OpenCL drivers
 
-Q: Why should people want to develop on the Snowflake platform?
+Q: Why should people want to develop on the FWDNXT inference engine platform?
 
 A: Best performance per power and scalability, plus our hardware has a small form factor that can scale from single small module to high-performance systems
 
