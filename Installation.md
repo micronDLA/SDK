@@ -1,25 +1,24 @@
-# Installation
 
-
-**Dependencies list**
-
-- Python 3 together with numpy and pytorch.
-- [Thnets](https://github.com/mvitez/thnets/)
-- [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/)
-- GCC 5.1 or higher
-
-Thested on: Ubuntu 14.04 LTS Release, Kernel 4.4.0, Ubuntu 16.04 LTS Release, Kernel 4.13.0, picocomputing-6.0.0.21
-
-After unpackaging the SDK, it can be installed on Ubuntu with this command:
-
-`sudo ./install.sh`
-
-This script will take care of everything, it will install pytorch, thnets, protobufs and everything required to run the tests. It has been tested on Ubuntu 14.04 and Ubuntu 16.04.
+# System requirements
 
 This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example).  
-You can find picocomputing-6.0.0.21 release [here](https://picocomputing.zendesk.com/hc/en-us).
 
+Tested on: 
+  - Ubuntu 14.04 LTS Release, Kernel 4.4.0
+  - Ubuntu 16.04 LTS Release, Kernel 4.13.0
+  - CentOS 7.5
 
+# Software requirements
+- GCC 5.1 or higher
+- [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
+- Python 3 together with numpy
+- [Thnets](https://github.com/mvitez/thnets/)
+
+# Recommended Installation:
+
+All-in-one installation of the SDK can be run with:
+
+`sudo ./install.sh`
 
 # Manual Installation:
 
