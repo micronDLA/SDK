@@ -4,10 +4,10 @@ This tutorial will teach you how to run inference on the Inference Engine using 
 The program will process an image and return the top-5 classification of the image.  
 In this tutorial you will need:
 * One of the [pre-trained models](http://fwdnxt.com/models/)
-* Input image. Some image samples are [here](https://github.com/FWDNXT/SDK/tree/master/test-files)
-* [Categories file](https://github.com/FWDNXT/SDK/blob/master/test-files/categories.txt)
-* Source code in [here](https://github.com/FWDNXT/SDK/tree/master/sdk/examples/C)
-* libfwdnxt.so: add libfwdnxt to the [sdk folder](https://github.com/FWDNXT/SDK/tree/master/sdk). You can get the libfwdnxt.so by a request to [FWDNXT](http://fwdnxt.com/)
+* Input image. Some image samples are [here](../test-files)
+* [Categories file](../test-files/categories.txt)
+* Source code in [here](../sdk/examples/C)
+* libfwdnxt.so: add libfwdnxt to the [sdk folder](../sdk). You can get the libfwdnxt.so by a request to [FWDNXT](http://fwdnxt.com/)
 
 **Running inference on the Inference Engine for one image**
 
@@ -34,7 +34,7 @@ After creating the `instructions.bin`, you can run the following command to exec
 
 `-b` option will load the specified Inference Engine bitfile into a FPGA card.  
 Loading the FPGA and bringing up the HMC will take at max 5 min.
-Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](https://github.com/FWDNXT/SDK/blob/master/Troubleshooting.md).  
+Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](Troubleshooting.md).  
 After the first run, the Inference Engine will be loaded in the FPGA card. The following runs will not need to load the Inference Engine bitfile anymore.
 You can run the network on the Inference Engine with this command, which will find the FPGA card that was loaded with the Inference Engine:
 

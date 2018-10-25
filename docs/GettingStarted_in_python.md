@@ -6,10 +6,10 @@ categorization task will output a probability vector. Each element of the vector
 category that is listed in a categories file.  
 In this tutorial you will need:
 * One of the [pre-trained models](http://fwdnxt.com/models/)
-* Input image. Some image samples are [here](https://github.com/FWDNXT/SDK/tree/master/test-files)
-* [Categories file](https://github.com/FWDNXT/SDK/blob/master/test-files/categories.txt)
-* [simpledemo.py](https://github.com/FWDNXT/SDK/blob/master/sdk/examples/python/simpledemo.py)
-* libfwdnxt.so: add libfwdnxt to the [sdk folder](https://github.com/FWDNXT/SDK/tree/master/sdk). You can get the libfwdnxt.so by a request to [FWDNXT](http://fwdnxt.com/)
+* Input image. Some image samples are [here](../test-files)
+* [Categories file](../test-files/categories.txt)
+* [simpledemo.py](../sdk/examples/python/simpledemo.py)
+* libfwdnxt.so: add libfwdnxt to the [sdk folder](../sdk). You can get the libfwdnxt.so by a request to [FWDNXT](http://fwdnxt.com/)
 
 **Running inference on FWDNXT hardware for one image**
 
@@ -35,7 +35,7 @@ An example is here:
 
 
 Loading the FPGA and bringing up the HMC will take at max 5 min.
-Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](https://github.com/FWDNXT/SDK/blob/master/Troubleshooting.md).  
+Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](Troubleshooting.md).  
 After the first run, FWDNXT hardware will be loaded in the FPGA card. The following runs will not need to load the hardware anymore.
 You can run the network on hardware with this command, which will find the FPGA card that was loaded with FWDNXT hardware:
 
