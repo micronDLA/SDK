@@ -9,7 +9,7 @@ Tested on:
   - CentOS 7.5
 
 # Software requirements
-- GCC 5.1 or higher
+- GCC 4.9 or higher
 - [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
 - Python 3 together with numpy
 - [Thnets](https://github.com/mvitez/thnets/)
