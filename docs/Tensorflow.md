@@ -21,7 +21,7 @@ python -m tf2onnx.convert
 --input ./inception_v1_2016_08_28_frozen.pb
 --inputs input:0
 --outputs InceptionV1/Logits/Predictions/Softmax:0 
---output ./googlenet_v1_slim
+--output ./googlenet_v1_slim.onnx
 --fold_const
 ```
 
