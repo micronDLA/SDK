@@ -211,7 +211,8 @@ void *getresults_thread(void *dummy)
         }
         if (!info) // We sent no info to notify that we finished
             break;
-        for(int batchidx = 0; batchidx < nclus * nfpga && info->filename[batchidx]; batchidx++)
+        int batchidx;
+        for(batchidx = 0; batchidx < nclus * nfpga && info->filename[batchidx]; batchidx++)
         {
             printf("-------------- %s --------------\n", info->filename[batchidx]);
             int* idxs = (int *)malloc(sizeof(int) * outsize);
