@@ -1,22 +1,35 @@
 # Tensorflow support
 
-Last updated on June 16th, 2018
-
-**Important:** This converter is still a preliminary release. Do not hesitate to contact us with any issues you might have converting Tensorflow models to ONNX format.
+Last updated on October 26th, 2018
 
 ## Installation
 
 **Dependency list**
 
-These are the things that is needed to use the Tensorflow converter.
-
-- Python 3 together with numpy, tensorflow and onnx
-- Bazel
-- Cloned github repositories: tensorflow/tensorflow, tensorflow/models, onnx/onnx
+- Python 3 with packages numpy, tensorflow and onnx
+- tf2onnx which can be installed following instructions [here](https://github.com/onnx/tensorflow-onnx)
+- Bazel if you want to use summarize_graph tool from tensorflow
 
 If you find issues installing these contact us ([http://fwdnxt.com/](http://fwdnxt.com/))
 
-## Tutorial - Convert Tensorflow model into ONNX format
+## Using a tf2onnx converter from ONNX (recommended for SDK releases since 0.3.11)
+
+You need to have a frozen graph of your tensorflow model and know its input and output. You also need to use the "--fold_const" option during the conversion. For example to convert Inception-v1 from TF-slim you will run:
+
+```
+python -m tf2onnx.convert
+--input ./inception_v1_2016_08_28_frozen.pb
+--inputs input:0
+--outputs InceptionV1/Logits/Predictions/Softmax:0 
+--output ./googlenet_v1_slim
+--fold_const
+```
+
+For more details please refer to the [tensorflow-onnx repository](https://github.com/onnx/tensorflow-onnx).
+
+## Using a tf2onnx converter from FWDNXT (recommended for SDK releases before 0.3.11)
+
+You need to clone following github repositories: tensorflow/tensorflow, tensorflow/models, onnx/onnx.
 
 You can either use pretrained TF-slim model or your own model. If using TF-slim export your desired model's inference graph with:
 
@@ -66,7 +79,7 @@ python onnx/onnx/tools/net_drawer.py --input inception_v3.onnx --output inceptio
 dot -Tsvg inception_v3.dot -o inception_v3.svg
 ```
 
-## Tensorflow to ONNX operator conversion
+**Tensorflow to ONNX operator conversion**
 
 Add -&gt; Add
 
@@ -105,6 +118,7 @@ Tanh -&gt; Tanh
 * Inception V1
 * Inception V3
 * ResNet V1 50
+* VGG 16
 * VGG 19
 
 ## Questions and answers
