@@ -82,11 +82,11 @@ This script requires internet connection to install the necessary packages. Inst
 ## Offline Installation
 The off-line install script is different from the one in sdk/
 
-The offlineinstall.sh will install all packages needed by the SDK and optionally install supporting third-party packages.
+The install.sh in the offline installer folder will install all packages needed by the SDK and optionally install supporting third-party packages.
 
 All-in-one installation of the SDK can be run with:
 
-`sudo ./offlineinstall.sh`
+`sudo ./install.sh <username>` 
 
 ## Manual Installation
 
