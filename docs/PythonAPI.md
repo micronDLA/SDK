@@ -98,6 +98,7 @@ Runs a single inference on FWDNXT inference engine.
 ***Parameters:***
 
 **Image** as a numpy array of type float32
+
 **Result** as a preallocated numpy array of type float32
 
 ## Run\_sw
@@ -107,6 +108,7 @@ Runs a single inference on the FWDNXT inference engine simulator.
 ***Parameters:***
 
 **Image** as a numpy array of type float32
+
 **Result** as a preallocated numpy array of type float32
 
 ## Run\_th
@@ -116,6 +118,7 @@ Runs a single inference using thnets.
 ***Parameters:***
 
 **Image** as a numpy array of type float32
+
 **Result** as a preallocated numpy array of type float32
 
 
@@ -126,6 +129,7 @@ Put an input into a buffer and start FWDNXT hardware
 ***Parameters:***
 
 **Image** as a numpy array of type float32
+
 **userobj** user defined object to keep track of the given input
 
 **Return value:** Error or no error.
