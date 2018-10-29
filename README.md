@@ -39,15 +39,16 @@ To register and download, please send a request to info@fwdnxt.com
   * [Multiple FPGAs with different models <a name="two"></a>](#multiple-fpgas-with-different-models--a-name--two----a-)
   * [Multiple Clusters with input batching <a name="three"></a>](#multiple-clusters-with-input-batching--a-name--three----a-)
   * [Multiple Clusters without input batching <a name="four"></a>](#multiple-clusters-without-input-batching--a-name--four----a-)
-- [6. Using with Tensorflow](#6-using-with-tensorflow) : Tutorial on using tensorflow with the Inference Engine
+- [6. Tutorial - PutInput and GetResult](#6-tutorial---putinput-and-getresult) : tutorial for using PutInput and GetOutput
+- [7. Using with Tensorflow](#6-using-with-tensorflow) : Tutorial on using tensorflow with the Inference Engine
   * [Installation](#installation)
   * [Using a tf2onnx converter from ONNX (recommended for SDK releases since 0.3.11)](#using-a-tf2onnx-converter-from-onnx--recommended-for-sdk-releases-since-0311-)
   * [Using a tf2onnx converter from FWDNXT (recommended for SDK releases before 0.3.11)](#using-a-tf2onnx-converter-from-fwdnxt--recommended-for-sdk-releases-before-0311-)
-  * [TF-Slim models tested on FWDNXT inference engine](#tf-slim-models-tested-on-fwdnxt-inference-engine)
-- [7. Supported models and layers](#7-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
+- [8. Supported models and layers](#7-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
   * [Tested models](#tested-models)
-    + [ONNX model zoo:](#onnx-model-zoo-)
-- [8. Troubleshooting and Q&A](#8-troubleshooting-and-q-a) : Troubleshooting common issues and answering common questions
+  * [TF-Slim models tested on FWDNXT inference engine](#tf-slim-models-tested-on-fwdnxt-inference-engine)
+  * [ONNX model zoo](#onnx-model-zoo)
+- [9. Troubleshooting and Q&A](#8-troubleshooting-and-q-a) : Troubleshooting common issues and answering common questions
 
 
 Please report issues and bugs [here](https://github.com/FWDNXT/SDK/issues).
@@ -136,13 +137,6 @@ This is a very concise tutorial to help beginners learn how to create and train 
 
 Users should have knowledge of Linux and Ubuntu environments, personal computer or workstation maintenance and command line tools, and experience with the Python programming language. Additionally experience in C, C++, CUDA and GPU programming language may be needed for training advanced modules, but not required at the beginning, as PyTorch offers already implemented functions.
 
-## Suggested computing hardware
-
-Here is a link to recommended hardware to train Deep neural networks:
-
-[https://medium.com/@culurciello/our-gpu-machines-6d14a28511b8](https://medium.com/@culurciello/our-gpu-machines-6d14a28511b8). This shows an example configuration of a high-performance personal computer that users can purchase and assemble to train deep neural network models. Assembled machines can also be purchased, for example here: [https://lambdal.com/](https://lambdal.com/).
-
-FWDNXT provides these link and examples as is, without any implied warranty.
 
 ## PyTorch: Deep Learning framework
 
@@ -308,10 +302,14 @@ The following code snippet shows you how to do this:
 import fwdnxt
 numfpga = 2
 numclus = 1
-sf = fwdnxt.FWDNXT() # Create FWDNXT API
-snwresults = sf.Compile('224x224x3', 'model.onnx', 'fwdnxt.bin', numfpga, numclus) # Generate instructions
-sf.Init('fwdnxt.bin', 'bitfile.bit') # Init the FPGA cards
-output = np.ndarray(2*snwresults, dtype=np.float32) # Create a location for the output
+# Create FWDNXT API
+sf = fwdnxt.FWDNXT() 
+# Generate instructions
+snwresults = sf.Compile('224x224x3', 'model.onnx', 'fwdnxt.bin', numfpga, numclus) 
+# Init the FPGA cards
+sf.Init('fwdnxt.bin', 'bitfile.bit') 
+# Create a location for the output
+output = np.ndarray(2*snwresults, dtype=np.float32) 
 # ... User's functions to get the input ...
 sf.Run(input_img, output) # Run
 ```
@@ -332,17 +330,22 @@ The following code snippet shows you how to do this:
 import fwdnxt
 numfpga = 1
 numclus = 1
-sf1 = fwdnxt.FWDNXT() # Create FWDNXT API
-sf2 = fwdnxt.FWDNXT() # Create second FWDNXT API
-
-snwresults1 = sf1.Compile('224x224x3', 'model1.onnx', 'fwdnxt1.bin', numfpga, numclus) # Generate instructions for model1
-snwresults2 = sf2.Compile2('224x224x3', 'model2.onnx', 'fwdnxt2.bin', numfpga, numclus) # Generate instructions for model2
-
-sf1.Init('fwdnxt1.bin', 'bitfile.bit') # Init the FPGA 1 with model 1
-sf2.Init('fwdnxt2.bin', 'bitfile.bit') # Init the FPGA 2 with model 2
-
-output1 = np.ndarray(snwresults1, dtype=np.float32) # Create a location for the output1
-output2 = np.ndarray(snwresults2, dtype=np.float32) # Create a location for the output2
+# Create FWDNXT API
+sf1 = fwdnxt.FWDNXT() 
+# Create second FWDNXT API
+sf2 = fwdnxt.FWDNXT() 
+# Generate instructions for model1
+snwresults1 = sf1.Compile('224x224x3', 'model1.onnx', 'fwdnxt1.bin', numfpga, numclus) 
+# Generate instructions for model2
+snwresults2 = sf2.Compile2('224x224x3', 'model2.onnx', 'fwdnxt2.bin', numfpga, numclus) 
+# Init the FPGA 1 with model 1
+sf1.Init('fwdnxt1.bin', 'bitfile.bit') 
+# Init the FPGA 2 with model 2
+sf2.Init('fwdnxt2.bin', 'bitfile.bit') 
+# Create a location for the output1
+output1 = np.ndarray(snwresults1, dtype=np.float32) 
+# Create a location for the output2
+output2 = np.ndarray(snwresults2, dtype=np.float32) 
 
 # ... User's functions to get the input ...
 sf1.Run(input_img1, output1) # Run 
@@ -362,10 +365,14 @@ Following similar strategy from 2 FPGA with input batching, the following code s
 import fwdnxt
 numfpga = 1
 numclus = 2
-sf = fwdnxt.FWDNXT() # Create FWDNXT API
-snwresults = sf.Compile('224x224x3', 'model.onnx', 'fwdnxt.bin', numfpga, numclus) # Generate instructions
-sf.Init('fwdnxt.bin', 'bitfile.bit') # Init the FPGA cards
-output = np.ndarray(2*snwresults, dtype=np.float32) # Create a location for the output
+# Create FWDNXT API
+sf = fwdnxt.FWDNXT() 
+# Generate instructions
+snwresults = sf.Compile('224x224x3', 'model.onnx', 'fwdnxt.bin', numfpga, numclus) 
+# Init the FPGA cards
+sf.Init('fwdnxt.bin', 'bitfile.bit') 
+# Create a location for the output
+output = np.ndarray(2*snwresults, dtype=np.float32) 
 # ... User's functions to get the input ...
 sf.Run(input_img, output) # Run 
 ```
@@ -381,11 +388,15 @@ The following code snippet shows you how to use 2 clusters to process 1 image:
 import fwdnxt
 numfpga = 1
 numclus = 2
-sf = fwdnxt.FWDNXT() # Create FWDNXT API
+# Create FWDNXT API
+sf = fwdnxt.FWDNXT() 
 sf.SetFlag('nobatch', '1') 
-snwresults = sf.Compile('224x224x3', 'model.onnx', 'fwdnxt.bin', numfpga, numclus) # Generate instructions
-sf.Init('fwdnxt.bin', 'bitfile.bit') # Init the FPGA cards
-output = np.ndarray(snwresults, dtype=np.float32) # Create a location for the output
+# Generate instructions
+snwresults = sf.Compile('224x224x3', 'model.onnx', 'fwdnxt.bin', numfpga, numclus) 
+# Init the FPGA cards
+sf.Init('fwdnxt.bin', 'bitfile.bit')
+# Create a location for the output
+output = np.ndarray(snwresults, dtype=np.float32) 
 # ... User's functions to get the input ...
 sf.Run(input_img, output) # Run 
 ```
@@ -396,7 +407,32 @@ The diagram below shows this type of execution:
 ![alt text](docs/pics/2clus1img.png)
 
 
-# 6. Using with Tensorflow
+
+
+# 6. Tutorial - PutInput and GetResult
+This tutorial teaches you to use PutInput and GetResult API calls. 
+
+PutInput will load the input data into the memory that is shared between host and FWDNXT Inference Engine.
+
+GetOutput will read the output (results) from the memory. GetOutput can be blocking or non-blocking. Use `SetFlag` function to use blocking or non-blocking mode. 
+
+Blocking means that a call to GetResult will wait for the Inference Engine to finish processing. 
+
+Non-blocking means that GetResult will return immediately: with or without the result depending whether the Inference Engine has finished processing.    
+
+These two functions are important in a streaming application. The programmer can overlap the time for these 2 tasks: input loading and getting results.
+
+Examples to use PutInput and GetOutput are located in [examples/python/](examples/python/).
+
+* pollingdemo.py : is an example of non-blocking mode. The program will poll GetResult until it returns the output.
+
+* interleavingdemo.py : is an example that shows how to pipeline PutInput and GetResult calls. There are 2 separate memory regions to load inputs and get results. While PutInput loads to one region, GetResult fetches the output from another region. Each image is labeled with the **userobj** to keep track which input produced the returned output. 
+
+* threadeddemo.py : shows how to use 2 threads to process multiple images in a folder. One thread calls GetResult and another calls PutInput.
+
+* threadedbatchdemo.py : similar to `threadeddemo.py`. It shows how to process images in a batch using PutInput and GetResult. 
+
+# 7. Using with Tensorflow
 
 Last updated on October 26th, 2018
 
@@ -432,7 +468,9 @@ You need to clone following github repositories: tensorflow/tensorflow, tensorfl
 You can either use pretrained TF-slim model or your own model. If using TF-slim export your desired model's inference graph with:
 
 ```
-python models/research/slim/export_inference_graph.py --model_name=inception_v3 --output_file=./inception_v3_inf_graph.pb
+python models/research/slim/export_inference_graph.py 
+--model_name=inception_v3 
+--output_file=./inception_v3_inf_graph.pb
 ```
 
 If using your own model make sure to save only the graph used during inference without dropout or any other layers used only during training. Your graph should have 1 input and 1 output.
@@ -441,7 +479,8 @@ You need to know the name of the output node in your graph. This can be found ou
 
 ```
 bazel build tensorflow/tools/graph_transforms:summarize_graph
-bazel-bin/tensorflow/tools/graph_transforms/summarize_graph --in_graph=./inception_v3_inf_graph.pb
+bazel-bin/tensorflow/tools/graph_transforms/summarize_graph 
+--in_graph=./inception_v3_inf_graph.pb
 ```
 
 The inference graph and weights should be merged into a single file with:
@@ -458,7 +497,9 @@ python tensorflow/tensorflow/python/tools/freeze_graph.py
 Then convert your frozen graph into ONNX format using:
 
 ```
-python tf2onnx.py --input_graph=./frozen_inception_v3.pb --output_graph=./inception_v3.onnx
+python tf2onnx.py 
+--input_graph=./frozen_inception_v3.pb 
+--output_graph=./inception_v3.onnx
 ```
 
 The converter assumes the input tensor is named "input". If that is not the case in your model then you can specify input tensor name with the argument "input_name".
@@ -466,14 +507,19 @@ The converter assumes the input tensor is named "input". If that is not the case
 You can visualize the inference graph or frozen graph using Tensorboard:
 
 ```
-python tensorflow/tensorflow/python/tools/import_pb_to_tensorboard.py --model_dir=frozen_inception_v3.pb --log_dir=./visualize
+python tensorflow/tensorflow/python/tools/import_pb_to_tensorboard.py 
+--model_dir=frozen_inception_v3.pb 
+--log_dir=./visualize
 tensorboard --logdir=./visualize
 ```
 
 You can also visualize the final ONNX graph using:
 
 ```
-python onnx/onnx/tools/net_drawer.py --input inception_v3.onnx --output inception_v3.dot --embed_docstring
+python onnx/onnx/tools/net_drawer.py 
+--input inception_v3.onnx 
+--output inception_v3.dot 
+--embed_docstring
 dot -Tsvg inception_v3.dot -o inception_v3.svg
 ```
 
@@ -511,16 +557,8 @@ Squeeze -&gt; Flatten
 
 Tanh -&gt; Tanh
 
-## TF-Slim models tested on FWDNXT inference engine
 
-* Inception V1
-* Inception V3
-* ResNet V1 50
-* VGG 16
-* VGG 19
-
-
-# 7. Supported models and layers
+# 8. Supported models and layers
 
   * AveragePool
   * BatchNormalization
@@ -554,8 +592,15 @@ These models are available [here](http://fwdnxt.com/models/).
   * [Linknet](https://arxiv.org/pdf/1707.03718.pdf)
   * [Neural Style Transfer Network](https://arxiv.org/pdf/1603.08155.pdf)
  
+## TF-Slim models tested on FWDNXT inference engine
 
-### ONNX model zoo:
+* Inception V1
+* Inception V3
+* ResNet V1 50
+* VGG 16
+* VGG 19
+
+## ONNX model zoo
 
 https://github.com/onnx/models
 
@@ -568,7 +613,7 @@ https://github.com/onnx/models
 Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not support the LRN layer.
 
 
-# 8. Troubleshooting and Q&A
+# 9. Troubleshooting and Q&A
 
 Q: Where can I find weights for pretrained TF-slim models?
 
@@ -586,49 +631,50 @@ lspci | grep -i pico
 lsmod | grep -i pico
     pico                 3493888  12
 dmesg | grep -i pico
-[   12.030836] pico: loading out-of-tree module taints kernel.
-[   12.031521] pico: module verification failed: signature and/or required key missing - tainting kernel
-[   12.035737] pico:init_pico(): Pico driver 5.0.9.18 compiled on Mar  1 2018 at 17:22:20
-[   12.035739] pico:init_pico(): debug level: 3
-[   12.035751] pico:init_pico(): got major number 240
-[   12.035797] pico:pico_init_e17(): id: 19de:45 19de:2045 5
-[   12.035798] pico:pico_init_v6_v5(): id: 19de:45 19de:2045 5
-[   12.035806] pico 0000:05:00.0: enabling device (0100 -> 0102)
-[   12.035883] pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[1] (addr: 0xffffffffc0a2f2a8). minor=224
-[   12.035919] pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c5f00000 for 0x100000 bytes
-[   12.035938] pico:pico_init_8664(): Initializing backplane: 0xffff945549cb2300
-[   12.036205] pico:init_jtag(): Initializing JTAG: Backplane (0x8780) (backplane ID: 0x700)
-[   12.036206] pico:init_jtag(): Using ex700 Spartan image
-[   12.036445] pico:init_jtag(): Initializing JTAG: Module (0x45) (backplane ID: 0x700)
-[   12.036446] pico:init_jtag(): Using ex700 Spartan image
-[   12.036446] pico:pico_init_v6_v5(): writing 1 to 0x10 to enable stream machine
-[   12.036452] pico:pico_init_v6_v5(): Firmware version (0x810): 0x5000708
-[   12.036462] pico:update_fpga_cfg(): fpga version: 0x5000000 device: 0x45
-[   12.037641] pico:update_fpga_cfg(): card 224 firmware version (from PicoBus): 0x5000708
-[   12.039948] pico:update_fpga_cfg(): 0xFFE00050: 0x2020
-[   12.039949] pico:update_fpga_cfg(): found a user picobus 32b wide
-[   12.039950] pico:update_fpga_cfg(): cap: 0x410, widths: 32, 32
-[   12.040121] pico:require_ex500_jtag(): S6 IDCODE: 0x44028093
-[   12.040212] pico:require_ex500_jtag(): S6 USERCODE: 0x7000038
-[   12.040685] pico:require_ex500_jtag(): S6 status: 0x3cec
-[   12.040893] pico:pico_init_e17(): id: 19de:510 19de:2060 5
-[   12.040894] pico:pico_init_v6_v5(): id: 19de:510 19de:2060 5
-[   12.040899] pico 0000:08:00.0: enabling device (0100 -> 0102)
-[   12.041115] pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[2] (addr: 0xffffffffc0a2f2b0). minor=1
-[   12.041131] pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c6100000 for 0x100000 bytes
-[   12.041382] pico:init_jtag(): Initializing JTAG: Module (0x510) (backplane ID: 0x700)
-[   12.041384] pico:pico_init_v6_v5(): creating device files for Pico FPGA #1 (fpga=0xffff9455483a8158 on card 0xffff9455483a8000)
-[   12.041385] pico: creating device with class=0xffff94554054f480, major=240, minor=1
-[   12.041421] pico:pico_init_v6_v5(): writing 1 to 0x10 to enable stream machine
-[   12.041425] pico:pico_init_v6_v5(): Firmware version (0x810): 0x6000000
-[   12.041430] pico:update_fpga_cfg(): fpga version: 0x5000000 device: 0x510
-[   12.047453] pico:update_fpga_cfg(): detected non-virgin card (0x4000. probably from driver reload). disabling picobuses till the FPGA is reloaded.
-[   12.047495] pico:pico_init_e17(): id: 19de:510 19de:2060 5
-[   12.047497] pico:pico_init_v6_v5(): id: 19de:510 19de:2060 5
-[   12.047502] pico 0000:09:00.0: enabling device (0100 -> 0102)
-[   12.047699] pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[3] (addr: 0xffffffffc0a2f2b8). minor=2
-[   12.047722] pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c7000000 for 0x100000 bytes
-[   12.047968] pico:init_jtag(): Initializing JTAG: Module (0x510) (backplane ID: 0x700)
+pico: loading out-of-tree module taints kernel.
+pico: module verification failed: signature and/or required key missing - tainting kernel
+pico:init_pico(): Pico driver 5.0.9.18 compiled on Mar  1 2018 at 17:22:20
+pico:init_pico(): debug level: 3
+pico:init_pico(): got major number 240
+pico:pico_init_e17(): id: 19de:45 19de:2045 5
+pico:pico_init_v6_v5(): id: 19de:45 19de:2045 5
+pico 0000:05:00.0: enabling device (0100 -> 0102)
+pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[1] (addr: 0xffffffffc0a2f2a8)
+pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c5f00000 for 0x100000 bytes
+pico:pico_init_8664(): Initializing backplane: 0xffff945549cb2300
+pico:init_jtag(): Initializing JTAG: Backplane (0x8780) (backplane ID: 0x700)
+pico:init_jtag(): Using ex700 Spartan image
+pico:init_jtag(): Initializing JTAG: Module (0x45) (backplane ID: 0x700)
+pico:init_jtag(): Using ex700 Spartan image
+pico:pico_init_v6_v5(): writing 1 to 0x10 to enable stream machine
+pico:pico_init_v6_v5(): Firmware version (0x810): 0x5000708
+pico:update_fpga_cfg(): fpga version: 0x5000000 device: 0x45
+pico:update_fpga_cfg(): card 224 firmware version (from PicoBus): 0x5000708
+pico:update_fpga_cfg(): 0xFFE00050: 0x2020
+pico:update_fpga_cfg(): found a user picobus 32b wide
+pico:update_fpga_cfg(): cap: 0x410, widths: 32, 32
+pico:require_ex500_jtag(): S6 IDCODE: 0x44028093
+pico:require_ex500_jtag(): S6 USERCODE: 0x7000038
+pico:require_ex500_jtag(): S6 status: 0x3cec
+pico:pico_init_e17(): id: 19de:510 19de:2060 5
+pico:pico_init_v6_v5(): id: 19de:510 19de:2060 5
+pico 0000:08:00.0: enabling device (0100 -> 0102)
+pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[2] (addr: 0xffffffffc0a2f2b0)
+pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c6100000 for 0x100000 bytes
+pico:init_jtag(): Initializing JTAG: Module (0x510) (backplane ID: 0x700)
+pico:pico_init_v6_v5(): creating device files for Pico FPGA #1
+pico: creating device with class=0xffff94554054f480, major=240, minor=1
+pico:pico_init_v6_v5(): writing 1 to 0x10 to enable stream machine
+pico:pico_init_v6_v5(): Firmware version (0x810): 0x6000000
+pico:update_fpga_cfg(): fpga version: 0x5000000 device: 0x510
+pico:update_fpga_cfg(): detected non-virgin card (0x4000. probably from driver reload). 
+disabling picobuses till the FPGA is reloaded.
+pico:pico_init_e17(): id: 19de:510 19de:2060 5
+pico:pico_init_v6_v5(): id: 19de:510 19de:2060 5
+pico 0000:09:00.0: enabling device (0100 -> 0102)
+pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[3] (addr: 0xffffffffc0a2f2b8).
+pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c7000000 for 0x100000 bytes
+pico:init_jtag(): Initializing JTAG: Module (0x510) (backplane ID: 0x700)
 ```
 
 Q: Can I run my own model?
