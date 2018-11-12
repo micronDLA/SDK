@@ -40,7 +40,7 @@ To register and download, please send a request to info@fwdnxt.com
   * [Multiple Clusters with input batching <a name="three"></a>](#multiple-clusters-with-input-batching--a-name--three----a-)
   * [Multiple Clusters without input batching <a name="four"></a>](#multiple-clusters-without-input-batching--a-name--four----a-)
 - [6. Tutorial - PutInput and GetResult](#6-tutorial---putinput-and-getresult) : tutorial for using PutInput and GetOutput
-- [7. Tensorflow Support](#7-tensorflow-support) : Tutorial on using Tensorflow with the Inference Engine
+- [7. Tensorflow Support](#7-tensorflow-support) : Tutorial on converting Tensorflow models to ONNX
 - [8. Caffe1 Support](#8-caffe1-support) : Tutorial on converting Caffe1 models to ONNX
 - [9. Supported models and layers](#9-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
   * [Tested models](#tested-models)
