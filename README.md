@@ -40,15 +40,13 @@ To register and download, please send a request to info@fwdnxt.com
   * [Multiple Clusters with input batching <a name="three"></a>](#multiple-clusters-with-input-batching--a-name--three----a-)
   * [Multiple Clusters without input batching <a name="four"></a>](#multiple-clusters-without-input-batching--a-name--four----a-)
 - [6. Tutorial - PutInput and GetResult](#6-tutorial---putinput-and-getresult) : tutorial for using PutInput and GetOutput
-- [7. Using with Tensorflow](#6-using-with-tensorflow) : Tutorial on using tensorflow with the Inference Engine
-  * [Installation](#installation)
-  * [Using a tf2onnx converter from ONNX (recommended for SDK releases since 0.3.11)](#using-a-tf2onnx-converter-from-onnx--recommended-for-sdk-releases-since-0311-)
-  * [Using a tf2onnx converter from FWDNXT (recommended for SDK releases before 0.3.11)](#using-a-tf2onnx-converter-from-fwdnxt--recommended-for-sdk-releases-before-0311-)
-- [8. Supported models and layers](#7-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
+- [7. Tensorflow Support](#7-tensorflow-support) : Tutorial on using Tensorflow with the Inference Engine
+- [8. Caffe1 Support](#8-caffe1-support) : Tutorial on converting Caffe1 models to ONNX
+- [9. Supported models and layers](#9-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
   * [Tested models](#tested-models)
   * [TF-Slim models tested on FWDNXT inference engine](#tf-slim-models-tested-on-fwdnxt-inference-engine)
   * [ONNX model zoo](#onnx-model-zoo)
-- [9. Troubleshooting and Q&A](#8-troubleshooting-and-q-a) : Troubleshooting common issues and answering common questions
+- [10. Troubleshooting and Q&A](#10-troubleshooting-and-q-a) : Troubleshooting common issues and answering common questions
 
 
 Please report issues and bugs [here](https://github.com/FWDNXT/SDK/issues).
@@ -432,7 +430,7 @@ Examples to use PutInput and GetOutput are located in [examples/python/](example
 
 * threadedbatchdemo.py : similar to `threadeddemo.py`. It shows how to process images in a batch using PutInput and GetResult. 
 
-# 7. Using with Tensorflow
+# 7. Tensorflow Support
 
 Last updated on October 26th, 2018
 
@@ -443,8 +441,6 @@ Last updated on October 26th, 2018
 - Python 3 with packages numpy, tensorflow and onnx
 - tf2onnx which can be installed following instructions [here](https://github.com/onnx/tensorflow-onnx)
 - Bazel if you want to use summarize_graph tool from tensorflow
-
-If you find issues installing these contact us ([http://fwdnxt.com/](http://fwdnxt.com/))
 
 ## Using a tf2onnx converter from ONNX (recommended for SDK releases since 0.3.11)
 
@@ -463,7 +459,7 @@ For more details please refer to the [tensorflow-onnx repository](https://github
 
 ## Using a tf2onnx converter from FWDNXT (recommended for SDK releases before 0.3.11)
 
-You need to clone following github repositories: tensorflow/tensorflow, tensorflow/models, onnx/onnx.
+You need to clone following github repositories: tensorflow/tensorflow, tensorflow/models.
 
 You can either use pretrained TF-slim model or your own model. If using TF-slim export your desired model's inference graph with:
 
@@ -513,52 +509,31 @@ python tensorflow/tensorflow/python/tools/import_pb_to_tensorboard.py
 tensorboard --logdir=./visualize
 ```
 
-You can also visualize the final ONNX graph using:
+You can also visualize the final ONNX graph using [Netron](https://github.com/lutzroeder/netron). 
 
-```
-python onnx/onnx/tools/net_drawer.py 
---input inception_v3.onnx 
---output inception_v3.dot 
---embed_docstring
-dot -Tsvg inception_v3.dot -o inception_v3.svg
-```
+# 8. Caffe1 Support
 
-**Tensorflow to ONNX operator conversion**
+Make sure your model is in the newest Caffe1 format. If not use upgrade_net_proto_text binary from Caffe1 tools to upgrade it. For example to upgrade VGG-16 from Caffe1 model zoo:
 
-Add -&gt; Add
+`upgrade_net_proto_text VGG_ILSVRC_16_layers_deploy.prototxt vgg16_caffe1.prototxt`
 
-AvgPool -&gt; AveragePool
+Download [caffe_translator.py](https://github.com/pytorch/pytorch/blob/master/caffe2/python/caffe_translator.py). Use it to convert model from Caffe1 format to Caffe2. For example:
 
-BatchNormWithGlobalNormalization -&gt; BatchNormalization
+`python caffe_translator.py vgg16_caffe1.prototxt VGG_ILSVRC_16_layers.caffemodel`
 
-Concat -&gt; Concat
+You will need Caffe2. If you have PyTorch installed from v1.0rc branch or master branch then Caffe2 should already be on your system. Use convert-caffe2-to-onnx binary to convert Caffe2 model to ONNX format. For example:
 
-ConcatV2 -&gt; Concat
+`convert-caffe2-to-onnx predict_net.pb --caffe2-init-net init_net.pb --value-info '{"data": [1, [1, 3, 224, 224]]}' -o vgg16.onnx`
 
-Conv2D+BiasAdd or Conv2D+Add or Conv2D -&gt; Conv
+For more information see links below:
 
-FusedBatchNorm -&gt; BatchNormalization
+[https://github.com/BVLC/caffe/blob/master/tools/upgrade_net_proto_text.cpp](https://github.com/BVLC/caffe/blob/master/tools/upgrade_net_proto_text.cpp)
 
-MatMul+BiasAdd or MatMul+Add or MatMul -&gt; Gemm
+[https://caffe2.ai/docs/caffe-migration.html](https://caffe2.ai/docs/caffe-migration.html)
 
-MaxPool -&gt; MaxPool
+[https://github.com/onnx/tutorials/blob/master/tutorials/Caffe2OnnxExport.ipynb](https://github.com/onnx/tutorials/blob/master/tutorials/Caffe2OnnxExport.ipynb)
 
-Mean -&gt; GlobalAveragePool
-
-Pad -&gt; Pad
-
-Relu -&gt; Relu
-
-Reshape -&gt; Flatten
-
-Softmax -&gt; Softmax
-
-Squeeze -&gt; Flatten
-
-Tanh -&gt; Tanh
-
-
-# 8. Supported models and layers
+# 9. Supported models and layers
 
   * AveragePool
   * BatchNormalization
@@ -613,7 +588,7 @@ https://github.com/onnx/models
 Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not support the LRN layer.
 
 
-# 9. Troubleshooting and Q&A
+# 10. Troubleshooting and Q&A
 
 Q: Where can I find weights for pretrained TF-slim models?
 
