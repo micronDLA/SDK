@@ -26,19 +26,17 @@ To register and download, please send a request to info@fwdnxt.com
   * [Manual Installation](#manual-installation)
 - [2. Getting started with Deep Learning](#2-getting-started-with-deep-learning) : general information about deep learning
   * [Introduction](#introduction)
-  * [Suggested computing hardware](#suggested-computing-hardware)
-  * [PyTorch: Deep Learning framework](#pytorch--deep-learning-framework)
+  * [PyTorch: Deep Learning framework](#pytorch-deep-learning-framework)
   * [My dataset](#my-dataset)
   * [Training a neural network with PyTorch](#training-a-neural-network-with-pytorch)
   * [After training a neural network](#after-training-a-neural-network)
 - [3. Getting started Inference on FWDNXT hardware](#3-getting-started-inference-on-fwdnxt-hardware) : getting started tutorial for running inference on the Inference Engine
 - [4. Getting started Inference on FWDNXT hardware with C](#4-getting-started-inference-on-fwdnxt-hardware-with-c) : getting started tutorial for running inference on the Inference Engine using C
 - [5. Tutorial - Multiple FPGAs and Clusters](#5-tutorial---multiple-fpgas-and-clusters) : tutorial for running inference on multiple FPGAs and clusters
-  * [Table of Contents](#table-of-contents)
-  * [Multiple FPGAs with input batching <a name="one"></a>](#multiple-fpgas-with-input-batching--a-name--one----a-)
-  * [Multiple FPGAs with different models <a name="two"></a>](#multiple-fpgas-with-different-models--a-name--two----a-)
-  * [Multiple Clusters with input batching <a name="three"></a>](#multiple-clusters-with-input-batching--a-name--three----a-)
-  * [Multiple Clusters without input batching <a name="four"></a>](#multiple-clusters-without-input-batching--a-name--four----a-)
+  * [Multiple FPGAs with input batching <a name="one"></a>](#multiple-fpgas-with-input-batching)
+  * [Multiple FPGAs with different models <a name="two"></a>](#multiple-fpgas-with-different-models)
+  * [Multiple Clusters with input batching <a name="three"></a>](#multiple-clusters-with-input-batching)
+  * [Multiple Clusters without input batching <a name="four"></a>](#multiple-clusters-without-input-batching)
 - [6. Tutorial - PutInput and GetResult](#6-tutorial---putinput-and-getresult) : tutorial for using PutInput and GetOutput
 - [7. Tensorflow Support](#7-tensorflow-support) : Tutorial on converting Tensorflow models to ONNX
 - [8. Caffe1 Support](#8-caffe1-support) : Tutorial on converting Caffe1 models to ONNX
@@ -291,7 +289,7 @@ This tutorial will teach you how to run inference on FWDNXT inference engine usi
 3. [Multiple Clusters with input batching](#three)
 4. [Multiple Clusters without input batching](#four)
 
-## Multiple FPGAs with input batching <a name="one"></a>
+## Multiple FPGAs with input batching
 Suppose that you a desktop computer with 2 AC-510 FPGAs cards connected to a EX-750 PCI backplane. To simplify this example, lets assume there is 1 cluster per FPGA card. We will see how to use multiple clusters in the following sections.
 The SDK can receive 2 images and process 1 image on each FPGA. The FWDNXT instructions and model parameters are broadcast to each FPGA card's main memory (HMC).  
 The following code snippet shows you how to do this:
@@ -320,7 +318,7 @@ The diagram below shows this type of execution:
 ![alt text](docs/pics/2fpga2img.png)
 
 
-## Multiple FPGAs with different models <a name="two"></a>
+## Multiple FPGAs with different models
 The SDK can also run different models on different FPGAs. Each `fwdnxt.FWDNXT()` instance will create a different set of FWDNXT instructions for a different model and load it to a different FPGA.  
 The following code snippet shows you how to do this:
 
@@ -353,7 +351,7 @@ The code is similar to the previous section. Each instance will compile, init an
 The diagram below shows this type of execution:  
 ![alt text](docs/pics/2fpga2model.png)
 
-## Multiple Clusters with input batching <a name="three"></a>
+## Multiple Clusters with input batching
 For simplicity, now assume you have 1 FPGA and inside it we have 2 FWDNXT clusters.
 Each cluster execute their own set of instructions, so we can also batch the input (just like the 2 FPGA case before).
 The difference is that both clusters share the same main memory in the FPGA card.  
@@ -378,7 +376,7 @@ The only difference is that nclus=2 and nfpga=1.
 The diagram below shows this type of execution:  
 ![alt text](docs/pics/2clus2img.png)
 
-## Multiple Clusters without input batching <a name="four"></a>
+## Multiple Clusters without input batching
 The SDK can also use both clusters on the same input image. It will split the operations among the 2 clusters.  
 The following code snippet shows you how to use 2 clusters to process 1 image:
 
