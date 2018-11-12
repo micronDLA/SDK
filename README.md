@@ -315,7 +315,7 @@ sf.Run(input_img, output) # Run
 `sf.Init` will initialize the FPGAs. It will load the bitfile.bit, send the instructions and model parameters to each FPGA's main memory.  
 The expected output size of `sf.Run` is twice `snwresults`, because numfpga=2 and 2 input images are processed. `input_img` is 2 images concatenated.
 The diagram below shows this type of execution:  
-![alt text](docs/pics/2fpga2img.png)
+<img src="docs/pics/2fpga2img.png" width="900" height="735"/>
 
 
 ## Multiple FPGAs with different models
@@ -349,7 +349,7 @@ sf2.Run(input_img2, output2)
 ```
 The code is similar to the previous section. Each instance will compile, init and execute a different model on different FPGA.  
 The diagram below shows this type of execution:  
-![alt text](docs/pics/2fpga2model.png)
+<img src="docs/pics/2fpga2model.png" width="900" height="735"/>
 
 ## Multiple Clusters with input batching
 For simplicity, now assume you have 1 FPGA and inside it we have 2 FWDNXT clusters.
@@ -374,7 +374,7 @@ sf.Run(input_img, output) # Run
 ```
 The only difference is that nclus=2 and nfpga=1. 
 The diagram below shows this type of execution:  
-![alt text](docs/pics/2clus2img.png)
+<img src="docs/pics/2clus2img.png" width="900" height="735"/>
 
 ## Multiple Clusters without input batching
 The SDK can also use both clusters on the same input image. It will split the operations among the 2 clusters.  
@@ -400,7 +400,7 @@ Use `sf.SetFlag('nobatch', '1')` to set the compiler to split the workload among
 You can find more informantion about the option flags [here](docs/PythonAPI.md).  
 Now the output size is not twice of `snwresults` because you expect output for one inference run.   
 The diagram below shows this type of execution:  
-![alt text](docs/pics/2clus1img.png)
+<img src="docs/pics/2clus1img.png" width="900" height="735"/>
 
 
 
