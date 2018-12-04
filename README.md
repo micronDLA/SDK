@@ -202,9 +202,9 @@ Check out other possible application programs using FWDNXT hardware [here](http:
 The example program is located in examples/python/
 You can run the demo using this command:
 
-`python3 simpledemo.py <onnx file> <picture> -c <categories file.txt> -l`
+`python3 simpledemo.py <onnx file> <picture> -c <categories file.txt> -b <bitfile.bit>`
 
-`-l` option will load the hardware into a FPGA card. Note: make sure the bitfile is in same directory of `simpledemo.py`, or change the path in the program.   
+`-b` option will load the hardware into a FPGA card.    
 
 
 Loading the FPGA and bringing up the HMC will take at max 5 min.
@@ -212,7 +212,7 @@ Loading the FPGA only fails when there are no FPGA cards available. If you find 
 After the first run, FWDNXT hardware will be loaded in the FPGA card. The following runs will not need to load the hardware anymore.
 You can run the network on hardware with this command, which will find the FPGA card that was loaded with FWDNXT hardware:
 
-`python3 simpledemo.py <onnx file> <picture> -c <categories file.txt> -l`
+`python3 simpledemo.py <onnx file> <picture> -c <categories file.txt>`
 
 If you used the example image with alexnet, the demo will output:
 
@@ -283,11 +283,7 @@ bloodhound -- 21.5000
 # 5. Tutorial - Multiple FPGAs and Clusters
 
 This tutorial will teach you how to run inference on FWDNXT inference engine using multiple FPGAs and clusters. 
-## Table of Contents
-1. [Multiple FPGAs with input batching](#one)
-2. [Multiple FPGAs with different models](#two)
-3. [Multiple Clusters with input batching](#three)
-4. [Multiple Clusters without input batching](#four)
+
 
 ## Multiple FPGAs with input batching
 Suppose that you a desktop computer with 2 AC-510 FPGAs cards connected to a EX-750 PCI backplane. To simplify this example, lets assume there is 1 cluster per FPGA card. We will see how to use multiple clusters in the following sections.
