@@ -19,7 +19,7 @@ _('modelpath', type=str, default='', help='Path to the model file')
 _('imagesdir', type=str, default='', help='A directory name with input files')
 _('-r', '--res', type=int, default=[3, 224, 224], nargs='+', help='expected image size (planes, height, width)')
 _('-c', '--categories', type=str, default='', help='Categories file')
-_('-l','--load', action='store_true', help='Load bitfile')
+_('-l','--load', type=str, default='', help='Load bitfile')
 
 def LoadImage(imagepath):
 
@@ -57,10 +57,7 @@ ie = fwdnxt.FWDNXT()
 swnresults = ie.Compile("{:d}x{:d}x{:d}".format(args.res[1], args.res[2], args.res[0]), args.modelpath, 'save.bin')
 
 #Init fpga
-if args.load :
-    nresults = ie.Init('save.bin', 'bitfile.bit')
-else:
-    nresults = ie.Init('save.bin', '')
+nresults = ie.Init('save.bin', args.load)
 
 categories = None
 if args.categories != '':
