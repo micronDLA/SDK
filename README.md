@@ -40,11 +40,12 @@ To register and download, please send a request to info@fwdnxt.com
 - [6. Tutorial - PutInput and GetResult](#6-tutorial---putinput-and-getresult) : tutorial for using PutInput and GetOutput
 - [7. Tensorflow Support](#7-tensorflow-support) : Tutorial on converting Tensorflow models to ONNX
 - [8. Caffe1 Support](#8-caffe1-support) : Tutorial on converting Caffe1 models to ONNX
-- [9. Supported models and layers](#9-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
+- [9. Keras Support](#9-keras-support) : Tutorial on converting Keras models to ONNX
+- [10. Supported models and layers](#10-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
   * [Tested models](#tested-models)
   * [TF-Slim models tested on FWDNXT inference engine](#tf-slim-models-tested-on-fwdnxt-inference-engine)
   * [ONNX model zoo](#onnx-model-zoo)
-- [10. Troubleshooting and Q&A](#10-troubleshooting-and-q-a) : Troubleshooting common issues and answering common questions
+- [11. Troubleshooting and Q&A](#11-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
 
 
 Please report issues and bugs [here](https://github.com/FWDNXT/SDK/issues).
@@ -527,7 +528,21 @@ For more information see links below:
 
 [https://github.com/onnx/tutorials/blob/master/tutorials/Caffe2OnnxExport.ipynb](https://github.com/onnx/tutorials/blob/master/tutorials/Caffe2OnnxExport.ipynb)
 
-# 9. Supported models and layers
+# 9. Keras Support
+
+Exporting Keras models to ONNX format is done through [ONNXMLTools](https://github.com/onnx/onnxmltools). You should edit ~/.keras/keras.json so that field "image_data_format" is set to "channels_first". A sample code to convert Resnet 50 from Keras to ONNX is shown below.
+
+```python
+import onnx
+import onnxmltools
+import keras
+
+model = keras.applications.resnet50.ResNet50(include_top=True, weights='imagenet', input_tensor=None, input_shape=None, pooling=None, classes=1000)
+onnx_model = onnxmltools.convert_keras(model)
+onnx.save(onnx_model, 'resnet50.onnx')
+```
+
+# 10. Supported models and layers
 
   * AveragePool
   * BatchNormalization
@@ -582,7 +597,7 @@ https://github.com/onnx/models
 Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not support the LRN layer.
 
 
-# 10. Troubleshooting and Q&A
+# 11. Troubleshooting and Q&A
 
 Q: Where can I find weights for pretrained TF-slim models?
 
