@@ -45,6 +45,8 @@ To register and download, please send a request to info@fwdnxt.com
   * [Tested models](#tested-models)
   * [TF-Slim models tested on FWDNXT inference engine](#tf-slim-models-tested-on-fwdnxt-inference-engine)
   * [ONNX model zoo](#onnx-model-zoo)
+  * [Keras](#keras)
+  * [CNTK](#cntk)
 - [11. Troubleshooting and Q&A](#11-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
 
 
@@ -596,6 +598,14 @@ https://github.com/onnx/models
  
 Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not support the LRN layer.
 
+## Keras
+
+* [ResNet50](https://keras.io/applications/#resnet50)
+
+## CNTK
+
+* [ResNet50](https://www.cntk.ai/Models/CNTK_Pretrained/ResNet50_ImageNet_CNTK.model)
+* [VGG16](https://www.cntk.ai/Models/Caffe_Converted/VGG16_ImageNet_Caffe.model)
 
 # 11. Troubleshooting and Q&A
 
