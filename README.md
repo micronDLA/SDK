@@ -38,16 +38,17 @@ To register and download, please send a request to info@fwdnxt.com
   * [Multiple Clusters with input batching <a name="three"></a>](#multiple-clusters-with-input-batching)
   * [Multiple Clusters without input batching <a name="four"></a>](#multiple-clusters-without-input-batching)
 - [6. Tutorial - PutInput and GetResult](#6-tutorial---putinput-and-getresult) : tutorial for using PutInput and GetOutput
-- [7. Tensorflow Support](#7-tensorflow-support) : Tutorial on converting Tensorflow models to ONNX
-- [8. Caffe1 Support](#8-caffe1-support) : Tutorial on converting Caffe1 models to ONNX
-- [9. Keras Support](#9-keras-support) : Tutorial on converting Keras models to ONNX
-- [10. Supported models and layers](#10-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
+- [7. Running a model from your favorite deep learning framework](#7-running-a-model-from-your-favorite-deep-learning-framework) : Tutorial on converting models to ONNX
+  * [Tensorflow](#tensorflow)
+  * [Caffe1](#caffe1)
+  * [Keras](#keras)
+- [8. Supported models and layers](#10-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
   * [Tested models](#tested-models)
   * [TF-Slim models tested on FWDNXT inference engine](#tf-slim-models-tested-on-fwdnxt-inference-engine)
   * [ONNX model zoo](#onnx-model-zoo)
   * [Keras](#keras)
   * [CNTK](#cntk)
-- [11. Troubleshooting and Q&A](#11-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
+- [9. Troubleshooting and Q&A](#11-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
 
 
 Please report issues and bugs [here](https://github.com/FWDNXT/SDK/issues).
@@ -427,21 +428,13 @@ Examples to use PutInput and GetOutput are located in [examples/python/](example
 
 * threadedbatchdemo.py : similar to `threadeddemo.py`. It shows how to process images in a batch using PutInput and GetResult. 
 
-# 7. Tensorflow Support
+# 7. Running a model from your favorite deep learning framework
 
-Last updated on October 26th, 2018
+FWDNXT Inference Engine supports all deep learning frameworks by running models in ONNX format. In order to convert a model from your favorite deep learning framework to ONNX format you should follow the instructions [here](https://github.com/onnx/tutorials). However there are some extra steps you should take with certain frameworks for the best compatibility with FWDNXT Inference Engine and we describe them below.
 
-## Installation
+## Tensorflow
 
-**Dependency list**
-
-- Python 3 with packages numpy, tensorflow and onnx
-- tf2onnx which can be installed following instructions [here](https://github.com/onnx/tensorflow-onnx)
-- Bazel if you want to use summarize_graph tool from tensorflow
-
-## Using a tf2onnx converter from ONNX (recommended for SDK releases since 0.3.11)
-
-You need to have a frozen graph of your tensorflow model and know its input and output. You also need to use the "--fold_const" option during the conversion. For example to convert Inception-v1 from TF-slim you will run:
+We will use [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx) converter. You need to have a frozen graph of your tensorflow model and know its input and output. You also need to use the "--fold_const" option during the conversion. For example to convert Inception-v1 from TF-slim you will run:
 
 ```
 python -m tf2onnx.convert
@@ -452,63 +445,7 @@ python -m tf2onnx.convert
 --fold_const
 ```
 
-For more details please refer to the [tensorflow-onnx repository](https://github.com/onnx/tensorflow-onnx).
-
-## Using a tf2onnx converter from FWDNXT (recommended for SDK releases before 0.3.11)
-
-You need to clone following github repositories: tensorflow/tensorflow, tensorflow/models.
-
-You can either use pretrained TF-slim model or your own model. If using TF-slim export your desired model's inference graph with:
-
-```
-python models/research/slim/export_inference_graph.py 
---model_name=inception_v3 
---output_file=./inception_v3_inf_graph.pb
-```
-
-If using your own model make sure to save only the graph used during inference without dropout or any other layers used only during training. Your graph should have 1 input and 1 output.
-
-You need to know the name of the output node in your graph. This can be found out with:
-
-```
-bazel build tensorflow/tools/graph_transforms:summarize_graph
-bazel-bin/tensorflow/tools/graph_transforms/summarize_graph 
---in_graph=./inception_v3_inf_graph.pb
-```
-
-The inference graph and weights should be merged into a single file with:
-
-```
-python tensorflow/tensorflow/python/tools/freeze_graph.py 
---input_graph=./inception_v3_inf_graph.pb 
---input_checkpoint=./checkpoints/inception_v3.ckpt 
---input_binary=true 
---output_graph=./frozen_inception_v3.pb 
---output_node_names=InceptionV3/Predictions/Reshape_1
-```
-
-Then convert your frozen graph into ONNX format using:
-
-```
-python tf2onnx.py 
---input_graph=./frozen_inception_v3.pb 
---output_graph=./inception_v3.onnx
-```
-
-The converter assumes the input tensor is named "input". If that is not the case in your model then you can specify input tensor name with the argument "input_name".
-
-You can visualize the inference graph or frozen graph using Tensorboard:
-
-```
-python tensorflow/tensorflow/python/tools/import_pb_to_tensorboard.py 
---model_dir=frozen_inception_v3.pb 
---log_dir=./visualize
-tensorboard --logdir=./visualize
-```
-
-You can also visualize the final ONNX graph using [Netron](https://github.com/lutzroeder/netron). 
-
-# 8. Caffe1 Support
+## Caffe1
 
 Make sure your model is in the newest Caffe1 format. If not use upgrade_net_proto_text binary from Caffe1 tools to upgrade it. For example to upgrade VGG-16 from Caffe1 model zoo:
 
@@ -518,7 +455,7 @@ Download [caffe_translator.py](https://github.com/pytorch/pytorch/blob/master/ca
 
 `python caffe_translator.py vgg16_caffe1.prototxt VGG_ILSVRC_16_layers.caffemodel`
 
-You will need Caffe2. If you have PyTorch installed from v1.0rc branch or master branch then Caffe2 should already be on your system. Use convert-caffe2-to-onnx binary to convert Caffe2 model to ONNX format. For example:
+Now your model is in Caffe2 format. You can follow the [official instructions](https://github.com/onnx/tutorials/blob/master/tutorials/Caffe2OnnxExport.ipynb) to convert it to ONNX format. Example conversion:
 
 `convert-caffe2-to-onnx predict_net.pb --caffe2-init-net init_net.pb --value-info '{"data": [1, [1, 3, 224, 224]]}' -o vgg16.onnx`
 
@@ -528,9 +465,7 @@ For more information see links below:
 
 [https://caffe2.ai/docs/caffe-migration.html](https://caffe2.ai/docs/caffe-migration.html)
 
-[https://github.com/onnx/tutorials/blob/master/tutorials/Caffe2OnnxExport.ipynb](https://github.com/onnx/tutorials/blob/master/tutorials/Caffe2OnnxExport.ipynb)
-
-# 9. Keras Support
+## Keras
 
 Exporting Keras models to ONNX format is done through [ONNXMLTools](https://github.com/onnx/onnxmltools). You should edit ~/.keras/keras.json so that field "image_data_format" is set to "channels_first". A sample code to convert Resnet 50 from Keras to ONNX is shown below.
 
@@ -544,7 +479,7 @@ onnx_model = onnxmltools.convert_keras(model)
 onnx.save(onnx_model, 'resnet50.onnx')
 ```
 
-# 10. Supported models and layers
+# 8. Supported models and layers
 
   * AveragePool
   * BatchNormalization
@@ -607,7 +542,7 @@ Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not su
 * [ResNet50](https://www.cntk.ai/Models/CNTK_Pretrained/ResNet50_ImageNet_CNTK.model)
 * [VGG16](https://www.cntk.ai/Models/Caffe_Converted/VGG16_ImageNet_Caffe.model)
 
-# 11. Troubleshooting and Q&A
+# 9. Troubleshooting and Q&A
 
 Q: Where can I find weights for pretrained TF-slim models?
 
