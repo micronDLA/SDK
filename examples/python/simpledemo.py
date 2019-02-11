@@ -44,7 +44,7 @@ ie = fwdnxt.FWDNXT()
 #ie.SetFlag('debug','bw')
 
 #Compile to a file
-swnresults = ie.Compile("{:d}x{:d}x{:d}".format(args.res[1], args.res[2], args.res[0]), args.modelpath, 'save.bin')
+swnresults = ie.Compile("{:d}x{:d}x{:d}".format(args.res[2], args.res[1], args.res[0]), args.modelpath, 'save.bin')
 
 #Init fpga
 nresults = ie.Init('save.bin', args.load)
