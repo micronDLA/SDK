@@ -38,7 +38,7 @@ stat_std = list([0.229, 0.224, 0.225])
 for i in range(3):
     img[i] = (img[i] - stat_mean[i])/stat_std[i]
 
-#Create and initialize the snowflow object
+#Create and initialize the Inference Engine object
 ie = fwdnxt.FWDNXT()
 #ie.SetFlag('hwlinear','0')
 #ie.SetFlag('debug','bw')
