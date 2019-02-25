@@ -5,12 +5,12 @@
 # E. Culurciello, February 2019
 
 # from: http://flask.pocoo.org/docs/1.0/patterns/fileuploads/
+# https://stackoverflow.com/questions/32019733/getting-value-from-select-tag-using-flask
 
 import os, sys
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
-# import FWDNXT inference engine:
-import fwdnxt
+import fwdnxt # FWDNXT inference engine
 import PIL
 from PIL import Image
 import numpy as np
@@ -26,12 +26,14 @@ def allowed_file(filename):
 	return '.' in filename and \
 		filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
  
+
 def list_files(directory, extension):
 	list = []
 	for f in os.listdir(directory):
 		if f.endswith('.' + extension):
 			list.append(f)
 	return list
+
 
 def ieprocess(image_file, network_file):
 	# load image and resize it:
@@ -82,8 +84,6 @@ def ieprocess(image_file, network_file):
 	return rstring
 
 
-user_image = None
-
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
 	# get a list of neural nets we can use:
@@ -112,5 +112,7 @@ def upload_file():
 	
 	return render_template('index.html', net_list = net_list)
 
+
 if __name__ == '__main__':
 	app.run(debug = True, host='0.0.0.0', port=80)
+
