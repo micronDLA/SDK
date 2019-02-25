@@ -4,6 +4,10 @@ This is a web demo similar to [simpledemo](https://github.com/FWDNXT/SDK/blob/ma
 
 ### Installation:
 
+Install flask:
+
+`pip3 install flask`
+
 Copy to this directory:
 
 - Download a [model](http://fwdnxt.com/models/resnet18.onnx)
