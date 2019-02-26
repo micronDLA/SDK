@@ -53,13 +53,19 @@ def upload_file():
 			file.save(filepath)
 			print(filepath)
 			network_file = request.form.get('comp_select')
+			# network_file = 'resnet18.onnx'
 			rstring = ieprocess(filepath, network_file)
 			print(rstring)
-			return render_template('index.html', net_list = net_list, 
+			return render_template('index.html', #net_list = net_list, 
 				user_image = filepath, results=rstring)
 	
 	return render_template('index.html', net_list = net_list)
 
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    
 
 if __name__ == '__main__':
 	app.run(debug = True, host='0.0.0.0', port=80)

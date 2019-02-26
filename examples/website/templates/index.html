@@ -7,34 +7,43 @@
 </head>
 
 <body>
-    <h1>FWDNXT Inference Engine demonstration</h1>
 
-    <form method="post" enctype="multipart/form-data">
+    <div>
+      <h1>FWDNXT Inference Engine demonstration</h1>
+    </div>
+
+    <div>
+      <form method="post" enctype="multipart/form-data">
+      
       <span class="input-group-addon">Please select neural network:</span>
+      
       <select name="comp_select" class="selectpicker form-control">
         {% for net in net_list %}
         <option value="{{ net }}">{{ net }}</option>
         {% endfor %}
       </select>
-      <p>
-        <h4>Upload a new image to process:</h4>
-        <input type="file" name="file">
-        <input type="submit" value="Upload">
-      </p>
-    </form>
-    
-    {% if user_image %}
-    <h4>Image uploaded:</h4>
-    <img src={{user_image}} alt="User Image">
-    {% endif %}
 
-    {% if results %}
-    <h4>Results (category name, confidence [%]):</h4>
-    <ul>
-      {% for item in results %}
-      <li>{{item}}</li>
-      {% endfor %}
-    </ul>
-    {% endif %}
+      <h4>Upload a new image to process:</h4>
+      <input type="file" name="file">
+      <input type="submit" value="Upload">
+      
+      </form>
+    </div>
+    
+    <div>
+      {% if user_image %}
+      <h4>Image uploaded:</h4>
+      <img src={{user_image}} alt="User Image">
+      {% endif %}
+
+      {% if results %}
+      <h4>Results (category name, confidence [%]):</h4>
+      <ul>
+        {% for item in results %}
+        <li>{{item}}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
 
 </body></html>
