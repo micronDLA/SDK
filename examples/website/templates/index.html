@@ -3,7 +3,7 @@
 
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>FWDNXT Image Processor</title>
-	<link rel="stylesheet" type="text/css" media="screen" href="main.css">
+  <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}"> -->
 </head>
 
 <body>
@@ -13,7 +13,7 @@
     </div>
 
     <div>
-      <form method="post" enctype="multipart/form-data">
+      <form class="form-inline" method="post" enctype="multipart/form-data">
       
       <span class="input-group-addon">Please select neural network:</span>
       
@@ -24,8 +24,8 @@
       </select>
 
       <h4>Upload a new image to process:</h4>
-      <input type="file" name="file">
-      <input type="submit" value="Upload">
+      <input type="file" class="button" name="file">
+      <button type="submit" class="button">Upload</button>
       
       </form>
     </div>

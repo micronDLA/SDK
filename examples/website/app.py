@@ -1,8 +1,8 @@
 #!/usr/bin python3
 
+# E. Culurciello, February 2019
 # tiny web server demo
 # input an image and process with FWDNXT Inference Engine
-# E. Culurciello, February 2019
 
 # from: http://flask.pocoo.org/docs/1.0/patterns/fileuploads/
 # https://stackoverflow.com/questions/32019733/getting-value-from-select-tag-using-flask
@@ -11,6 +11,7 @@ import os, sys
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
 from ieproc import ieprocess
+from mysqldb import save_to_db
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -50,12 +51,17 @@ def upload_file():
 		if file and allowed_file(file.filename):
 			filename = secure_filename(file.filename)
 			filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+			# save image to be processed:	
 			file.save(filepath)
-			print(filepath)
+			print('Image to be processed:', filepath)
+			# get user-selected neural network file:
 			network_file = request.form.get('comp_select')
-			# network_file = 'resnet18.onnx'
+			# process on FWDNXT inference engine:
 			rstring = ieprocess(filepath, network_file)
-			print(rstring)
+			print('Processed image results:', rstring)
+			# save to database image and results:
+			save_to_db(filepath, rstring)
+
 			return render_template('index.html', #net_list = net_list, 
 				user_image = filepath, results=rstring)
 	
