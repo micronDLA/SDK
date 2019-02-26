@@ -3,6 +3,9 @@
 # E. Culurciello, February 2019
 # add data to a database
 
+# https://docs.python.org/2/library/sqlite3.html
+# https://www.w3schools.com/sql/default.asp
+
 import sqlite3
 import datetime
 import os.path
@@ -38,14 +41,24 @@ def save_to_db(file, data):
 
 if __name__ == '__main__':
 
+	# test saving some random data:
 	data = ['black-and-tan coonhound, 13.582031', 'Rottweiler, 12.878906', 'bloodhound, 11.738281', 'Gordon setter, 11.292969', 'Doberman, 11.1328125']
 	save_to_db('dog224.jpg', data)
 
 	# open db:
 	conn = sqlite3.connect(table_name)
 	c = conn.cursor()
-	# print db:
+
+	# print current db:
+	print('\n\nPrinting entire db:')
 	for row in c.execute('SELECT * FROM processed_images ORDER BY date'):
 		print(row)
+
+	# example search db:
+	t = ("%bloodhound%",)
+	c.execute('SELECT * FROM processed_images WHERE data like ?', t)
+	print('\n\nSearch results:')
+	print(c.fetchall())
+
 	# close db:
 	conn.close()
