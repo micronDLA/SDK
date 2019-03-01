@@ -3,47 +3,42 @@
 
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>FWDNXT Image Processor</title>
-  <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}"> -->
+	<link rel="stylesheet" type="text/css" media="screen" href="main.css">
 </head>
 
 <body>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="search">Search</a></li>
+    </ul>
+    <h1>FWDNXT Inference Engine demonstration</h1>
 
-    <div>
-      <h1>FWDNXT Inference Engine demonstration</h1>
-    </div>
-
-    <div>
-      <form class="form-inline" method="post" enctype="multipart/form-data">
-      
+    <form method="post" enctype="multipart/form-data">
       <span class="input-group-addon">Please select neural network:</span>
-      
       <select name="comp_select" class="selectpicker form-control">
         {% for net in net_list %}
         <option value="{{ net }}">{{ net }}</option>
         {% endfor %}
       </select>
-
-      <h4>Upload a new image to process:</h4>
-      <input type="file" class="button" name="file">
-      <button type="submit" class="button">Upload</button>
-      
-      </form>
-    </div>
+      <p>
+        <h4>Upload a new image to process:</h4>
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+      </p>
+    </form>
     
-    <div>
-      {% if user_image %}
-      <h4>Image uploaded:</h4>
-      <img src={{user_image}} alt="User Image">
-      {% endif %}
+    {% if user_image %}
+    <h4>Image uploaded:</h4>
+    <img src={{user_image}} alt="User Image">
+    {% endif %}
 
-      {% if results %}
-      <h4>Results (category name, confidence [%]):</h4>
-      <ul>
-        {% for item in results %}
-        <li>{{item}}</li>
-        {% endfor %}
-      </ul>
-      {% endif %}
-    </div>
+    {% if results %}
+    <h4>Results (category and % confidence):</h4>
+    <ul>
+      {% for item in results %}
+      <li>{{item}}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
 
 </body></html>

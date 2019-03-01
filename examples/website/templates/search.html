@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Results</title>
+</head>
+<body>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="search">Search</a></li>
+    </ul>
+    <h1>Database search results</h1>
+    <form method="POST">
+        <input name="text">
+        <input type="submit">
+    </form>
+    {% if results %}
+        <h4> Searched string: {{ string_to_search }}</h4>
+        <table>
+            <tbody>
+            {% for img_name in results %}
+                <tr>
+                    <td>{{ img_name }}</td>
+                    <td><img src="{{ img_name }}"" alt="Image" height="128"></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        No results :(
+    {% endif %}
+</body>
+</html>

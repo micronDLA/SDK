@@ -11,7 +11,7 @@ import os, sys
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
 from ieproc import ieprocess
-from mysqldb import save_to_db
+from mysqldb import save_to_db, search_db_string
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -71,7 +71,25 @@ def upload_file():
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-    
+
+
+@app.route('/search', methods=['GET', 'POST'])
+def display_results():
+    if request.method == 'POST':
+        # input string to search:
+        str_to_match = request.form['text']
+        # str_to_match = 'bloodhound'
+        # search db with string and output result:
+        ret = search_db_string(str_to_match)
+        results=[]
+        for i in ret:
+            results.append(os.path.join(app.config['UPLOAD_FOLDER'],i[1])) # append filenames
+
+        return render_template('search.html', string_to_search=str_to_match,
+            results = results)
+    else:
+        return render_template('search.html')
+        
 
 if __name__ == '__main__':
 	app.run(debug = True, host='0.0.0.0', port=80)
