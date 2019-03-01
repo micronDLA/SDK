@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     uint64_t outsize = 0;//number of output values produced
     void* sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize);
     float *input = NULL;
-    int input_elements = 0;
+    uint64_t input_elements = 0;
 //fetch input image
     if(image)
     {
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
     int err = 0;
 // run inference
     printf("Run FWDNXT inference engine\n");
-    err = ie_run(sf_handle, input, input_elements, output, output_elements);
+    err = ie_run(sf_handle, (const float * const *)&input, &input_elements, output, output_elements);
     if(err==-1)
     {
         fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");

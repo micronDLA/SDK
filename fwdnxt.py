@@ -1,6 +1,7 @@
 import sys
 from ctypes import *
 import numpy
+from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
 f = CDLL("libfwdnxt.so")
 
@@ -24,10 +25,10 @@ class FWDNXT:
         self.ie_getinfo = f.ie_getinfo
 
         self.ie_run = f.ie_run
-        self.ie_run.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong]
+        self.ie_run.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong]
 
         self.ie_putinput = f.ie_putinput
-        self.ie_putinput.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_long]
+        self.ie_putinput.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_long]
 
         self.ie_getresult = f.ie_getresult
         self.ie_getresult.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_void_p]
@@ -42,13 +43,13 @@ class FWDNXT:
         self.ie_write_weights.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int]
 
         self.ie_run_sim = f.ie_run_sim
-        self.ie_run_sim.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong]
+        self.ie_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong]
 
         self.thnets_run_sim = f.thnets_run_sim
-        self.thnets_run_sim.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, c_bool]
+        self.thnets_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, c_bool]
 
         self.test_functions = f.test_functions
-        self.test_functions.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint, ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint]
+        self.test_functions.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint]
 
     #compile a network and produce .bin file with everything that is needed to execute
     def Compile(self, image, modeldir, outfile, numcard = 1, numclus = 1, nlayers = -1):
@@ -83,22 +84,37 @@ class FWDNXT:
         if rc != 0:
             raise Exception(rc)
         return return_val.value
+    def params(self, images):
+        if type(images) == numpy.ndarray:
+            return byref(images.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(images.size))
+        elif type(images) == tuple:
+            cimages = (POINTER(c_float) * len(images))()
+            csizes = (c_ulonglong * len(images))()
+            for i in range(len(images)):
+                cimages[i] = images[i].ctypes.data_as(POINTER(c_float))
+                csizes[i] = images[i].size
+            return cimages, csizes
+        else:
+            raise Exception('Input must be ndarray or tuple to ndarrays')
+
 
     #Run inference engine. It does the steps sequentially. putInput, compute, getResult
-    def Run(self, image, result):
-        rc = self.ie_run(self.handle, image, image.size, result, result.size)
+    def Run(self, images, result):
+        imgs, sizes = self.params(images)
+        rc = self.ie_run(self.handle, imgs, sizes, result, result.size)
         if rc != 0:
             raise Exception(rc)
 
     #Put an input into shared memory and start FWDNXT hardware
-    def PutInput(self, image, userobj):
+    def PutInput(self, images, userobj):
         userobj = py_object(userobj)
         key = c_long(addressof(userobj))
         self.userobjs[key.value] = userobj
-        if image is None:
-            rc = self.ie_putinput(self.handle, numpy.empty(0, dtype=numpy.float32), 0, key)
+        if images is None:
+            imgs, sizes = self.params(numpy.empty(0, dtype=numpy.float32))
         else:
-            rc = self.ie_putinput(self.handle, image, image.size, key)
+            imgs, sizes = self.params(images)
+        rc = self.ie_putinput(self.handle, imgs, sizes, key)
         if rc == -99:
             return False
         if rc != 0:
@@ -118,14 +134,16 @@ class FWDNXT:
         return retuserobj.value
 
     #Run software inference engine emulator
-    def Run_sw(self, image, result):
-        rc = self.ie_run_sim(self.handle, image, image.size, result, result.size)
+    def Run_sw(self, images, result):
+        imgs, sizes = self.params(images)
+        rc = self.ie_run_sim(self.handle, imgs, sizes, result, result.size)
         if rc != 0:
             raise Exception(rc)
 
     #Run model with thnets
     def Run_th(self, image, result):
-        rc = self.thnets_run_sim(self.handle, image, image.size, result, result.size, False)
+        imgs, sizes = self.params(images)
+        rc = self.thnets_run_sim(self.handle, imgs, sizes, result, result.size)
         if rc != 0:
             raise Exception(rc)
 
@@ -141,6 +159,7 @@ class FWDNXT:
         self.ie_write_weights(self.handle, weight, weight.size, node)
 
     def Run_function(self, image, result):
-        rc = self.test_functions(self.handle, image, image.size, result, result.size)
+        imgs, sizes = self.params(images)
+        rc = self.test_functions(self.handle, imgs, sizes, result, result.size)
         if rc != 0:
             raise Exception(rc)

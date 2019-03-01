@@ -125,7 +125,7 @@ int main(int argc, char **argv)
     }
     while ( (de = readdir(dir)) )
     {
-        char path[256];
+        char path[257];
         if (de->d_type != DT_REG)
             continue;
         sprintf(path, "%s/%s", imagesdir, de->d_name);
@@ -152,7 +152,8 @@ int main(int argc, char **argv)
         batchidx++;
         if(batchidx == nclus * nfpga)
         {
-            int err = ie_putinput(sf_handle, info->input, netwidth * netheight * 3 * nclus * nfpga, info);
+            uint64_t inputsize = netwidth * netheight * 3 * nclus * nfpga;
+            int err = ie_putinput(sf_handle, (const float * const *)&info->input, &inputsize, info);
             if(err==-1)
             {
                 fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
@@ -164,7 +165,8 @@ int main(int argc, char **argv)
     if(batchidx)
     {
         // Process what left
-        int err = ie_putinput(sf_handle, info->input, netwidth * netheight * 3 * nclus * nfpga, info);
+        uint64_t inputsize = netwidth * netheight * 3 * nclus * nfpga;
+        int err = ie_putinput(sf_handle, (const float * const *)&info->input, &inputsize, info);
         if(err==-1)
         {
             fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
