@@ -54,30 +54,35 @@ then
 		fi
 	 	cp libfwdnxt.so /usr/local/lib
 		yum install unzip
-		yum install yum-utils
-		yum-builddep python
-		echo "Installing Python3 from source"
-		cd /tmp
-		curl -LO https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tar.xz
-		tar xf Python-3.6.5.tar.xz
-		cd Python-3.6.5
-		./configure
-		make
-		make install
-		echo "Installing protobuf from source"
-		cd /tmp
-		curl -LO https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
-		tar xf protobuf-all-3.6.1.tar.gz
-		cd protobuf-3.6.1
-		./configure
-		make
-		make install
-		ldconfig
+		if ! [ -x "$(command -v python3)" ]; then
+			echo "Installing Python3 from source"
+			yum install yum-utils
+			yum-builddep python
+			cd /tmp
+			curl -LO https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tar.xz
+			tar xf Python-3.6.5.tar.xz
+			cd Python-3.6.5
+			./configure
+			make
+			make install
+		fi
+		if ! [ -x "$(command -v protoc)" ]; then
+			echo "Installing protobuf from source"
+			cd /tmp
+			curl -LO https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
+			tar xf protobuf-all-3.6.1.tar.gz
+			cd protobuf-3.6.1
+			./configure
+			make
+			make install
+			ldconfig
+		fi
 		echo "Installing thnets from source"
 		cd /tmp
 		curl -LO https://github.com/mvitez/thnets/archive/master.zip
 		unzip master.zip
 		cd thnets-master
+		make clean
 		make ONNX=1
 		make install
 		ldconfig
