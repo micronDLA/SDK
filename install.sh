@@ -26,12 +26,6 @@ then
 			make -j4
 			make install
 		fi
-		echo "Installing thnets from source"
-		cd /tmp
-		git clone https://github.com/mvitez/thnets
-		cd thnets
-		make ONNX=1
-		make install
 		ldconfig
 		echo 'Installation finished'
 	fi
@@ -77,14 +71,6 @@ then
 			make install
 			ldconfig
 		fi
-		echo "Installing thnets from source"
-		cd /tmp
-		curl -LO https://github.com/mvitez/thnets/archive/master.zip
-		unzip master.zip
-		cd thnets-master
-		make clean
-		make ONNX=1
-		make install
 		ldconfig
 		echo 'Installation finished'
 	fi
