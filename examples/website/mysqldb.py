@@ -38,6 +38,18 @@ def save_to_db(file, data):
 
 	return True
 
+def search_db_string(s):
+	t = ('%'+s+'%',)
+	# open db:
+	conn = sqlite3.connect(table_name)
+	c = conn.cursor()
+	c.execute('SELECT * FROM processed_images WHERE data like ?', t)
+	# print('\n\nSearch results:')
+	results = c.fetchall()
+	# close db:
+	conn.close()
+	return results
+
 
 if __name__ == '__main__':
 
@@ -55,10 +67,8 @@ if __name__ == '__main__':
 		print(row)
 
 	# example search db:
-	t = ("%bloodhound%",)
-	c.execute('SELECT * FROM processed_images WHERE data like ?', t)
-	print('\n\nSearch results:')
-	print(c.fetchall())
+	results = search_db_string('bloodhound')
+	print(results)
 
 	# close db:
 	conn.close()
