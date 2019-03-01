@@ -10,7 +10,8 @@
 import os, sys
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
-from ieproc import ieprocess
+from ieproc import ieprocess # process with Inference Engine
+# from thnetsproc import thprocess # process with thnets (PCU, GPU)
 from mysqldb import save_to_db
 
 UPLOAD_FOLDER = 'uploads'
@@ -57,7 +58,8 @@ def upload_file():
 			# get user-selected neural network file:
 			network_file = request.form.get('comp_select')
 			# process on FWDNXT inference engine:
-			rstring = ieprocess(filepath, network_file)
+			rstring = ieprocess(filepath, network_file) # process with Inference Engine
+# 			rstring = thprocess(filepath, network_file) # process with thnets (CPU,GPU)
 			print('Processed image results:', rstring)
 			# save to database image and results:
 			save_to_db(filepath, rstring)
