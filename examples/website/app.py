@@ -4,16 +4,11 @@
 # tiny web server demo
 # input an image and process with FWDNXT Inference Engine
 
-# from: http://flask.pocoo.org/docs/1.0/patterns/fileuploads/
-# https://stackoverflow.com/questions/32019733/getting-value-from-select-tag-using-flask
-
 import os, sys
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
-from mysqldb import save_to_db, search_db_string
 from ieproc import ieprocess # process with Inference Engine
 # from thnetsproc import thprocess # process with thnets (PCU, GPU)
-from mysqldb import save_to_db
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -62,8 +57,6 @@ def upload_file():
 			rstring = ieprocess(filepath, network_file) # process with Inference Engine
 # 			rstring = thprocess(filepath, network_file) # process with thnets (CPU,GPU)
 			print('Processed image results:', rstring)
-			# save to database image and results:
-			save_to_db(filepath, rstring)
 
 			return render_template('index.html', #net_list = net_list, 
 				user_image = filepath, results=rstring)
@@ -76,22 +69,6 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
-@app.route('/search', methods=['GET', 'POST'])
-def display_results():
-    if request.method == 'POST':
-        # input string to search:
-        str_to_match = request.form['text']
-        # str_to_match = 'bloodhound'
-        # search db with string and output result:
-        ret = search_db_string(str_to_match)
-        results=[]
-        for i in ret:
-            results.append(os.path.join(app.config['UPLOAD_FOLDER'],i[1])) # append filenames
-
-        return render_template('search.html', string_to_search=str_to_match,
-            results = results)
-    else:
-        return render_template('search.html')
         
 
 if __name__ == '__main__':
