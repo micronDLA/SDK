@@ -4,6 +4,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/*!
+create a context object
+*/
+void *ie_create();
+
 /*!
 compile a network and produce .bin file with everything that is needed to execute
 initialize inference engine: parse, create memory map, partition workload and generate code
@@ -18,8 +24,8 @@ return:
     swoutsize: output size of model for batch 1
     cmem: fpga instance
 */
-void *ie_compile(const char *image, const char *modeldir, const char* outbin,
-                     uint64_t *swoutsize, int numcard, int numclus, int nlayers);
+void *ie_compile(void *cmemo, const char *image, const char *modeldir, const char* outbin,
+                     uint64_t *swoutsize, int *noutputs, int numcard, int numclus, int nlayers);
 
 /*!
 initialization routines for FWDNXT inference engine:
@@ -32,7 +38,7 @@ args:
 return:
     (void*) context obj
 */
-void *ie_init(void *cmemo, const char* fbitfile, const char* inbin, uint64_t* outsize);
+void *ie_init(void *cmemo, const char* fbitfile, const char* inbin, uint64_t* outsize, int *noutputs);
 
 /*!
 Run inference engine
@@ -46,7 +52,7 @@ args:
 return:
     -1 (error), 0 (pass)
 */
-int ie_run(void *cmemo, const float * const *input, const uint64_t *input_elements, float *output, uint64_t output_elements);
+int ie_run(void *cmemo, const float * const *input, const uint64_t *input_elements, float **output, uint64_t *output_elements);
 
 /*!
 Put an input into shared memory and start FWDNXT hardware
@@ -68,7 +74,7 @@ args:
 return:
     -1 (error), 0 (pass)
 */
-int ie_getresult(void *cmemo, float *output, uint64_t output_elements, void **userparam);
+int ie_getresult(void *cmemo, float **output, uint64_t *output_elements, void **userparam);
 
 /*!
 Set flags for the compiler
@@ -78,7 +84,7 @@ args:
 return:
     -1 (error), 0 (pass)
 */
-int ie_setflag(const char *name, const char *value);
+int ie_setflag(void *cmemo, const char *name, const char *value);
 
 /*!
 Get various info about the inference engine
@@ -102,7 +108,7 @@ args:
 return:
     -1 (error), 0 (pass)
 */
-int ie_run_sim(void *cmemo, const float * const *input, const uint64_t *input_elements, float *output, uint64_t output_elements);
+int ie_run_sim(void *cmemo, const float * const *input, const uint64_t *input_elements, float **output, uint64_t *output_elements);
 
 /*!
 Run model with thnets
@@ -115,7 +121,7 @@ args:
 return:
     -1 (error), 0 (pass)
 */
-int thnets_run_sim(void *cmemo, const float * const *input, const unsigned *input_elements, float *output, unsigned output_elements);
+int thnets_run_sim(void *cmemo, const float * const *input, const unsigned *input_elements, float **output, unsigned *output_elements);
 
 /*!
 Free FPGA instance
@@ -149,6 +155,15 @@ void ie_write_data(void *cmemo, uint64_t address, const void *data, uint64_t nel
 
 void ie_write_weights(void *cmemo, float *weight, int wsize, int nid);
 int test_functions(void *cmemo, const float * const *input, const unsigned *input_elements, float *output, unsigned output_elements);
+
+/*!
+just load multiple bin files without initializing hardware
+args:
+    inbins: array of bin filenames
+    count: number of bin files
+returns a context obj to pass to ie_init
+*/
+void *ie_loadmulti(void *cmemo, const char * const *inbins, unsigned count);
 
 #ifdef __cplusplus
 }

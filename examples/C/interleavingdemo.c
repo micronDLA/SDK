@@ -102,7 +102,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize);
+    int noutputs;
+    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs);
 
     categories = (char **)calloc(outsize, sizeof(char *));
     FILE *fp = fopen(categ, "r");
@@ -181,7 +182,7 @@ void getresult()
 {
     struct info *info;
     int i;
-    int err = ie_getresult(sf_handle, output, outsize, (void **)&info);
+    int err = ie_getresult(sf_handle, &output, &outsize, (void **)&info);
     if(err==-1)
     {
         fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");

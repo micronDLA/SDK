@@ -101,7 +101,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize);
+    int noutputs;
+    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs);
     pthread_create(&tid, 0, getresults_thread, 0);
     DIR *dir = opendir(imagesdir);
     if (!dir)
@@ -155,7 +156,7 @@ int main(int argc, char **argv)
 void *getresults_thread(void *dummy)
 {
     int i;
-    int output_elements = outsize;
+    uint64_t output_elements = outsize;
     char **categories = (char **)calloc(output_elements, sizeof(char *));
     FILE *fp = fopen(categ, "r");
     if(fp)
@@ -175,7 +176,7 @@ void *getresults_thread(void *dummy)
     for (;;)
     {
         struct info *info;
-        int err = ie_getresult(sf_handle, output, output_elements, (void **)&info);
+        int err = ie_getresult(sf_handle, &output, &output_elements, (void **)&info);
         if(err==-1)
         {
             fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");

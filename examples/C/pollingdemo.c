@@ -102,9 +102,10 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize);
+    int noutputs;
+    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs);
     // Disable blockingmode, API will return -99 instead of waiting
-    ie_setflag("blockingmode", "0");
+    ie_setflag(sf_handle, "blockingmode", "0");
 
     categories = (char **)calloc(outsize, sizeof(char *));
     FILE *fp = fopen(categ, "r");
@@ -195,7 +196,7 @@ int getresult()
 {
     struct info *info;
     int i;
-    int err = ie_getresult(sf_handle, output, outsize, (void **)&info);
+    int err = ie_getresult(sf_handle, &output, &outsize, (void **)&info);
     if(err==-1)
     {
         fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
