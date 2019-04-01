@@ -55,9 +55,6 @@ class FWDNXT:
         self.thnets_run_sim = f.thnets_run_sim
         self.thnets_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_bool]
 
-        self.test_functions = f.test_functions
-        self.test_functions.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), ndpointer(c_float, flags="C_CONTIGUOUS"), c_uint]
-
     def Loadmulti(self, bins):
         b = (c_char_p * len(bins))()
         for i in range(len(bins)):

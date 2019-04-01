@@ -154,7 +154,6 @@ void ie_write_data(void *cmemo, uint64_t address, const void *data, uint64_t nel
 
 
 void ie_write_weights(void *cmemo, float *weight, int wsize, int nid);
-int test_functions(void *cmemo, const float * const *input, const unsigned *input_elements, float *output, unsigned output_elements);
 
 /*!
 just load multiple bin files without initializing hardware
