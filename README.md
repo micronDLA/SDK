@@ -418,6 +418,8 @@ Non-blocking means that GetResult will return immediately: with or without the r
 
 These two functions are important in a streaming application. The programmer can overlap the time for these 2 tasks: input loading and getting results.
 
+<img src="docs/pics/Double Buffer Illustration.jpg" width="900" height="240"/>
+
 Examples to use PutInput and GetOutput are located in [examples/python/](examples/python/).
 
 * pollingdemo.py : is an example of non-blocking mode. The program will poll GetResult until it returns the output.
