@@ -115,7 +115,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize);
+    int noutputs;
+    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs);
     pthread_create(&tid, 0, getresults_thread, 0);
     dir = opendir(imagesdir);
     if (!dir)
@@ -125,7 +126,7 @@ int main(int argc, char **argv)
     }
     while ( (de = readdir(dir)) )
     {
-        char path[256];
+        char path[257];
         if (de->d_type != DT_REG)
             continue;
         sprintf(path, "%s/%s", imagesdir, de->d_name);
@@ -152,7 +153,8 @@ int main(int argc, char **argv)
         batchidx++;
         if(batchidx == nclus * nfpga)
         {
-            int err = ie_putinput(sf_handle, info->input, netwidth * netheight * 3 * nclus * nfpga, info);
+            uint64_t inputsize = netwidth * netheight * 3 * nclus * nfpga;
+            int err = ie_putinput(sf_handle, (const float * const *)&info->input, &inputsize, info);
             if(err==-1)
             {
                 fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
@@ -164,7 +166,8 @@ int main(int argc, char **argv)
     if(batchidx)
     {
         // Process what left
-        int err = ie_putinput(sf_handle, info->input, netwidth * netheight * 3 * nclus * nfpga, info);
+        uint64_t inputsize = netwidth * netheight * 3 * nclus * nfpga;
+        int err = ie_putinput(sf_handle, (const float * const *)&info->input, &inputsize, info);
         if(err==-1)
         {
             fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
@@ -203,7 +206,8 @@ void *getresults_thread(void *dummy)
     for (;;)
     {
         struct info *info;
-        int err = ie_getresult(sf_handle, output, outsize * nclus * nfpga, (void **)&info);
+        uint64_t totoutsize = outsize * nclus * nfpga;
+        int err = ie_getresult(sf_handle, &output, &totoutsize, (void **)&info);
         if(err==-1)
         {
             fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");

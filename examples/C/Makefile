@@ -1,4 +1,4 @@
-all: simpledemo threadeddemo threadedbatchdemo pollingdemo interleavingdemo compile
+all: simpledemo threadeddemo threadedbatchdemo pollingdemo interleavingdemo twonetdemo compile
 
 compile: compile.c
 	$(CC) -o $@ $< -lm -lfwdnxt
@@ -18,6 +18,9 @@ pollingdemo: pollingdemo.c
 interleavingdemo: interleavingdemo.c
 	$(CC) -o $@ $< -lm -lfwdnxt
 
+twonetdemo: twonetdemo.c
+	$(CC) -o $@ $< $(CFLAGS) -lm -lfwdnxt
+
 clean:
-	rm -rf compile simpledemo threadeddemo threadedbatchdemo pollingdemo interleavingdemo
+	rm -rf compile simpledemo threadeddemo threadedbatchdemo pollingdemo interleavingdemo twonetdemo
 

@@ -11,9 +11,8 @@ Run FWDNXT inference engine instructions
 
 static void print_help()
 {
-    printf("Syntax: simpledemo\n");
-    printf("\t-i <image file>\n");
-    printf("\t-c <categories file>\n\t-b <bitfile>\n\t-s <fwdnxt.bin file>\n");
+    printf("Syntax: twonetdemo <bin1> <bin2> <image1> <image2>\n");
+    printf("\t-c <categories file>\n\t-b <bitfile>\n");
     printf("\t-f <number of FPGAs to use>\n\t-C <number of clusters>\n");
 }
 
@@ -46,31 +45,30 @@ int sortcmp(const void *a, const void *b)
 
 int main(int argc, char **argv)
 {
-    const char *image = "./dog224.jpg";//input image
+    const char *image[2] = {0,0};
     const char *categ = "./categories.txt";//categories list
     const char *f_bitfile = "";//FGPA bitfile with FWDNXT inference engine
-    const char *outbin = "save.bin";//file with fwdnxt inference engine instructions
+    const char *binfile[2];
     int nfpga = 1;
     int nclus = 1;
-    int i;
+    int i, n = 0;
 
     //program arguments ------------------------
     for(i = 1; i < argc; i++) {
         if(argv[i][0] != '-')
+        {
+            if(n < 2)
+                binfile[n] = argv[i];
+            else if (n < 4)
+                image[n-2] = argv[i];
+            n++;
             continue;
+        }
         switch(argv[i][1])
         {
-        case 'b': // bitfile
-            if(i+1 < argc)
-                f_bitfile = argv[++i];
-            break;
         case 'f':// number of fpgas
             if(i+1 < argc)
                 nfpga = atoi(argv[++i]);
-            break;
-        case 'i':// image
-            if(i+1 < argc)
-                image = argv[++i];
             break;
         case 'C':// number clusters
             if(i+1 < argc)
@@ -80,70 +78,66 @@ int main(int argc, char **argv)
             if(i+1 < argc)
                 categ = argv[++i];
             break;
-        case 's':// output file
-            if(i+1 < argc)
-                outbin = argv[++i];
-            break;
         default:
             print_help();
             return -1;
         }
     }
-    if(argc==1)
+    if(n < 4)
     {
         print_help();
         return -1;
     }
 // initialize FPGA: load hardware and load instructions into memory
     printf("Initialize FWDNXT inference engine FPGA\n");
-    uint64_t outsize = 0;//number of output values produced
+    uint64_t outsize[2];//number of output values produced
+    void *sf_handle = ie_loadmulti(0, binfile, 2);
     int noutputs;
-    void* sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs);
-    float *input = NULL;
-    uint64_t input_elements = 0;
+    ie_init(sf_handle, f_bitfile, 0, outsize, &noutputs);
+    float *input[2] = {NULL, NULL};
+    uint64_t input_elements[2] = {0,0};
 //fetch input image
-    if(image)
+    for(n = 0; n < 2; n++)
     {
         float mean[3] = {0.485, 0.456, 0.406};
         float std[3] = {0.229, 0.224, 0.225};
         int width, height, cp;
-        unsigned char *bitmap = (unsigned char *)stbi_load(image, &width, &height, &cp, 0);
+        unsigned char *bitmap = (unsigned char *)stbi_load(image[n], &width, &height, &cp, 0);
         if(!bitmap)
         {
-            printf("The image %s could not be loaded\n", image);
+            printf("The image %s could not be loaded\n", image[n]);
             return -1;
         }
-        input = (float *)malloc(sizeof(float) * cp * width * height);
-        rgb2float_cmajor(input, bitmap, width, height, cp, width * cp, mean, std);
-        input_elements = width * height * cp;
+        input[n] = (float *)malloc(sizeof(float) * cp * width * height * 2);
+        rgb2float_cmajor(input[n], bitmap, width, height, cp, width * cp, mean, std);
+        input_elements[n] = width * height * cp * nfpga * nclus;
         free(bitmap);
     }
-    else{
-        fprintf(stderr, "Image is NULL\n");
-        exit(1);
-    }
-    input_elements *= nfpga*nclus;
-    uint64_t output_elements = outsize * nfpga*nclus;
-    float *output = (float*) malloc(output_elements*sizeof(float));//allocate memory to hold output
+    uint64_t output_elements[2] = {outsize[0] * nfpga * nclus, outsize[1] * nfpga * nclus};
+    float *output[2];
+    output[0] = (float*) malloc(output_elements[0]*sizeof(float));//allocate memory to hold output
+    output[1] = (float*) malloc(output_elements[1]*sizeof(float));//allocate memory to hold output
     int err = 0;
 // run inference
     printf("Run FWDNXT inference engine\n");
-    err = ie_run(sf_handle, (const float * const *)&input, &input_elements, &output, &output_elements);
+    err = ie_run(sf_handle, (const float * const *)input, input_elements, output, output_elements);
     if(err==-1)
     {
         fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
         return -1;
     }
-    if(input)
-        free(input);
+    if(input[0])
+        free(input[0]);
+    if(input[1])
+        free(input[1]);
 //read categories list
     FILE *fp = fopen(categ, "r");
-    char **categories = (char **)calloc(output_elements, sizeof(char *));
+    char **categories = (char **)calloc(output_elements[0], sizeof(char *));
     if(fp)
     {
         char line[300];
         int i = 0;
-        while (i < output_elements && fgets(line, sizeof(line), fp))
+        while (i < output_elements[0] && fgets(line, sizeof(line), fp))
         {
             char *p = strchr(line, '\n');
             if(p)
@@ -154,22 +148,28 @@ int main(int argc, char **argv)
     }
 //print out the results
     printf("-------------- Results --------------\n");
-    int* idxs = (int *)malloc(sizeof(int) * output_elements);
-    for(i = 0; i < output_elements; i++)
-        idxs[i] = i;
-    sortdata = output;
-    qsort(idxs, outsize, sizeof(int), sortcmp);
-    for(i = 0; i < 5; i++)
-        printf("%s (%d) -- %.4f\n", categories[idxs[i]] ? categories[idxs[i]] : "", idxs[i], output[idxs[i]]);
-//free allocated memory
-    free(idxs);
-    for(i = 0; i < output_elements; i++)
+    for(int n = 0; n < 2; n++)
+    {
+        printf("%s\n", binfile[n]);
+        int* idxs = (int *)malloc(sizeof(int) * output_elements[n]);
+        for(i = 0; i < output_elements[n]; i++)
+            idxs[i] = i;
+        sortdata = output[n];
+        qsort(idxs, output_elements[n], sizeof(int), sortcmp);
+        for(i = 0; i < 5; i++)
+            printf("%s (%d) -- %.4f\n", categories[idxs[i]] ? categories[idxs[i]] : "", idxs[i], output[n][idxs[i]]);
+    //free allocated memory
+        free(idxs);
+    }
+    for(i = 0; i < output_elements[0]; i++)
         if(categories[i])
             free(categories[i]);
     free(categories);
     ie_free(sf_handle);
-    if(output)
-        free(output);
+    if(output[0])
+        free(output[0]);
+    if(output[1])
+        free(output[1]);
     printf("\ndone\n");
     return 0;
 }
