@@ -554,7 +554,7 @@ A: They can be found as tarred checkpoint files at
 
 Q: Issue: Can't find FPGA card
 
-A: Make sure the picocomputing-6.0.0.21 release is installed properly. Please run the following commands. It should print the following outputs.
+A: Make sure the picocomputing-6.1.0.17 release is installed properly. Please run the following commands. It should print the following outputs.
 ```
 lspci | grep -i pico
     05:00.0 Memory controller: Pico Computing Device 0045 (rev 05)
@@ -610,36 +610,12 @@ pico:init_jtag(): Initializing JTAG: Module (0x510) (backplane ID: 0x700)
 
 Q: Can I run my own model?
 
-A: yes, all models that are derivatives of the onles listed in the Supported Networks section can be modified and will run, within the limitations of the system.
-
-Q: How can I create my own demonstration applications?
-
-A: Just modify our example in the Demo section and you will be running in no time!
+A: yes, all models that are derivatives of the ones listed in the Supported Networks section. It can be modified within the limitations of the system.
 
 Q: How will developers be able to develop on your platform?
 
 A: They will need to provide a neural network model only. No need to write any special code. FWDNXT will update the software periodically based on users and market needs.
 
-Q:Will using FWDNXT inference engine require FPGA expertise? How much do I really have to know?
-
-A: Nothing at all, it will be all transparent to users, just like using a GPU.
-
-Q: How can I migrate my CUDA-based designs into FWDNXT inference engine?
-
-A: FWDNXT inference engine offer its own optimized compiler, and you only need to specify trained model file
-
 Q: What tools will I need at minimum?
 
 A: FWDNXT inference engine on an FPGA and FWDNXT SDK tools
-
-Q: What if my designs are in OpenCL or one of the FPGA vendor's tools?
-
-A: FWDNXT inference engine will soon be available in OpenCL drivers
-
-Q: Why should people want to develop on the FWDNXT inference engine platform?
-
-A: Best performance per power and scalability, plus our hardware has a small form factor that can scale from single small module to high-performance systems
-
-Q: How important is scalability? How does that manifest in terms of performance?
-
-A: it is important when the application needs scale, or are not defined. Scalability allows the same application to run faster or in more devices with little or no work.
