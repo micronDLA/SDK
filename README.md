@@ -67,7 +67,7 @@ Tested on:
 
 ## Software requirements
 - GCC 4.9 or higher
-- [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
+- [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): Currently version: pico-computing-6.1.0.17. Please verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
 - Python 3 together with numpy
 - [Thnets](https://github.com/mvitez/thnets/)
 
