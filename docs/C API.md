@@ -1,16 +1,12 @@
 # C API
 
-The [C functions](https://github.com/FWDNXT/SDK/blob/master/sdk/api.h) for the Inference Engine are:
+The [C functions](https://github.com/FWDNXT/SDK/blob/master/api.h) for the Inference Engine are:
 
 ## ie_compile
 
 Parse an ONNX model and generates Inference Engine instructions.
 
 ***Parameters:***
-
-`const char *test`:  select a test. For testing, do not use.
-
-`const char *param`: select a parameters of the test. For testing, do not use. 
 
 `const char *image`: it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up FWDNXT inference engine's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".    
 
