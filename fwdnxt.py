@@ -55,6 +55,8 @@ class FWDNXT:
         self.thnets_run_sim = f.thnets_run_sim
         self.thnets_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_bool]
 
+    #loads a different model binary file
+    # bins: model binary file path
     def Loadmulti(self, bins):
         b = (c_char_p * len(bins))()
         for i in range(len(bins)):
@@ -62,11 +64,22 @@ class FWDNXT:
         self.ie_loadmulti(self.handle, b, len(bins))
 
     #compile a network and produce .bin file with everything that is needed to execute
+    # image: it is a string with the image path or the image dimensions.
+    #        If it is a image path then the size of the image will be used to set up FWDNXT hardware's code.
+    #        If it is not an image path then it needs to specify the size in the following format:
+    #        Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+    # modeldir: path to a model file in ONNX format.
+    # outfile: path to a file where a model in FWDNXT ready format will be saved.
+    # numcard: number of FPGA cards to use.
+    # numclus: number of clusters to be used.
+    # nlayers: number of layers to run in the model. Use -1 if you want to run the entire model.
+    # Return:
+    #   Number of results to be returned by the network
     def Compile(self, image, modeldir, outfile, numcard = 1, numclus = 1, nlayers = -1):
         self.swoutsize = (c_ulonglong * 16)()
         self.noutputs = c_int()
         self.ie_compile(self.handle, bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
-            bytes(outfile, 'ascii'), self.swoutsize, byref(self.noutputs), numcard, numclus, nlayers, False)
+            bytes(outfile, 'ascii'), self.swoutsize, byref(self.noutputs), numcard, numclus, nlayers)
         if self.noutputs.value == 1:
                 return self.swoutsize[0]
         ret = ()
@@ -75,6 +88,8 @@ class FWDNXT:
         return ret
 
     #initialization routines for FWDNXT inference engine
+    # infile: model binary file path
+    # bitfile: FPGA bitfile to be loaded
     def Init(self, infile, bitfile):
         self.outsize = (c_ulonglong * 16)()
         self.noutputs = c_int()
@@ -92,12 +107,38 @@ class FWDNXT:
         self.handle = c_void_p()
 
     #Set flags for the compiler
+    # name: string with the flag name
+    # value: to be assigned to the flag
+    #Currently available flags are:
+    # nobatch: can be 0 or 1, default is 0. 1 will spread the input to multiple clusters. Example: if nobatch is 1
+    #       and numclus is 2, one image is processed using 2 clusters. If nobatch is 0 and numclus is 2, then it will
+    #       process 2 images. Do not set nobatch to 1 when using one cluster (numclus=1).
+    # hwlinear: can be 0 or 1, default is 0. 1 will enable the linear layer in hardware.
+    #       This will increase performance, but reduce precision.
+    # convalgo: can be 0, 1 or 2, default is 0. 1 and 2 will run loop optimization on the model.
+    # paddingalgo: can be 0 or 1, default is 0. 1 will run padding optimization on the convolution layers.
+    # blockingmode: default is 1. 1 ie_getresult will wait for hardware to finish.
+    #       0 will return immediately if hardware did not finish.
+    # max_instr: set a bound for the maximum number of FWDNXT inference engine instructions to be generated.
+    #       If this option is set, then instructions will be placed before data. Note: If the amount of data
+    #       (input, output and weights) stored in memory exceeds 4GB, then this option must be set.
+    # debug: default 'w', which prints only warnings. An empty string will remove those warnings.
+    #       'b' will add some basic information.
     def SetFlag(self, name, value):
         rc = self.ie_setflag(self.handle, bytes(name, 'ascii'), bytes(value, 'ascii'))
         if rc != 0:
             raise Exception(rc)
 
     #Get various info about the inference engine
+    # name: string with the info name that is going to be returned
+    #Currently available values are:
+    # hwtime: float value of the processing time in FWDNXT inference engine only
+    # numcluster: int value of the number of clusters to be used
+    # numfpga: int value of the number of FPGAs to be used
+    # numbatch: int value of the number of batch to be processed
+    # freq: int value of the FWDNXT inference engine's frequency
+    # maxcluster: int value of the maximum number of clusters in FWDNXT inference engine
+    # maxfpga: int value of the maximum number of FPGAs available
     def GetInfo(self, name):
         if name == 'hwtime':
             return_val = c_float()
@@ -122,6 +163,9 @@ class FWDNXT:
 
 
     #Run inference engine. It does the steps sequentially. putInput, compute, getResult
+    # image: input to the model as a numpy array of type float32
+    #Returns:
+    # result: model's output tensor as a preallocated numpy array of type float32
     def Run(self, images, result):
         imgs, sizes = self.params(images)
         r, rs = self.params(result)
@@ -130,6 +174,10 @@ class FWDNXT:
             raise Exception(rc)
 
     #Put an input into shared memory and start FWDNXT hardware
+    # image: input to the model as a numpy array of type float32
+    # userobj: user defined object to keep track of the given input
+    #Return:
+    # Error or no error.
     def PutInput(self, images, userobj):
         userobj = py_object(userobj)
         key = c_long(addressof(userobj))
@@ -146,6 +194,8 @@ class FWDNXT:
         return True
 
     #Get an output from shared memory. If opt_blocking was set then it will wait FWDNXT hardware
+    #Return:
+    # result: model's output tensor as a preallocated numpy array of type float32
     def GetResult(self, result):
         userobj = c_long()
         r, rs = self.params(result)
@@ -159,6 +209,9 @@ class FWDNXT:
         return retuserobj.value
 
     #Run software inference engine emulator
+    # image: input to the model as a numpy array of type float32
+    #Return:
+    # result: models output tensor as a preallocated numpy array of type float32
     def Run_sw(self, images, result):
         imgs, sizes = self.params(images)
         r, rs = self.params(result)
@@ -167,6 +220,9 @@ class FWDNXT:
             raise Exception(rc)
 
     #Run model with thnets
+    # image: input to the model as a numpy array of type float32
+    #Return:
+    # result: models output tensor as a preallocated numpy array of type float32
     def Run_th(self, image, result):
         imgs, sizes = self.params(images)
         r, rs = self.params(result)
@@ -182,11 +238,9 @@ class FWDNXT:
     def WriteData(self, addr, data, card):
         self.ie_write_data(self.handle, addr, data, data.size*sizeof(c_float), card)
 
+    #write weights to an address in shared memory
+    # weight: weights as a contiguous array
+    # node: id to the layer that weights are being overwritten
     def WriteWeights(self, weight, node):
         self.ie_write_weights(self.handle, weight, weight.size, node)
 
-    def Run_function(self, image, result):
-        imgs, sizes = self.params(images)
-        rc = self.test_functions(self.handle, imgs, sizes, result, result.size)
-        if rc != 0:
-            raise Exception(rc)

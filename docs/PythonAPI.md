@@ -48,8 +48,9 @@ Set some flags that change the behaviour of the API.
 
 ***Parameters:***
 
-**Name** as a numpy string
-**Value** as a numpy string
+**Name** name of the flag to be set
+
+**Value** value to set the flag as a numpy string
 
 Currently available flags are:
 
@@ -73,9 +74,9 @@ Gets information of the SDK options.
 
 ***Parameters:***
 
-**Name** as a numpy string
+**Name** info name to be returned
 
-Currently available values are:
+Currently available names are:
 
 **hwtime**, float value of the processing time in FWDNXT inference engine only
 
@@ -97,9 +98,9 @@ Runs a single inference on FWDNXT inference engine.
 
 ***Parameters:***
 
-**Image** as a numpy array of type float32
+**Image** input data as a numpy array of type float32
 
-**Result** as a preallocated numpy array of type float32
+**Result** output tensor of the model as a preallocated numpy array of type float32
 
 ## Run\_sw
 
@@ -107,9 +108,9 @@ Runs a single inference on the FWDNXT inference engine simulator.
 
 ***Parameters:***
 
-**Image** as a numpy array of type float32
+**Image** input data as a numpy array of type float32
 
-**Result** as a preallocated numpy array of type float32
+**Result** output tensor of the model as a preallocated numpy array of type float32
 
 ## Run\_th
 
@@ -117,9 +118,9 @@ Runs a single inference using thnets.
 
 ***Parameters:***
 
-**Image** as a numpy array of type float32
+**Image** input data as a numpy array of type float32
 
-**Result** as a preallocated numpy array of type float32
+**Result** output tensor of the model as a preallocated numpy array of type float32
 
 
 ## PutInput
@@ -128,7 +129,7 @@ Put an input into a buffer and start FWDNXT hardware
 
 ***Parameters:***
 
-**Image** as a numpy array of type float32
+**Image** input data as a numpy array of type float32
 
 **userobj** user defined object to keep track of the given input
 
@@ -140,6 +141,6 @@ Get an output from a buffer. If opt_blocking was set then it will wait FWDNXT ha
 
 ***Parameters:***
 
-**Result** as a preallocated numpy array of type float32
+**Result** output tensor of the model as a preallocated numpy array of type float32
 
 **Return value:**: recover the parameters set for a previously given input
