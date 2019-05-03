@@ -109,3 +109,4 @@ while nimages > 0:
         sleep(0.001)
 #Free
 ie.Free()
+print('done')

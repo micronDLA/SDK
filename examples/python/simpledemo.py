@@ -69,3 +69,4 @@ else:
 
 #Free
 ie.Free()
+print('done')

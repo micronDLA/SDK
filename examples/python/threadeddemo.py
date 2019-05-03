@@ -100,3 +100,4 @@ ie.PutInput(None, None)
 thread.join()
 #Free
 ie.Free()
+print('done')

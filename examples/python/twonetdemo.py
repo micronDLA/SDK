@@ -80,3 +80,4 @@ for n in range(2):
 
 #Free
 ie.Free()
+print('done')

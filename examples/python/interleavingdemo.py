@@ -97,3 +97,4 @@ if nimages > 0:
 
 #Free
 ie.Free()
+print('done')
