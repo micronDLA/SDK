@@ -13,11 +13,11 @@ then
 		apt-get -y install python3-pip
 		pip3 install --upgrade numpy
 		# Protobuf
-		if hash protoc 2>/dev/null
-		then
-			echo "protobuf compiler is installed, skipping protobuf installation"
+		ldconfig -p | grep libprotobuf.so.17 >/dev/null
+		if [ $? -eq 0 ]; then
+			echo "protobuf is installed, skipping protobuf installation"
 		else
-		        echo "Installing protobuf from source"
+		        echo "Installing protobuf 3.6.1 from source"
 			cd /tmp
 			wget https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
 			tar xf protobuf-all-3.6.1.tar.gz
@@ -60,8 +60,11 @@ then
 			make
 			make install
 		fi
-		if ! [ -x "$(command -v protoc)" ]; then
-			echo "Installing protobuf from source"
+		ldconfig -p | grep libprotobuf.so.17 >/dev/null
+		if [ $? -eq 0 ]; then
+			echo "protobuf is installed, skipping protobuf installation"
+		else
+			echo "Installing protobuf 3.6.1 from source"
 			cd /tmp
 			curl -LO https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
 			tar xf protobuf-all-3.6.1.tar.gz
