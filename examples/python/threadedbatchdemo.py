@@ -21,6 +21,7 @@ _('-c', '--categories', type=str, default='', help='Categories file')
 _('-l','--load', type=str, default='', help='Load bitfile')
 _('-f','--nfpgas', type=int, default=1, help='Number of FPGAs to use')
 _('-C','--nclusters', type=int, default=1, help='Number of clusters to use')
+_('-b','--batch', type=int, default=1, help='Number images per cluster')
 
 
 def GetResult():
@@ -81,16 +82,19 @@ yres = args.res[1]
 
 #Create and initialize the snowflow object
 ie = fwdnxt.FWDNXT()
+ie.SetFlag('imgs_per_cluster', str(args.batch))
 #ie.SetFlag('hwlinear','0')
 #ie.SetFlag('debug','bw')
 
 #Compile to a file
 swnresults = ie.Compile("{:d}x{:d}x{:d}".format(args.res[1], args.res[2], args.res[0]), args.modelpath, 'save.bin', args.nfpgas, args.nclusters)
 
+swnresults //= args.batch
+
 #Init fpga
 nresults = ie.Init('save.bin', args.load)
 
-batchsize = args.nfpgas * args.nclusters
+batchsize = args.nfpgas * args.nclusters * args.batch
 thread = threading.Thread(target = GetResult)
 thread.start()
 
@@ -101,14 +105,14 @@ for fn in os.listdir(args.imagesdir):
     try:
         img = LoadImage(args.imagesdir + '/' + fn)
         input[batchidx] = img
+        info[batchidx] = fn
+        batchidx += 1
+        if batchidx == batchsize:
+            ie.PutInput(input, info)
+            batchidx = 0
+            info = {}
     except:
         pass
-    info[batchidx] = fn
-    batchidx += 1
-    if batchidx == batchsize:
-        ie.PutInput(input, info)
-        batchidx = 0
-        info = {}
 
 if batchidx > 0:
     ie.PutInput(input, info)

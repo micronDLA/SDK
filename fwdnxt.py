@@ -183,7 +183,7 @@ class FWDNXT:
         key = c_long(addressof(userobj))
         self.userobjs[key.value] = userobj
         if images is None:
-            imgs, sizes = self.params(numpy.empty(0, dtype=numpy.float32))
+            imgs, sizes = None, None
         else:
             imgs, sizes = self.params(images)
         rc = self.ie_putinput(self.handle, imgs, sizes, key)
