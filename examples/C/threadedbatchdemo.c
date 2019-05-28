@@ -225,7 +225,7 @@ void *getresults_thread(void *dummy)
             sortdata = output + batchidx * outsize;
             qsort(idxs, outsize, sizeof(int), sortcmp);
             for(i = 0; i < 5; i++)
-                printf("%s (%d) -- %.4f\n", categories[idxs[i]] ? categories[idxs[i]] : "", idxs[i], output[idxs[i]]);
+                printf("%s (%d) -- %.4f\n", categories[idxs[i]] ? categories[idxs[i]] : "", idxs[i], output[batchidx * outsize + idxs[i]]);
             free(idxs);
             free(info->filename[batchidx]);
         }
