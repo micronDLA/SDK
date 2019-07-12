@@ -488,18 +488,13 @@ onnx.save(onnx_model, 'resnet50.onnx')
   * Concat 
   * Conv 
   * ConvTranspose 
-  * Flatten
-  * Gemm
   * GlobalAveragePool
   * LogSoftmax
   * MatMul 
-  * Max
   * MaxPool 
   * Relu 
-  * Reshape
   * Sigmoid
   * Softmax
-  * Split
   * Tanh
   * Transpose
   * Upsample
