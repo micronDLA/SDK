@@ -42,13 +42,13 @@ To register and download, please send a request to info@fwdnxt.com
   * [Tensorflow](#tensorflow)
   * [Caffe1](#caffe1)
   * [Keras](#keras)
-- [8. Supported models and layers](#10-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
+- [8. Supported models and layers](#8-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
   * [Tested models](#tested-models)
   * [TF-Slim models tested on FWDNXT inference engine](#tf-slim-models-tested-on-fwdnxt-inference-engine)
   * [ONNX model zoo](#onnx-model-zoo)
   * [Keras](#keras)
   * [CNTK](#cntk)
-- [9. Troubleshooting and Q&A](#11-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
+- [9. Troubleshooting and Q&A](#9-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
 
 
 Please report issues and bugs [here](https://github.com/FWDNXT/SDK/issues).
