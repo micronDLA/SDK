@@ -52,21 +52,8 @@ Set some flags that change the behaviour of the API.
 
 **Value** value to set the flag as a numpy string
 
-Currently available flags are:
+Currently available options are listed in [here](Codes.md)
 
-**nobatch**, can be 0 or 1, default is 0. 1 will spread the input to multiple clusters. Example: if nobatch is 1 and numclus is 2, one image is processed using 2 clusters. If nobatch is 0 and numclus is 2, then it will process 2 images. Do not set nobatch to 1 when using one cluster (numclus=1).
-
-**hwlinear**, can be 0 or 1, default is 0. 1 will enable the linear layer in hardware. This will increase performance, but reduce precision.
-
-**convalgo**, can be 0, 1 or 2, default is 0. 1 and 2 will run loop optimization on the model.
-
-**paddingalgo**, can be 0 or 1, default is 0. 1 will run padding optimization on the convolution layers.
-
-**blockingmode**, default is 1. 1 ie_getresult will wait for hardware to finish. 0 will return immediately if hardware did not finish.
-
-**max_instr**, set a bound for the maximum number of FWDNXT inference engine instructions to be generated. If this option is set, then instructions will be placed before data. Note: If the amount of data (input, output and weights) stored in memory exceeds 4GB, then this option must be set.
-
-**debug**, default w, which prints only warnings. An empty string will remove those warnings. bw will add some basic information.
 
 ## GetInfo
 
@@ -76,21 +63,7 @@ Gets information of the SDK options.
 
 **Name** info name to be returned
 
-Currently available names are:
-
-**hwtime**, float value of the processing time in FWDNXT inference engine only
-
-**numcluster**, int value of the number of clusters to be used
-
-**numfpga**, int value of the number of FPGAs to be used
-
-**numbatch**, int value of the number of batch to be processed
-
-**freq**, int value of the FWDNXT inference engine's frequency
-
-**maxcluster**, int value of the maximum number of clusters in FWDNXT inference engine
-
-**maxfpga**, int value of the maximum number of FPGAs available
+Currently available options are listed in [here](Codes.md)
 
 ## Run
 
