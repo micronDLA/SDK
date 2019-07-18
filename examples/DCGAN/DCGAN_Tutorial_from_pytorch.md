@@ -1,4 +1,4 @@
-# FWDNXT SDK
+# DCGAN Tutorial
 
 This tutorial uses contents from [Pytorch's DCGAN Tutorial](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html).
 

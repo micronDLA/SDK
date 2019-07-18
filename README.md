@@ -510,6 +510,8 @@ print('\x1b[32mMean/max error compared to pytorch are {:.3f}/{:.3f} %\x1b[0m'.fo
 ```
 The print output for us was:
 ```python
+CONV
+Mean/max error compared to pytorch are 1.636/9.055 %
 ```
 Since the input and weights are set random, the output might be different from this. In any case, error is not zero. The results between CPU and accelerator does not match. The precision used by the accelerator is fixed point 16bit ([Q8.8](https://en.wikipedia.org/wiki/Fixed-point_arithmetic)) and the CPU uses float32. Thus, a small error is an expected behaviour of the accelerator.
 The `Init` and `Run` function internally converts all the float32 values into the fix point format.
@@ -601,13 +603,48 @@ Then the output is rearranged back to the original data arrangement.
 
 For more details of all the debug options and compile options please refer to [Python API](docs/PythonAPI.md) and [C API](docs/C%20API.md).
 
+Note: `SetFlag('debug', 'w')` will enable warning prints. The warning prints are useful to check if the computation values are overflowing or not. Overflows happen when the result of the computation can't be represented using the fix-point (Q8.8) format.
+
+There are a few suggestions when designing a neural network that will avoid this case.
+Check that a batchnorm layer is present after each convolution and linear layer. Another suggestion is to use tanh or sigmoid instead of relu after the layers that have values overflowing.
+This will limit the output to -1 and 1 (tanh) or 0 and 1 (sigmoid).
+
 # 9. Running a model from your favorite deep learning framework
 
 FWDNXT Inference Engine supports all deep learning frameworks by running models in ONNX format. In order to convert a model from your favorite deep learning framework to ONNX format you should follow the instructions [here](https://github.com/onnx/tutorials). However there are some extra steps you should take with certain frameworks for the best compatibility with FWDNXT Inference Engine and we describe them below.
 
+There is a list of tutorials on how to convert model to ONNX for each framework in the [ONNX github](https://github.com/onnx/tutorials).
+
 ## Tensorflow
 
-We will use [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx) converter. You need to have a frozen graph of your tensorflow model and know its input and output. You also need to use the "--fold_const" option during the conversion. For example to convert Inception-v1 from TF-slim you will run:
+The content provided in this section is equivalent to the [tensorflow to ONNX tutorial](https://github.com/onnx/tutorials/blob/master/tutorials/TensorflowToOnnx-1.ipynb).
+ The files for that tutorial is in the [assets folder](https://github.com/onnx/tutorials/tree/master/tutorials/assets), so git clone the onnx tutorial repo.
+
+To convert tensorflow models into ONNX format, you will need this converter [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx).
+
+Tensorflow uses various file formats to represent a model: checkpoint files, frozen graphs (graph with weights) and saved_model. For more details please refer to [tensorflow guides](https://www.tensorflow.org/guide/extend/model_files).
+
+After step 2 from [Convert Tensorflow model to ONNX]((https://github.com/onnx/tutorials/blob/master/tutorials/TensorflowToOnnx-1.ipynb), you should have a mnist1.onnx.
+ Now, you only need to run that on the accelerator.
+
+```python
+img = np.load("./image.npz").reshape([1, 784])
+sf = fwdnxt.FWDNXT()
+snwresults = sf.Compile(
+        '{:d}x{:d}x{:d}'.format(28, 28, 1),
+        'mnist1.onnx', 'mnist.bin', 1, 1)
+
+sf.Init("mnist.bin", "")
+inVec_c = np.ascontiguousarray(img)
+result = np.ascontiguousarray(np.ndarray((1, 1, snwresults), dtype=np.float32))
+sf.Run(inVec_c, result)
+```
+
+Another method to convert tensorflow models to ONNX is through frozen graph. This is shown in [part 2 of the Convert Tensorflow model to ONNX tutorial](https://github.com/onnx/tutorials/blob/c4ae39b04619970160453f87b3bceb3b269cb10d/tutorials/TensorflowToOnnx-2.ipynb)
+
+To create a frozen graph of your tensorflow model you need to know its input and output.
+
+You also need to use the "--fold_const" option during the conversion. For example to convert Inception-v1 from TF-slim you will run:
 
 ```
 python -m tf2onnx.convert
@@ -617,6 +654,10 @@ python -m tf2onnx.convert
 --output ./googlenet_v1_slim.onnx
 --fold_const
 ```
+
+Then you can use the same code to run the ONNX file with the SDK
+
+Another good resource for you to refer about tensorflow pre-trained model is [here](https://github.com/tensorflow/models/tree/master/research/slim#Export).
 
 ## Caffe1
 
