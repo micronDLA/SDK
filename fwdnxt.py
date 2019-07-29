@@ -1,9 +1,20 @@
 import sys
 from ctypes import *
-import numpy
+import numpy as np
 from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
 f = CDLL("libfwdnxt.so")
+
+#Allows None to be passed instead of a ndarray
+def wrapped_ndptr(*args, **kwargs):
+  base = ndpointer(*args, **kwargs)
+  def from_param(cls, obj):
+    if obj is None:
+      return obj
+    return base.from_param(obj)
+  return type(base.__name__, (base,), {'from_param': classmethod(from_param)})
+
+FloatNdPtr = wrapped_ndptr(dtype=np.float32, flags='C_CONTIGUOUS')
 
 class FWDNXT:
     def __init__(self):
@@ -55,6 +66,55 @@ class FWDNXT:
         self.thnets_run_sim = f.thnets_run_sim
         self.thnets_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_bool]
 
+        #Training of linear layer
+        self.trainlinear_start = f.ie_trainlinear_start
+        self.trainlinear_start.argtypes = [c_void_p, c_int, c_int, c_int, ndpointer(c_float, flags="C_CONTIGUOUS"), ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int, c_int, c_int, c_float]
+
+        self.trainlinear_data = f.ie_trainlinear_data
+        self.trainlinear_data.argtypes = [c_void_p, FloatNdPtr, FloatNdPtr, c_int]
+
+        self.trainlinear_step_sw = f.ie_trainlinear_step_sw
+        self.trainlinear_step_sw.argtypes = [c_void_p]
+
+        self.trainlinear_step_float = f.ie_trainlinear_step_float
+        self.trainlinear_step_float.argtypes = [c_void_p]
+
+        self.trainlinear_step = f.ie_trainlinear_step
+        self.trainlinear_step.argtypes = [c_void_p, c_int]
+
+        self.trainlinear_get = f.ie_trainlinear_get
+        self.trainlinear_get.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), ndpointer(c_float, flags="C_CONTIGUOUS")]
+
+        self.trainlinear_getY = f.ie_trainlinear_getY
+        self.trainlinear_getY.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS")]
+
+        self.trainlinear_end = f.ie_trainlinear_end
+        self.trainlinear_end.argtypes = [c_void_p]
+
+    def TrainlinearStart(self, batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate):
+        self.trainlinear_start(self.handle, A.shape[1], A.shape[0], batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate)
+
+    def TrainlinearData(self, X, Y, idx):
+        self.trainlinear_data(self.handle, X, Y, idx)
+
+    def TrainlinearStep(self, idx):
+        self.trainlinear_step(self.handle, idx)
+
+    def TrainlinearStepSw(self):
+        self.trainlinear_step_sw(self.handle)
+
+    def TrainlinearStepFloat(self):
+        self.trainlinear_step_float(self.handle)
+
+    def TrainlinearGet(self, A, b):
+        self.trainlinear_get(self.handle, A, b)
+
+    def TrainlinearGetY(self, Y):
+        self.trainlinear_getY(self.handle, Y)
+
+    def TrainlinearEnd(self):
+        self.trainlinear_end(self.handle)
+
     #loads a different model binary file
     # bins: model binary file path
     def Loadmulti(self, bins):
@@ -79,7 +139,7 @@ class FWDNXT:
         self.swoutsize = (c_ulonglong * 16)()
         self.noutputs = c_int()
         self.ie_compile(self.handle, bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
-            bytes(outfile, 'ascii'), self.swoutsize, byref(self.noutputs), numcard, numclus, nlayers)
+            bytes(outfile, 'ascii'), self.swoutsize, byref(self.noutputs), numcard, numclus, nlayers, False)
         if self.noutputs.value == 1:
                 return self.swoutsize[0]
         ret = ()
@@ -87,13 +147,16 @@ class FWDNXT:
             ret += (self.swoutsize[i],)
         return ret
 
+    #returns the context obj
+    def get_handle(self):
+        return self.handle
     #initialization routines for FWDNXT inference engine
     # infile: model binary file path
     # bitfile: FPGA bitfile to be loaded
-    def Init(self, infile, bitfile):
+    def Init(self, infile, bitfile, cmem = None):
         self.outsize = (c_ulonglong * 16)()
         self.noutputs = c_int()
-        self.handle = self.ie_init(self.handle, bytes(bitfile, 'ascii'), bytes(infile, 'ascii'), byref(self.outsize), byref(self.noutputs))
+        self.handle = self.ie_init(self.handle, bytes(bitfile, 'ascii'), bytes(infile, 'ascii'), byref(self.outsize), byref(self.noutputs), cmem)
         if self.noutputs.value == 1:
                 return self.outsize[0]
         ret = ()
@@ -149,7 +212,7 @@ class FWDNXT:
             raise Exception(rc)
         return return_val.value
     def params(self, images):
-        if type(images) == numpy.ndarray:
+        if type(images) == np.ndarray:
             return byref(images.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(images.size))
         elif type(images) == tuple:
             cimages = (POINTER(c_float) * len(images))()
