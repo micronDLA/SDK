@@ -5,6 +5,8 @@ from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
 f = CDLL("libfwdnxt.so")
 
+curversion = 'v0.3.16'
+
 #Allows None to be passed instead of a ndarray
 def wrapped_ndptr(*args, **kwargs):
   base = ndpointer(*args, **kwargs)
@@ -90,6 +92,10 @@ class FWDNXT:
 
         self.trainlinear_end = f.ie_trainlinear_end
         self.trainlinear_end.argtypes = [c_void_p]
+        v = self.GetInfo('version')
+        if v != curversion:
+            print('Wrong libfwdnxt.so found, expecting', curversion, 'and found', v, 'quitting')
+            quit()
 
     def TrainlinearStart(self, batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate):
         self.trainlinear_start(self.handle, A.shape[1], A.shape[0], batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate)
@@ -205,11 +211,15 @@ class FWDNXT:
     def GetInfo(self, name):
         if name == 'hwtime':
             return_val = c_float()
+        elif name == 'version':
+            return_val = create_string_buffer(10)
         else:
             return_val = c_int()
         rc = self.ie_getinfo(self.handle, bytes(name, 'ascii'), byref(return_val))
         if rc != 0:
             raise Exception(rc)
+        if name == 'version':
+            return str(return_val.value, 'ascii')
         return return_val.value
     def params(self, images):
         if type(images) == np.ndarray:
