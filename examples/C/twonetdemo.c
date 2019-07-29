@@ -93,7 +93,7 @@ int main(int argc, char **argv)
     uint64_t outsize[2];//number of output values produced
     void *sf_handle = ie_loadmulti(0, binfile, 2);
     int noutputs;
-    ie_init(sf_handle, f_bitfile, 0, outsize, &noutputs);
+    ie_init(sf_handle, f_bitfile, 0, outsize, &noutputs, 0);
     float *input[2] = {NULL, NULL};
     uint64_t input_elements[2] = {0,0};
 //fetch input image

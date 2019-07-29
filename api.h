@@ -40,7 +40,7 @@ Load a .bin file into the hardware and initialize it
     @param cmemp        copy the FPGA info to this cmem (copies pico)
     @return context object
 */
-void *ie_init(void *cmemo, const char *fbitfile, const char *inbin, uint64_t *outsize, int *noutputs, void *cmemp = NULL);
+void *ie_init(void *cmemo, const char *fbitfile, const char *inbin, uint64_t *outsize, int *noutputs, void *cmemp);
 
 /*!
 Run inference engine

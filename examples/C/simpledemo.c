@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     printf("Initialize FWDNXT inference engine FPGA\n");
     uint64_t outsize = 0;//number of output values produced
     int noutputs;
-    void* sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs);
+    void* sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs, 0);
     float *input = NULL;
     uint64_t input_elements = 0;
 //fetch input image

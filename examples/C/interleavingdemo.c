@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     }
 
     int noutputs;
-    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs);
+    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs, 0);
 
     categories = (char **)calloc(outsize, sizeof(char *));
     FILE *fp = fopen(categ, "r");

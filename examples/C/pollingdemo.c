@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     }
 
     int noutputs;
-    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs);
+    sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs, 0);
     // Disable blockingmode, API will return -99 instead of waiting
     ie_setflag(sf_handle, "blockingmode", "0");
 
