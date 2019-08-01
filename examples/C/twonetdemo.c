@@ -148,7 +148,7 @@ int main(int argc, char **argv)
     }
 //print out the results
     printf("-------------- Results --------------\n");
-    for(int n = 0; n < 2; n++)
+    for(n = 0; n < 2; n++)
     {
         printf("%s\n", binfile[n]);
         int* idxs = (int *)malloc(sizeof(int) * output_elements[n]);
