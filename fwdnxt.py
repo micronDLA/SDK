@@ -32,9 +32,11 @@ class FWDNXT:
         self.ie_loadmulti.restype = c_void_p
 
         self.ie_compile = f.ie_compile
+        self.ie_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_ulonglong), POINTER(c_int), c_int, c_int, c_int]
         self.ie_compile.restype = c_void_p
 
         self.ie_init = f.ie_init
+        self_ie_init_argtypes = [c_void_p]
         self.ie_init.restype = c_void_p
 
         self.ie_free = f.ie_free
@@ -132,8 +134,12 @@ class FWDNXT:
     #compile a network and produce .bin file with everything that is needed to execute
     # image: it is a string with the image path or the image dimensions.
     #        If it is a image path then the size of the image will be used to set up FWDNXT hardware's code.
-    #        If it is not an image path then it needs to specify the size in the following format:
-    #        Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+    #        If it is not an image path then it needs to specify the size in one of the following formats:
+    #        Width x Height x Planes
+    #        Width x Height x Planes x Batchsize
+    #        Width x Height x Depth x Planes x Batchsize
+    #        Multiple inputs can be specified by separating them with a semi-colon
+    #        Example: Two inputs with width=640, height=480, planes=3 becomes a string "640x480x3;640x480x3".
     # modeldir: path to a model file in ONNX format.
     # outfile: path to a file where a model in FWDNXT ready format will be saved.
     # numcard: number of FPGA cards to use.

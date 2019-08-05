@@ -2,7 +2,11 @@
 /// @brief FWDNXT C api
 #ifndef _IE_API_H_INCLUDED_
 #define _IE_API_H_INCLUDED_
+
+static const char *fwdnxt_version = "v0.3.16";
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,7 +21,7 @@ Compile a network and produce a .bin file with everything that is needed to exec
 If the model contains some layers that cannot be run in hardware, they will be run in software.
 In this case, ie_compile is necessary, ie_init with a previously generated bin file is not enough
     @param cmemo        context object, can be null
-    @param image        image file or image size in the format WxHxP[;WxHxP...]
+    @param image        image file or image size in the format WxHxP or WxHxPxB or WxHxDxPxB, multiple inputs separated by semi-colon
     @param modelpath    path to the onnx file
     @param outbin       path to output .bin file
     @param swoutsize    output size (including the layers run in software) assuming batch 1, in number of elements, one per output
@@ -228,5 +232,23 @@ int ie_trainlinear_end(void *cmemo);
 #ifdef __cplusplus
 }
 #endif
+
+static inline void *ie_safecreate()
+{
+    char version[10];
+    void *cmemo = ie_create();
+
+    if(ie_getinfo(cmemo, "version", version))
+    {
+        fprintf(stderr, "Wrong libfwdnxt.so version\n");
+        exit(-1);
+    }
+    if(strcmp(version, fwdnxt_version))
+    {
+        fprintf(stderr, "Wrong libfwdnxt.so version, expecting %s, found %s\n", fwdnxt_version, version);
+        exit(-1);
+    }
+    return cmemo;
+}
 
 #endif

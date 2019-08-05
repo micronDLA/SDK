@@ -65,7 +65,8 @@ int main(int argc, char **argv)
     }
     uint64_t outsize;
     int noutputs;
-    void* sf_handle = ie_compile(0, image, modelpath, outbin, &outsize, &noutputs, nfpga, nclus, -1);
+    void* sf_handle = ie_safecreate();
+    ie_compile(sf_handle, image, modelpath, outbin, &outsize, &noutputs, nfpga, nclus, -1);
     ie_free(sf_handle);
     printf("\ndone\n");
     return 0;
