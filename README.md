@@ -171,6 +171,8 @@ For example, a good starting point is to train FWDNXT supported models on an ima
 
 [https://github.com/pytorch/examples/tree/master/imagenet](https://github.com/pytorch/examples/tree/master/imagenet). This script can load a custom dataset of images, please refer to the requirements in the script README file.
 
+Please make sure that all inputs of the neural network are 32-bit float and are 0-mean and 1-std normalized.
+
 ## After training a neural network
 
 After training a neural network with PyTorch, you model is ready for use in FWDNXT SDK. Please refer to the SDK manual for use with FWNDXT products.
