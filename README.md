@@ -101,12 +101,11 @@ All-in-one installation of the SDK can be run with:
 **Install protobuf to use ONNX support (required by SDK)**
 
 ```
-wget https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-all-3.5.1.zip
-unzip protobuf-all-3.5.1.zip
-cd protobuf-3.5.1
+wget https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
+tar xf protobuf-all-3.6.1.tar.gz
+cd protobuf-3.6.1
 ./configure
 make -j4
-make check -j4
 sudo make install
 sudo ldconfig
 ```
