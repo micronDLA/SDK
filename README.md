@@ -71,6 +71,8 @@ Tested on:
   - Ubuntu 14.04 LTS Release, Kernel 4.4.0
   - Ubuntu 16.04 LTS Release, Kernel 4.13.0
   - CentOS 7.5
+  - onnx 1.2.2
+  - torch 0.4.0 and 1.2.0
 
 ## Software requirements
 - GCC 4.9 or higher
