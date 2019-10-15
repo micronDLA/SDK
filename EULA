@@ -1,8 +1,8 @@
-FWDNXT, INC.
+Micron Technology, INC.
 End-User License Agreement
 
 
-By downloading software of FWDNXT, Inc., an Indiana corporation ("FWDNXT"), you agree to the following terms and conditions (“Agreement”).  If you do not agree with such terms and conditions do not install this software.
+By downloading software of Micron Technology, Inc., an Idaho corporation ("Micron Technology"), you agree to the following terms and conditions (“Agreement”).  If you do not agree with such terms and conditions do not install this software.
 
 WHEREAS:
 
@@ -20,13 +20,13 @@ NOW, WHEREFORE, IT IS HEREBY AGREED as follows:
 
 	“Authorized Device” means the Micron FPGA boards.
 
-	“Documentation” means those items of documentation identified as FWDNXT inference engine, software development kit and training documents.
+	“Documentation” means those items of documentation identified as Micron Technology inference engine, software development kit and training documents.
 
 “Effective Date” means the date on which Licensee first downloads Licensor’s software pursuant to this Agreement.
 
 “Intellectual Property” means all intellectual property, including, but not limited to, trade secrets, databases, know how, inventions, improvements, discoveries, conceptions, ideas, techniques, designs, products, developments, diagrams, specifications, drawings methods, models, software programs (including source code, object code and commenting), data, data analysis, data interpretation, written reports, and all rights herein including copyright, patent rights, database rights, rights in designs and all registrations and applications therefore, and all continuations, continuations in part, divisional applications, and renewals of any of the foregoing, in any part of the world.
 
-“Licensed Technology” means (a) the particular technology that is delivered by Licensor to Licensee under this Agreement, (b) all Intellectual Property of Licensor in any of the technology delivered hereunder, including, without limitation, techniques for customizing the protocols, command sets, and interfaces, and (c) any new enhancements and extensions thereto. 
+“Licensed Technology” means (a) the particular technology that is delivered by Licensor to Licensee under this Agreement, (b) all Intellectual Property of Licensor in any of the technology delivered hereunder, including, without limitation, techniques for customizing the protocols, command sets, and interfaces, and (c) any new enhancements and extensions thereto.
 
 “Proprietary Information” means all confidential, proprietary, or secret information, including, without limitation, the terms and conditions of this Agreement, Intellectual Property, Licensed Technology, algorithms, components, data, drawings, inventions, processes, programs, specifications, techniques, and other information or material, however stored, relating to a party, or a third-party licensor’s business, customers, finances, personnel, plans, or products, that is owned, possessed, or used by a party, but only to the extent disclosed by a party (“Disclosing Party”) to the other party (“Receiving Party”) and marked confidential or proprietary; provided, however, that if such information is disclosed orally or visually, it is identified by the Disclosing Party at the time of disclosure to be confidential and confirmed as such by a written summary to the Receiving Party within thirty (30) days after the disclosure, then such information shall be Proprietary Information notwithstanding the fact that it was not marked confidential or proprietary.
 
@@ -37,7 +37,7 @@ NOW, WHEREFORE, IT IS HEREBY AGREED as follows:
 
 2	License Grant
 
-2.1	Subject to the terms and conditions of this Agreement, Licensor grants to Licensee the non-exclusive, worldwide, non-transferable and non-assignable right and license to use the Licensed Technology in connection with FWDNXT inference engine and software development kit. 
+2.1	Subject to the terms and conditions of this Agreement, Licensor grants to Licensee the non-exclusive, worldwide, non-transferable and non-assignable right and license to use the Licensed Technology in connection with Micron Technology inference engine and software development kit.
 
 2.2	Licensee shall have no other rights with respect to the Licensed Technology, in particular and without limitation, except as may be explicitly allowed in this Agreement, Licensee shall not have the right to sublicense, distribute, lease, encumber, sell, or make or have made derivative works of the Licensed Technology. Licensee shall not, and shall not permit any person within its control to, use the Licensed Technology for any purpose other than as expressly set forth in this Agreement.
 
@@ -63,13 +63,13 @@ NOW, WHEREFORE, IT IS HEREBY AGREED as follows:
 
 (b)	no consent of any third parties is required for Licensor to enter into this Agreement or perform its obligations hereunder;
 
-(c)	the Licensed Technology conforms all material respects to the specifications set forth FWDNXT inference engine and software development kit; Licensee’s exclusive remedy for breach of this Section 5.1(c) is set out in Section 5.1(d);
+(c)	the Licensed Technology conforms all material respects to the specifications set forth Micron Technology inference engine and software development kit; Licensee’s exclusive remedy for breach of this Section 5.1(c) is set out in Section 5.1(d);
 
-(d)	it will, with no lower priority than other licensees, promptly repair any nonconformities between the Licensed Technology and Specifications discovered within one (1) month from the date of delivery; 
+(d)	it will, with no lower priority than other licensees, promptly repair any nonconformities between the Licensed Technology and Specifications discovered within one (1) month from the date of delivery;
 
 (e)	it will make reasonable efforts promptly to repair any material nonconformities discovered by Licensee between the Licensed Technology and the Specifications.
 
-(f)	the Licensed Technology and other work performed hereunder will be the original work of Licensor or Licensor’s licensors or in the public domain, will be free and clear of any and all restrictions, and will not infringe Intellectual Property rights in the United States of America. 
+(f)	the Licensed Technology and other work performed hereunder will be the original work of Licensor or Licensor’s licensors or in the public domain, will be free and clear of any and all restrictions, and will not infringe Intellectual Property rights in the United States of America.
 
 
 
@@ -130,9 +130,9 @@ NOW, WHEREFORE, IT IS HEREBY AGREED as follows:
 
 9	Governing Law
 
-9.1	Choice of Law.  This Agreement shall be governed by the laws of the State of  Indiana, United States of America, without giving effect to the conflict of law provisions thereof, and excluding (even if applicable) any application of the United Nations Convention of Contracts for the International Sale of Goods.
+9.1	Choice of Law.  This Agreement shall be governed by the laws of the State of  Idaho, United States of America, without giving effect to the conflict of law provisions thereof, and excluding (even if applicable) any application of the United Nations Convention of Contracts for the International Sale of Goods.
 
-9.2	Jurisdiction. The federal and state courts within Tippecanoe County, Indiana, shall have non-exclusive jurisdiction to adjudicate any dispute arising out of this Agreement. Each party hereto expressly consents to the personal jurisdiction of, and venue in, such courts.
+9.2	Jurisdiction. The federal and state courts within Idaho, shall have non-exclusive jurisdiction to adjudicate any dispute arising out of this Agreement. Each party hereto expressly consents to the personal jurisdiction of, and venue in, such courts.
 
 9.3	Equitable Relief.  Notwithstanding anything in this Section 13, each party shall have the right to institute judicial proceedings against the other party to seek specific performance, injunctive relief, or similar equitable relief.
 

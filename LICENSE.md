@@ -1,4 +1,4 @@
-Copyright © 2018 FWDNXT Inc.
+Copyright © 2019 Micron Technology Inc.
 All rights reserved.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
