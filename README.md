@@ -222,9 +222,9 @@ Check out other possible application programs using FWDNXT hardware [here](http:
 The example program is located in examples/python/
 You can run the demo using this command:
 
-`python3 simpledemo.py <onnx file> <picture> -c <categories file.txt> -b <bitfile.bit>`
+`python3 simpledemo.py <onnx file> <picture> -c <categories file.txt> -l <bitfile.bit>`
 
-`-b` option will load the hardware into a FPGA card.
+`-l` option will load the hardware into a FPGA card.
 
 
 Loading the FPGA and bringing up the HMC will take at max 5 min.
