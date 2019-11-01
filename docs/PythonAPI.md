@@ -1,18 +1,18 @@
 # Python API
 
-The python FWDNXT inference engine class has these functions:
+The python Micron DLA hardware class has these functions:
 
 ## Compile
 
-Loads a network and prepares it for FWDNXT inference engine.
+Loads a network and prepares it for Micron DLA hardware.
 
 ***Parameters:***
 
-**Image**:  it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up FWDNXT hardware's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+**Image**:  it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up Micron DLA hardware's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
 
 **Modeldir**: path to a model file in ONNX format.
 
-**Outfile**: path to a file where a model in FWDNXT ready format will be saved.
+**Outfile**: path to a file where a model in Micron DLA ready format will be saved.
 
 **Numcard**: number of FPGA cards to use.
 
@@ -24,11 +24,11 @@ Loads a network and prepares it for FWDNXT inference engine.
 
 ## Init
 
-Loads a bitfile on an FPGA if necessary and prepares to run FWDNXT inference engine.
+Loads a bitfile on an FPGA if necessary and prepares to run Micron DLA hardware.
 
 ***Parameters:***
 
-**Infile**: path to a file with a model in FWDNXT inference engine ready format.
+**Infile**: path to a file with a model in Micron DLA hardware ready format.
 
 **Bitfile**: path to the bitfile. Send empty string &quot;&quot; if you want to bypass loading a bitfile. In this case it will use a bitfile that is already loaded on the FPGA.
 
@@ -67,7 +67,7 @@ Currently available options are listed in [here](Codes.md)
 
 ## Run
 
-Runs a single inference on FWDNXT inference engine.
+Runs a single inference on Micron DLA hardware.
 
 ***Parameters:***
 
@@ -77,7 +77,7 @@ Runs a single inference on FWDNXT inference engine.
 
 ## Run\_sw
 
-Runs a single inference on the FWDNXT inference engine simulator.
+Runs a single inference on the Micron DLA hardware simulator.
 
 ***Parameters:***
 
@@ -98,7 +98,7 @@ Runs a single inference using thnets.
 
 ## PutInput
 
-Put an input into a buffer and start FWDNXT hardware
+Put an input into a buffer and start Micron DLA hardware
 
 ***Parameters:***
 
@@ -110,7 +110,7 @@ Put an input into a buffer and start FWDNXT hardware
 
 ## GetResult
 
-Get an output from a buffer. If opt_blocking was set then it will wait FWDNXT hardware
+Get an output from a buffer. If opt_blocking was set then it will wait Micron DLA hardware
 
 ***Parameters:***
 

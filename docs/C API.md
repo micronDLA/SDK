@@ -8,7 +8,7 @@ Parse an ONNX model and generates Inference Engine instructions.
 
 ***Parameters:***
 
-`const char *image`: it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up FWDNXT inference engine's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+`const char *image`: it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up Micron DLA hardware's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
 
 `const char *modeldir`: path to a model file in ONNX format.
 
@@ -42,7 +42,7 @@ Loads a bitfile on an FPGA if necessary and prepares to run on the Inference Eng
 
 ## ie_run
 
-Runs inference on the FWDNXT inference engine.
+Runs inference on the Micron DLA hardware.
 
 ***Parameters:***
 
@@ -129,7 +129,7 @@ Currently available options are listed in [here](Codes.md)
 
 ## ie_putinput
 
-Put an input into a buffer and start FWDNXT hardware
+Put an input into a buffer and start Micron DLA hardware
 
 ***Parameters:***
 
@@ -145,7 +145,7 @@ Put an input into a buffer and start FWDNXT hardware
 
 ## ie_getresult
 
-Get an output from a buffer. If opt_blocking was set then it will wait FWDNXT hardware
+Get an output from a buffer. If opt_blocking was set then it will wait Micron DLA hardware
 
 ***Parameters:***
 

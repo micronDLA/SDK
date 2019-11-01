@@ -4,30 +4,29 @@ import sys
 sys.path.insert(0, '../../')
 import microndla
 import sys
-import threading
 import os
 import PIL
 from PIL import Image
 import numpy as np
-from time import sleep
 
 from argparse import ArgumentParser
 # argument Checking
-parser = ArgumentParser(description="Micron DLA Person Identification Demonstration")
+parser = ArgumentParser(description="Micron DLA Categorization Demonstration")
 _ = parser.add_argument
 _('modelpath', type=str, default='', help='Path to the model file')
-_('imagesdir', type=str, default='', help='A directory name with input files')
+_('image', type=str, default='', help='An image file used as input')
+_('imagesdir', type=str, default='', help='Directory with images for quantization calibration')
 _('-r', '--res', type=int, default=[3, 224, 224], nargs='+', help='expected image size (planes, height, width)')
 _('-c', '--categories', type=str, default='', help='Categories file')
 _('-l','--load', type=str, default='', help='Load bitfile')
 
-def LoadImage(imagepath):
+def LoadImage(imagepath, args):
 
     #Load image into a numpy array
     img = Image.open(imagepath)
 
     #Resize it to the size expected by the network
-    img = img.resize((xres, yres), resample=PIL.Image.BILINEAR)
+    img = img.resize((args.res[2], args.res[1]), resample=PIL.Image.BILINEAR)
 
     #Convert to numpy float
     img = np.array(img).astype(np.float32) / 255
@@ -45,55 +44,41 @@ def LoadImage(imagepath):
 
 args = parser.parse_args()
 
-xres = args.res[2]
-yres = args.res[1]
+#Load image into a numpy array
+img = LoadImage(args.image, args)
+imgs = []
+for fn in os.listdir(args.imagesdir):
+    x = LoadImage(args.imagesdir + '/' + fn, args)
+    imgs.append(x)
 
-#Create and initialize the snowflow object
+#Create and initialize the Inference Engine object
 ie = microndla.MDLA()
-#ie.SetFlag('hwlinear','0')
 #ie.SetFlag('debug','bw')
 
 #Compile to a file
-swnresults = ie.Compile("{:d}x{:d}x{:d}".format(args.res[1], args.res[2], args.res[0]), args.modelpath, 'save.bin')
+istr = "{:d}x{:d}x{:d}".format(args.res[2], args.res[1], args.res[0])
+swnresults = ie.Quantize(istr, args.modelpath, 'save.bin', imgs)
 
 #Init fpga
 nresults = ie.Init('save.bin', args.load)
 
-categories = None
+#Create the storage for the result and run one inference
+result = np.ndarray(swnresults,dtype=np.float32)
+ie.Run(img, result)
+
+#Convert to numpy and print top-5
+idxs = (-result).argsort()
+
+print('')
+print('-------------- Results --------------')
 if args.categories != '':
     with open(args.categories) as f:
         categories = f.read().splitlines()
-
-#Create the storage for the result and run one inference
-result = np.ndarray(swnresults, dtype=np.float32)
-nimages = 0
-
-def getresult():
-    imgname = ie.GetResult(result)
-    #Convert to numpy and print top-5
-    idxs = (-result).argsort()
-
-    print('')
-    print('-------------- ' + str(imgname) + ' --------------')
-    if categories != None:
         for i in range(5):
             print(categories[idxs[i]], result[idxs[i]])
-    else:
-        for i in range(5):
-            print(idxs[i], result[idxs[i]])
-
-for fn in os.listdir(args.imagesdir):
-    try:
-        img = LoadImage(args.imagesdir + '/' + fn)
-    except:
-        pass
-    ie.PutInput(img, fn)
-    nimages += 1
-    if nimages > 1:
-        getresult()
-
-if nimages > 0:
-    getresult()
+else:
+    for i in range(5):
+        print(idxs[i], result[idxs[i]])
 
 #Free
 ie.Free()

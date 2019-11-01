@@ -2,7 +2,7 @@
 
 import sys
 sys.path.insert(0, '../../')
-import fwdnxt
+import microndla
 import sys
 import numpy as np
 import torch
@@ -16,7 +16,7 @@ _ = parser.add_argument
 _('-l','--load', type=str,default='',help='path to bitfile')
 args = parser.parse_args()
 
-ie = fwdnxt.FWDNXT()
+ie = microndla.MDLA()
 print('Compile')
 outsz = ie.Compile("1x1x100","generator.onnx","dcgan.bin")
 print('Init')

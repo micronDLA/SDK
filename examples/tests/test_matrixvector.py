@@ -4,7 +4,7 @@
 
 import sys
 sys.path.insert(0, '../../')
-import fwdnxt
+import microndla
 import torch
 import torch.onnx
 import numpy as np
@@ -32,7 +32,7 @@ inVec1 = torch.randn(1, 1, 1, D, dtype=torch.float32)
 modelMatrixVector = MatrixVector(D)
 torch.onnx.export(modelMatrixVector, inVec1, "net_matrix_vector.onnx")
 
-sf = fwdnxt.FWDNXT()
+sf = microndla.MDLA()
 if args.verbose:
     sf.SetFlag('debug', 'b')#debug options
 

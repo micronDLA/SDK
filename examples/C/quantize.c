@@ -1,17 +1,22 @@
 /*
-Run simple object classification on Micron DLA
+Run a model on Micron DLA. Use calibration inputs to set quantization scales for improved quantized results.
 */
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #include "../../api.h"
 //#define STB_IMAGE_IMPLEMENTATION
 #include "../../stb_image.h"
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "../../stb_image_resize.h"
 
 static void print_help()
 {
     printf("Syntax: simpledemo\n");
     printf("\t-i <image file>\n");
+    printf("\t-d <directory with images for quantization calibration>\n");
+    printf("\t-m <model file>\n");
     printf("\t-c <categories file>\n\t-b <bitfile>\n\t-s <microndla.bin file>\n");
     printf("\t-f <number of FPGAs to use>\n\t-C <number of clusters>\n");
 }
@@ -45,13 +50,17 @@ int sortcmp(const void *a, const void *b)
 
 int main(int argc, char **argv)
 {
+    const char *modelpath = "./alexnet.onnx";
+    const char *imagesdir = "images";
     const char *image = "./dog224.jpg";//input image
     const char *categ = "./categories.txt";//categories list
-    const char *f_bitfile = "";//FGPA bitfile with Micron DLA inference engine
-    const char *outbin = "save.bin";//file with microndla inference engine instructions
+    const char *f_bitfile = "";//FGPA bitfile with Micron DLA
+    const char *outbin = "save.bin";//file with Micron DLA instructions
     int nfpga = 1;
     int nclus = 1;
-    int i;
+    int i, netwidth = 224, netheight = 224;
+    DIR *dir;
+    struct dirent *de;
 
     //program arguments ------------------------
     for(i = 1; i < argc; i++) {
@@ -66,6 +75,15 @@ int main(int argc, char **argv)
         case 'f':// number of fpgas
             if(i+1 < argc)
                 nfpga = atoi(argv[++i]);
+            break;
+        case 'm':// modelpath
+            if(i+1 < argc){
+                modelpath = argv[++i];
+            }
+            break;
+        case 'd':// imagesdir
+            if(i+1 < argc)
+                imagesdir = argv[++i];
             break;
         case 'i':// image
             if(i+1 < argc)
@@ -95,20 +113,58 @@ int main(int argc, char **argv)
     }
 // initialize FPGA: load hardware and load instructions into memory
     printf("Initialize Micron DLA inference engine FPGA\n");
-    uint64_t outsize = 0;//number of output values produced
+    uint64_t outsize;//number of output values produced
+    uint64_t swoutsize;
     int noutputs;
-    void* sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs, 0);
+    int num_calib = 0;
+    dir = opendir(imagesdir);
+    if (!dir) {
+        fprintf(stderr, "Cannot open directory %s\n", imagesdir);
+        return -1;
+    }
+    while ( (de = readdir(dir)) ) {
+        if (de->d_type == DT_REG)
+            num_calib++;
+    }
+    rewinddir(dir);
+
+    float mean[3] = {0.485, 0.456, 0.406};
+    float std[3] = {0.229, 0.224, 0.225};
+
+    float **calibration = (float **)malloc(sizeof(float*) * num_calib);
+    int idx = 0;
+    while ( (de = readdir(dir)) ) {
+        char path[257];
+        if (de->d_type != DT_REG)
+            continue;
+        sprintf(path, "%s/%s", imagesdir, de->d_name);
+        printf("%s\n", path);
+        int width, height, cp;
+        unsigned char *bitmap = (unsigned char *)stbi_load(path, &width, &height, &cp, 3);
+        if(!bitmap) {
+            fprintf(stderr, "The image %s could not be loaded\n", path);
+            continue;
+        }
+        unsigned char *resized = (unsigned char *)malloc(3 * netwidth * netheight);
+        stbir_resize_uint8(bitmap, width, height, 0, resized, netwidth, netheight,  0, 3);
+        free(bitmap);
+        calibration[idx] = (float *)calloc(1, sizeof(float) * 3 * netwidth * netheight * nclus * nfpga);
+        rgb2float_cmajor(calibration[idx], resized, netwidth, netheight, 3, netwidth * 3, mean, std);
+        idx++;
+        free(resized);
+    }
+
+    void* sf_handle = ie_safecreate();
+    sf_handle = ie_quantize(sf_handle, image, modelpath, outbin, &swoutsize, &noutputs, nfpga, nclus, calibration, num_calib);
+    sf_handle = ie_init(sf_handle, f_bitfile, outbin, &outsize, &noutputs, 0);
+
     float *input = NULL;
     uint64_t input_elements = 0;
 //fetch input image
-    if(image)
-    {
-        float mean[3] = {0.485, 0.456, 0.406};
-        float std[3] = {0.229, 0.224, 0.225};
+    if(image) {
         int width, height, cp;
         unsigned char *bitmap = (unsigned char *)stbi_load(image, &width, &height, &cp, 0);
-        if(!bitmap)
-        {
+        if(!bitmap) {
             printf("The image %s could not be loaded\n", image);
             return -1;
         }
@@ -122,14 +178,13 @@ int main(int argc, char **argv)
         exit(1);
     }
     input_elements *= nfpga*nclus;
-    uint64_t output_elements = outsize * nfpga*nclus;
+    uint64_t output_elements = swoutsize * nfpga * nclus;
     float *output = (float*) malloc(output_elements*sizeof(float));//allocate memory to hold output
     int err = 0;
 // run inference
     printf("Run Micron DLA inference engine\n");
     err = ie_run(sf_handle, (const float * const *)&input, &input_elements, &output, &output_elements);
-    if(err==-1)
-    {
+    if(err==-1) {
         fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
         return -1;
     }

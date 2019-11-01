@@ -1,4 +1,4 @@
-# FWDNXT SDK web demo
+# Micron DLA SDK web demo
 
 This is a web demo similar to [simpledemo](https://github.com/FWDNXT/SDK/blob/master/examples/python/simpledemo.py)
 
@@ -11,7 +11,7 @@ Install flask:
 Copy to this directory:
 
 - Download a [model](http://fwdnxt.com/models/resnet18.onnx)
-- this [file](https://github.com/FWDNXT/SDK/blob/master/fwdnxt.py)
+- this [file](https://github.com/FWDNXT/SDK/blob/master/microndla.py)
 - [category file](https://github.com/FWDNXT/SDK/blob/master/test-files/categories.txt)
 
 

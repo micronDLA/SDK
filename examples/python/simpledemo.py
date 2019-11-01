@@ -2,7 +2,7 @@
 
 import sys
 sys.path.insert(0, '../../')
-import fwdnxt
+import microndla
 import sys
 import PIL
 from PIL import Image
@@ -10,7 +10,7 @@ import numpy as np
 
 from argparse import ArgumentParser
 # argument Checking
-parser = ArgumentParser(description="FWDNXT Categorization Demonstration")
+parser = ArgumentParser(description="Micron DLA Categorization Demonstration")
 _ = parser.add_argument
 _('modelpath', type=str, default='', help='Path to the model file')
 _('image', type=str, default='', help='An image file used as input')
@@ -39,9 +39,10 @@ for i in range(3):
     img[i] = (img[i] - stat_mean[i])/stat_std[i]
 
 #Create and initialize the Inference Engine object
-ie = fwdnxt.FWDNXT()
+ie = microndla.MDLA()
 #ie.SetFlag('hwlinear','0')
-#ie.SetFlag('debug','bw')
+ie.SetFlag('debug','bw')
+ie.SetFlag('comparesw','1')
 
 #Compile to a file
 swnresults = ie.Compile("{:d}x{:d}x{:d}".format(args.res[2], args.res[1], args.res[0]), args.modelpath, 'save.bin')

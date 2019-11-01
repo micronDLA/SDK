@@ -48,7 +48,7 @@ The following are flags that can be set with `SetFlag` without the need of a key
 
 **blockingmode**: default is 1. 1 ie_getresult will wait for hardware to finish. 0 will return immediately with an error, if hardware did not finish.
 
-**max_instr**: set a bound for the maximum number of FWDNXT inference engine instructions to be generated. If this option is set, then instructions will be placed before data. Note: If the amount of data (input, output and weights) stored in memory exceeds 4GB, then this option must be set.
+**max_instr**: set a bound for the maximum number of Micron DLA hardware instructions to be generated. If this option is set, then instructions will be placed before data. Note: If the amount of data (input, output and weights) stored in memory exceeds 4GB, then this option must be set.
 
 ## GetInfo
 
@@ -56,7 +56,7 @@ Gets information regarding some SDK options.
 
 There is no keyword or code for GetInfo. It only needs one of the following flag names.
 
-**hwtime**: returns the number of miliseconds taken by the FWDNXT inference engine for the processing only, returned as a float
+**hwtime**: returns the number of miliseconds taken by the Micron DLA hardware for the processing only, returned as a float
 
 **numcluster**: the number of clusters to be used, returned as an int
 
@@ -64,9 +64,9 @@ There is no keyword or code for GetInfo. It only needs one of the following flag
 
 **numbatch**: the number of batch to be processed, returned as an int
 
-**freq**: the FWDNXT inference engine's frequency, returned as an int
+**freq**: the Micron DLA hardware's frequency, returned as an int
 
-**maxcluster**: the maximum number of clusters in FWDNXT inference engine, returned as an int
+**maxcluster**: the maximum number of clusters in Micron DLA hardware, returned as an int
 
 **maxfpga**: the maximum number of FPGAs available, returned as an int
 

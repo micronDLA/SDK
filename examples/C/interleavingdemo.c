@@ -1,5 +1,5 @@
 /*
-Example to run FWDNXT inference engine using put and get_result
+Example to run Micron DLA using put and get_result
 */
 #include <stdbool.h>
 #include <stdlib.h>
@@ -16,7 +16,7 @@ static void print_help()
 {
     printf("Syntax: simpledemo\n");
     printf("\t-i <directory with image files>\n");
-    printf("\t-c <categories file>\t-b <bitfile>\t-s <fwdnxt.bin file>\n");
+    printf("\t-c <categories file>\t-b <bitfile>\t-s <microndla.bin file>\n");
 }
 
 #define BYTE2FLOAT 0.003921568f // 1/255
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
         int err = ie_putinput(sf_handle, (const float * const *)&input, &input_elements, info);
         if(err==-1)
         {
-            fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
+            fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
             return -1;
         }
         nimages++;
@@ -185,7 +185,7 @@ void getresult()
     int err = ie_getresult(sf_handle, &output, &outsize, (void **)&info);
     if(err==-1)
     {
-        fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
+        fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
         exit(-1);
     }
     printf("-------------- %s --------------\n", info->filename);

@@ -8,7 +8,7 @@ then
 	read -p "Do you accept this EULA (y/n)? " -r
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
-		cp libfwdnxt.so /usr/local/lib
+		cp libmicrondla.so /usr/local/lib
 		apt-get update
 		apt-get -y install python3-pip
 		pip3 install --upgrade numpy
@@ -46,7 +46,7 @@ then
 		else
 			echo /usr/local/lib >/etc/ld.so.conf.d/local.conf
 		fi
-	 	cp libfwdnxt.so /usr/local/lib
+	 	cp libmicrondla.so /usr/local/lib
 		yum install unzip
 		if ! [ -x "$(command -v python3)" ]; then
 			echo "Installing Python3 from source"

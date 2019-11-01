@@ -4,7 +4,7 @@
 
 import sys
 sys.path.insert(0, '../../')
-import fwdnxt
+import microndla
 import torch
 import torch.onnx
 import numpy as np
@@ -40,7 +40,7 @@ inVec1 = torch.randn(1, i, w, w, dtype=torch.float32)
 modelMax = Maxpool(k, s, p)
 torch.onnx.export(modelMax, inVec1, "net_maxpool.onnx")
 
-sf = fwdnxt.FWDNXT()
+sf = microndla.MDLA()
 if args.verbose:
     sf.SetFlag('debug', 'b')#debug options
 

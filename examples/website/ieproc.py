@@ -2,7 +2,7 @@
 
 # process image with inference engine
 
-import fwdnxt # FWDNXT inference engine
+import microndla # Micron DLA inference engine
 from PIL import Image
 import numpy as np
 
@@ -26,9 +26,9 @@ def ieprocess(image_file, network_file):
 	stat_std = list([0.229, 0.224, 0.225])
 	for i in range(3):
 		img[i] = (img[i] - stat_mean[i])/stat_std[i]
-	
+
 	#Create and initialize the Inference Engine object
-	ie = fwdnxt.FWDNXT()
+	ie = microndla.MDLA()
 
 	#Compile to a file
 	swnresults = ie.Compile("{:d}x{:d}x{:d}".format(224,224,3), network_file, 'save.bin')
