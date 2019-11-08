@@ -22,16 +22,34 @@ SetFlag can also set a flag directly, without the keyword and option code.
   * 's': print partitioning strategy
   * 'p': print list of operations
   * 'd': print accelerator's debug registers
-  * 'R': print all results returned by accelerator. This needs to be used with `SetFlag('options', 's').
+  * 'r': print wrong results only. This needs to be used with `SetFlag('options', 's')`.
+  * 'R': print all results returned by accelerator. This needs to be used with `SetFlag('options', 's')`.
   * 'i': print accelerator instructions into a txt file
   * 'I': print code generation instructions
 
 - 'options': configures compile options of the SDK
+  * 'V': enable variable fix-point precision. Default precision is Q8.8
+  * 'H': run linear on DLA. Same as `SetFlag('hwlinear', '1')`
+  * 'M': enable multi-MM vertical padding optimization
   * 'C': no batch mode for multiple clusters. Same as `SetFlag('nobatch', '1')`
+  * 'p': pipeline execution mode across multiple clusters
+  * 'B': sandbox mode. Reads DLA instruction from a text file.
   * 'k': try kernel_stationary optimization if possible. For more info refer to [here](https://www.emc2-workshop.com/assets/docs/asplos-18/paper5.pdf).
   This is same as `SetFlag('convalgo', '1')`
+  * 'r': try kernel_stationary option if possible, maxpool will reshape output
+  * 'K': try kernel_stationary option if possible, with yPxp ordering, maxpool will reshape output
+  * 'd': run tests with deterministic input and weights instead of random
+  * 'P': progressive load instead of DLA banks switching
+  * 'w': wait a 1 second for hardware to finish instead of polling the DLA
   * 's': run the software version for comparing the accelerator's output
+  * 'S': don't run DLA. Only run software version
+  * 'Q': don't run DLA. Only run software version using float precision and save quantization metrics: variable fix-point for inputs, intermediate activations and outputs. Same as `SetFlag('quantize',1)`
+  * 'i': measure time to load the initial data into DLA
+  * 'L': profile each layer separately: run each layer in the model individually (measure execution time of each layer)
+  * 'z': profile each layer separately: run entire model and output each layer's output (only to check output of each layer)
+  * 't': save input and output of the inference in a file
   * 'T': create two programs, one for each bank instead of modifying addresses during execution. This is used when data transfer to external memory is a bottleneck.
+  * 'a': compile, run and check which option works better. loop{ compile, run, save_best_choice }. Same as `SetFlag('profile',1)`
 
 The following are flags that can be set with `SetFlag` without the need of a keyword or code.
 
@@ -50,6 +68,21 @@ The following are flags that can be set with `SetFlag` without the need of a key
 
 **max_instr**: set a bound for the maximum number of Micron DLA hardware instructions to be generated. If this option is set, then instructions will be placed before data. Note: If the amount of data (input, output and weights) stored in memory exceeds 4GB, then this option must be set.
 
+**remove**: remove a number of layers in beginning of the model.
+
+**two_programs**: create a separate program for each bank instead of modifying addresses during execution
+
+**imgs_per_cluster**: images processed by each cluster (batch size for one cluster).
+
+**addr_off**: set address offset for the memory map
+
+**profile**: compile, run and check which option works better. loop{ compile, run, save_best_choice }
+
+**quantize**: don't run DLA. Only run software version using float precision and save quantization metrics: variable fix-point for inputs, intermediate activations and outputs.
+
+**fpgaid**: Select which FPGA to use: 510, 511 or 852. default -1 use first fpga found.
+
+
 ## GetInfo
 
 Gets information regarding some SDK options.
@@ -64,11 +97,22 @@ There is no keyword or code for GetInfo. It only needs one of the following flag
 
 **numbatch**: the number of batch to be processed, returned as an int
 
+**addr_off**: get the last address of the memory map, returned as an int. Used to attach a new memory map using this addr_off.
+
+**busy_comp**: returns if DLA is busy processing a input buffer
+
 **freq**: the Micron DLA hardware's frequency, returned as an int
 
 **maxcluster**: the maximum number of clusters in Micron DLA hardware, returned as an int
 
 **maxfpga**: the maximum number of FPGAs available, returned as an int
 
-**version**: prints the version number of the SDK
+**version**: returns the version number of the SDK, return as string
+
+**build**: returns the build hash, return as string
+
+**hwversion**: returns the DLA hardware version, return as string
+
+**hwbuild**: returns the DLA hardware build, return as string
+
 
