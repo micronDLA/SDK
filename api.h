@@ -186,12 +186,6 @@ void ie_write_data(void *cmemo, uint64_t address, const void *data, uint64_t nel
 void ie_write_weights(void *cmemo, float *weight, int wsize, int nid);
 
 /*!
-create non-linearity coefficients to be loaded into accelerator.
-    @param type        context object
-*/
-SF_INT* get_nonlin_coefs(int type);
-
-/*!
 create a MainMem for a FPGA card and initializes the FPGA (pico obj).
     @param cmemo        context object
     @param nfpga        set number of FPGAs to use and initialize
@@ -199,6 +193,13 @@ create a MainMem for a FPGA card and initializes the FPGA (pico obj).
     @param fbitfile     bitfile path to load into FPGA
 */
 void ie_create_memcard(void *cmemo, int nfpga, int nclus, const char* fbitfile);
+
+/*!
+return an array with nonlinear coefficients (can be freed with free)
+    @param cmemo        context object
+    @param type         coefficient type (one of SFT_RELU, SFT_SIGMOUID...)
+*/
+SF_INT* ie_get_nonlin_coefs(void *cmemo, int type);
 
 /*!
 create MemData, add to cmem, return its address: use address to read/write data to memory
@@ -215,10 +216,10 @@ read code from text file, generate assembly and return assembly
     @param cmemo        context object
     @param fname        text file path with program
     @param instr_addr   memory address of instructions
-    @param debug        debug level flag
-    @return     array of assembly instructions
+    @param programlen   the generated program length in bytes will be returned here
+    @return     buffer with machine code instructions, to be freed with free
 */
-uint32_t* read_code(void *cmemo, const char *fname, uint64_t instr_addr, int debug);
+uint32_t* ie_readcode(void *cmemo, const char *fname, uint64_t instr_addr, uint64_t *programlen);
 
 /*!
 set initial instructions, and start hw and poll/wait, return error or success
@@ -227,10 +228,8 @@ set initial instructions, and start hw and poll/wait, return error or success
     @param hwtime       returns amount of time to run the accelerator
     @param mvdata       returns amount of data transferred to accelerator
     @param outsize      wait for this amount of data to return from accelerator. if 0 then wait for 2 sec
-    @param debug        debug level
 */
-unsigned ie_hwrun(void* cmemo, uint64_t instr_addr, double* hwtime, double* mvdata, int outsize, int debug);
-
+void ie_hwrun(void* cmemo, uint64_t instr_addr, double* hwtime, double* mvdata, int outsize);
 
 /*!
 Just load multiple bin files without initializing hardware
