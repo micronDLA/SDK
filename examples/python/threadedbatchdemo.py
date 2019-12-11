@@ -83,7 +83,6 @@ yres = args.res[1]
 #Create and initialize the snowflow object
 ie = microndla.MDLA()
 ie.SetFlag('imgs_per_cluster', str(args.batch))
-#ie.SetFlag('hwlinear','0')
 #ie.SetFlag('debug','bw')
 
 #Compile to a file

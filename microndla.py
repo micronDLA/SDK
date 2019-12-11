@@ -7,7 +7,7 @@ from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
 f = CDLL("libmicrondla.so")
 
-curversion = 'v1.0.0'
+curversion = '2020.1'
 
 #Allows None to be passed instead of a ndarray
 def wrapped_ndptr(*args, **kwargs):

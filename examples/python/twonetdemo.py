@@ -47,7 +47,6 @@ for i in range(2):
 
 #Create and initialize the Inference Engine object
 ie = microndla.MDLA()
-#ie.SetFlag('hwlinear','0')
 #ie.SetFlag('debug','bw')
 
 #Compile to a file

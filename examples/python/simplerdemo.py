@@ -47,7 +47,7 @@ img = LoadImage(args.image, args)
 
 #Create and initialize the Inference Engine object
 ie = microndla.MDLA()
-ie.SetFlag('debug','bw')
+#ie.SetFlag('debug','bw')
 
 istr = "{:d}x{:d}x{:d}".format(args.res[2], args.res[1], args.res[0])
 #Create the storage for the result and run one inference

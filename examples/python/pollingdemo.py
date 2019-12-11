@@ -50,7 +50,6 @@ yres = args.res[1]
 
 #Create and initialize the snowflow object
 ie = microndla.MDLA()
-#ie.SetFlag('hwlinear','0')
 #ie.SetFlag('debug','bw')
 
 #GetResult will not wait for the result, it will return immediately if there is no result

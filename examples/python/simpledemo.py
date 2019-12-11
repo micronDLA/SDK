@@ -40,9 +40,7 @@ for i in range(3):
 
 #Create and initialize the Inference Engine object
 ie = microndla.MDLA()
-#ie.SetFlag('hwlinear','0')
-ie.SetFlag('debug','bw')
-ie.SetFlag('comparesw','1')
+#ie.SetFlag('debug','bw')
 
 #Compile to a file
 swnresults = ie.Compile("{:d}x{:d}x{:d}".format(args.res[2], args.res[1], args.res[0]), args.modelpath, 'save.bin')
