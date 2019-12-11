@@ -6,6 +6,7 @@ import numpy as np
 from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
 f = CDLL("libmicrondla.so")
+libc = CDLL("libc.so.6")
 
 curversion = '2020.1'
 
@@ -23,6 +24,19 @@ FloatNdPtr = wrapped_ndptr(dtype=np.float32, flags='C_CONTIGUOUS')
 class MDLA:
     def __init__(self):
         self.userobjs = {}
+
+        self.NONLIN_BLOCKS = 4
+        self.NUM_VV = 4
+        self.NUM_MM = 4
+        self.NONLIN_LINE = self.NUM_VV * self.NUM_MM * 2
+        self.MAX_NONLINBIT = 6
+        self.NONLIN_BLOCK_SIZE = (1<<(self.MAX_NONLINBIT+1))
+        self.NONLIN_SIZE = self.NONLIN_BLOCK_SIZE * self.NONLIN_LINE
+
+        self.SFT_RELU = 0
+        self.SFT_SIGMOID = 1
+        self.SFT_NORELU = 2
+        self.SFT_TANH = 3
 
         self.ie_create = f.ie_create
         self.ie_create.restype = c_void_p
@@ -64,13 +78,31 @@ class MDLA:
         self.ie_getresult.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_void_p]
 
         self.ie_read_data = f.ie_read_data
-        self.ie_read_data.argtypes = [c_void_p, c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_int]
+        self.ie_read_data.argtypes = [c_void_p, c_ulonglong, c_void_p, c_ulonglong, c_int]
 
         self.ie_write_data = f.ie_write_data
-        self.ie_write_data.argtypes = [c_void_p, c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_int]
+        self.ie_write_data.argtypes = [c_void_p, c_ulonglong, c_void_p, c_ulonglong, c_int]
 
         self.ie_write_weights = f.ie_write_weights
         self.ie_write_weights.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int]
+
+        self.ie_create_memcard = f.ie_create_memcard
+        self.ie_create_memcard.argtypes = [c_void_p, c_int, c_int, c_char_p]
+
+        self.ie_malloc = f.ie_malloc
+        self.ie_malloc.argtypes = [c_void_p, c_ulonglong, c_int, c_int, c_char_p]
+        self.ie_malloc.restype = c_ulonglong
+
+        self.ie_get_nonlin_coefs = f.ie_get_nonlin_coefs
+        self.ie_get_nonlin_coefs.argtypes = [c_void_p, c_int]
+        self.ie_get_nonlin_coefs.restype = POINTER(c_short)
+
+        self.ie_readcode = f.ie_readcode
+        self.ie_readcode.argtypes = [c_void_p, c_char_p, c_ulonglong, POINTER(c_ulonglong)]
+        self.ie_readcode.restype = POINTER(c_uint32)
+
+        self.ie_hwrun = f.ie_hwrun
+        self.ie_hwrun.argtypes = [c_void_p, c_ulonglong, POINTER(c_double), POINTER(c_double), c_int]
 
         self.ie_run_sim = f.ie_run_sim
         self.ie_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), POINTER(POINTER(c_float)), POINTER(c_ulonglong)]
@@ -380,13 +412,19 @@ class MDLA:
         if rc != 0:
             raise Exception(rc)
 
-    #read data from an address in shared memory
+    #Read data from an address in shared memory
+    # addr: address in shared memory where to read data from
+    # data: numpy array where to store data
+    # card: card index
     def ReadData(self, addr, data, card):
-        self.ie_read_data(self.handle, addr, data, data.size*sizeof(c_float), card)
+        self.ie_read_data(self.handle, addr, data.ctypes.data, data.size * data.itemsize, card)
 
-    #write data to an address in shared memory
+    #Write data to an address in shared memory
+    # addr: address in shared memory where to write data
+    # data: numpy array to write
+    # card: card index
     def WriteData(self, addr, data, card):
-        self.ie_write_data(self.handle, addr, data, data.size*sizeof(c_float), card)
+        self.ie_write_data(self.handle, addr, data.ctypes.data, data.size * data.itemsize, card)
 
     #write weights to an address in shared memory
     # weight: weights as a contiguous array
@@ -394,3 +432,50 @@ class MDLA:
     def WriteWeights(self, weight, node):
         self.ie_write_weights(self.handle, weight, weight.size, node)
 
+    #Allocate memory in shared memory
+    # nelements: number of elements to allocate
+    # datasize:  size of each element
+    # card:      card index
+    # name:      name to give to the buffer
+    #Return:
+    # the address in the shared memory
+    def Malloc(self, nelements, datasize, card, name):
+        return self.ie_malloc(self.handle, nelements, datasize, card, bytes(name, 'ascii'))
+
+    #Initialize the device for low level operations
+    # nfpga: number of FPGAs
+    # nclus: number of clusters
+    # fbitfile: optional, bitfile name
+    def CreateMemcard(self, nfpga, nclus, fbitfile):
+        self.ie_create_memcard(self.handle, nfpga, nclus, bytes(fbitfile, 'ascii'))
+
+    #Get nonlinear tables in a numpy array
+    # type: type of the coefficients, one of the SFT_... constants
+    def GetNonlinCoefs(self, type):
+        buf = np.ndarray(self.NONLIN_SIZE, dtype = np.int16)
+        nl = self.ie_get_nonlin_coefs(self.handle, type)
+        memmove(buf.ctypes.data, nl, self.NONLIN_SIZE * 2)
+        libc.free(nl)
+        return buf
+
+    #Read a program from a file
+    # filename:   file where to read it from
+    # instr_addr: address in shared memory where to store
+    #Return:
+    # the program as a numpy array
+    def ReadCode(self, filename, instr_addr):
+        proglen = c_ulonglong()
+        code = self.ie_readcode(self.handle, bytes(filename, 'ascii'), instr_addr, byref(proglen))
+        data = np.ndarray(proglen.value//4, dtype=np.int32)
+        memmove(data.ctypes.data, code, proglen)
+        libc.free(code)
+        return data
+
+    #Run the program in the device
+    # instr_addr: starting address
+    # outsize: number of 32-byte blocks to expect as output
+    def HwRun(self, instr_addr, outsize):
+        hwtime = c_double()
+        mvdata = c_double()
+        self.ie_hwrun(self.handle, instr_addr, byref(hwtime), byref(mvdata), outsize)
+        return hwtime.value, mvdata.value
