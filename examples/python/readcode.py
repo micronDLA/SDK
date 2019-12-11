@@ -13,7 +13,7 @@ def MEMALIGN(a):
 
 from argparse import ArgumentParser
 # argument Checking
-parser = ArgumentParser(description="FWDNXT Categorization Demonstration")
+parser = ArgumentParser(description="Code Demonstration")
 _ = parser.add_argument
 _('-l','--load', type=str, default='', help='Load bitfile')
 _('-p','--print', type=str, default='b', help='Debug info string')
