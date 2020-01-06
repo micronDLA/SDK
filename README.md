@@ -25,6 +25,7 @@ There are more documents in this SDK folder:
 - [1. Installation](#1-installation) : install SDK
   * [System requirements](#system-requirements)
   * [Software requirements](#software-requirements)
+  * [Docker Image](#docker-image)
   * [Recommended Installation](#recommended-installation)
   * [Offline Installation](#offline-installation)
   * [Manual Installation](#manual-installation)
@@ -78,6 +79,39 @@ Tested on:
 - [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): Currently version: pico-computing-6.1.0.17. Please verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
 - Python 3 together with numpy
 - [Thnets](https://github.com/mvitez/thnets/)
+
+## Docker Image
+
+Download [here](https://picocomputing.zendesk.com/hc/en-us/) the docker image for your OS.
+
+Load the docker image using docker load. Example:
+```
+$ docker load < microndla_ubuntu16_04.tgz
+```
+
+Check the tag of the docker image that you just loaded using:
+```
+$ docker images
+```
+
+Run the docker image using the `docker run` command. Example:
+```
+$ docker run -it --rm -v "/path/to/models/on/host":/models --device=/dev/pico1 microndla:ubuntu16.04
+```
+That will start you in the /home/mdla directory where the SDK is preinstalled. 
+
+In case you would like to make changes to the container (e.g. install text editor, python libraries), remove the --rm flag so the container persists on exit.
+You can then use the container id to `docker commit <id>` to a new image or `docker restart <id>` and `docker attach <id>` to reconnect stopped container.
+``
+$ docker run -it -v "/path/to/models/on/host":/models --device=/dev/pico1 microndla:ubuntu16.04
+root@d80174ce2995:/home/mdla# exit
+$ docker restart d80174ce2995
+$ docker attach d80174ce2995
+root@d80174ce2995:/home/mdla#
+```
+
+Run the example code provided. Check sections [3.](#3-getting-started-inference-on-microndla-hardware) and [4.](#4-getting-started-inference-on-microndla-hardware-with-c)
+
 
 ## Recommended Installation
 
