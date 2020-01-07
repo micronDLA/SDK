@@ -102,7 +102,7 @@ That will start you in the /home/mdla directory where the SDK is preinstalled.
 
 In case you would like to make changes to the container (e.g. install text editor, python libraries), remove the --rm flag so the container persists on exit.
 You can then use the container id to `docker commit <id>` to a new image or `docker restart <id>` and `docker attach <id>` to reconnect stopped container.
-``
+```
 $ docker run -it -v "/path/to/models/on/host":/models --device=/dev/pico1 microndla:ubuntu16.04
 root@d80174ce2995:/home/mdla# exit
 $ docker restart d80174ce2995
