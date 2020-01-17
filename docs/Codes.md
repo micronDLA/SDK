@@ -50,6 +50,8 @@ The following are flags that can be set with `SetFlag` without the need of a key
 
 **max_instr**: set a bound for the maximum number of FWDNXT inference engine instructions to be generated. If this option is set, then instructions will be placed before data. Note: If the amount of data (input, output and weights) stored in memory exceeds 4GB, then this option must be set.
 
+**seed**: positive integer value, default is current time. Value is used to seed random generation. 
+
 ## GetInfo
 
 Gets information regarding some SDK options.
