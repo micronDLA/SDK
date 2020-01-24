@@ -98,7 +98,7 @@ Run the docker image using the `docker run` command. Example:
 ```
 $ docker run -it --rm -v "/path/to/models/on/host":/models --device=/dev/pico1 microndla:ubuntu16.04
 ```
-That will start you in the /home/mdla directory where the SDK is preinstalled. 
+That will start you in the /home/mdla directory where the SDK is preinstalled.
 
 In case you would like to make changes to the container (e.g. install text editor, python libraries), remove the --rm flag so the container persists on exit.
 You can then use the container id to `docker commit <id>` to a new image or `docker restart <id>` and `docker attach <id>` to reconnect stopped container.
@@ -143,15 +143,6 @@ cd protobuf-3.6.1
 make -j4
 sudo make install
 sudo ldconfig
-```
-
-**Install Thnets with ONNX support (required by SDK)**
-
-```
-git clone https://github.com/mvitez/thnets/
-cd thnets
-make ONNX=1
-sudo make install
 ```
 
 
