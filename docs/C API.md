@@ -251,7 +251,7 @@ Put an input into a buffer and start Micron DLA hardware.
 ******
 ## int ie_getresult
 
-Get an output from a buffer. If opt_blocking was set then it will wait Micron DLA hardware.
+Get an output from a buffer. If opt_blocking was set then it will wait for Micron DLA hardware.
 
 ***Parameters:***
 
@@ -302,17 +302,17 @@ Write data to an address in shared memory.
 ******
 ## void ie_write_weights
 
-<span style="color:red">FIXME FIXME FIXME.</span>
+Write weights to an address in shared memory. <span style="color:red">FIXME FIXME FIXME.  address????</span>
 
 ***Parameters:***
 
 `void *cmemo`: pointer to an Inference Engine object.
 
-`float *weight`:     <span style="color:red">FIXME FIXME FIXME.</span>
+`float *weight`:  array of weights.
 
-`int wsize`:      <span style="color:red">FIXME FIXME FIXME.</span>
+`int wsize`: number of elements in `weight` array.
 
-`int nid`:      <span style="color:red">FIXME FIXME FIXME.</span>
+`int nid`:  id of the layer for which weights are being overwritten.
 
 
 ******

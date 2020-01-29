@@ -2,26 +2,89 @@
 
 The python Micron DLA hardware class has these functions:
 
+******
 ## Compile
 
 Loads a network and prepares it for Micron DLA hardware.
 
 ***Parameters:***
 
-**Image**:  it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up Micron DLA hardware's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+**Image**:  a string with the image path or the image dimensions. If it is an image path then the size of the image will be used to set up Micron DLA hardware's code. If it is not an image path then it needs to specify the size in one of the following formats:  
+>    Width x Height x Planes  
+>    Width x Height x Planes x Batchsize  
+>    Width x Height x Depth x Planes x Batchsize
+
+Multiple inputs can be specified by separating them with a semi-colon.
+
+Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
 
 **Modeldir**: path to a model file in ONNX format.
 
 **Outfile**: path to a file where a model in Micron DLA ready format will be saved.
 
-**Numcard**: number of FPGA cards to use.
+**Numcard**: number of FPGA cards to use.  Optional.  Default value is 1 if not specified.
 
-**Numclus**: number of clusters to be used.
+**Numclus**: number of clusters to be used.  Optional.  Default value is 1 if not specified.
 
-**Nlayers**: number of layers to run in the model. Use -1 if you want to run the entire model.
+**Nlayers**: number of layers to run in the model. Use -1 if you want to run the entire model.   Optional.  Default value is 1 if not specified.
 
-**Return value:** Number of results to be returned by the network
+***Return value:*** Number of results to be returned by the network
 
+******
+## GO
+
+All-in-one: Compile a network, Init FPGA and Run accelerator.
+
+***Parameters:***
+
+**Image**:  a string with the image path or the image dimensions. If it is an image path then the size of the image will be used to set up Micron DLA hardware's code. If it is not an image path then it needs to specify the size in one of the following formats:  
+>    Width x Height x Planes  
+>    Width x Height x Planes x Batchsize  
+>    Width x Height x Depth x Planes x Batchsize
+
+Multiple inputs can be specified by separating them with a semi-colon.
+
+Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+
+**Modeldir**: path to a model file in ONNX format.
+
+**Bitfile**: FPGA bitfile to be loaded.path to a file where a model in Micron DLA ready format will be saved.
+
+**Numcard**: number of FPGA cards to use.  Optional.  Default value is 1 if not specified.
+
+**Numclus**: number of clusters to be used.  Optional.  Default value is 1 if not specified.
+
+***Return value:*** model's output tensor as a preallocated numpy array of type float32.
+
+******
+## Quantize
+
+Loads and quantizes a network over a calibration dataset, and prepares it for Micron DLA hardware.
+
+***Parameters:***
+
+**Image**:  a string with the image path or the image dimensions. If it is an image path then the size of the image will be used to set up Micron DLA hardware's code. If it is not an image path then it needs to specify the size in one of the following formats:  
+>    Width x Height x Planes  
+>    Width x Height x Planes x Batchsize  
+>    Width x Height x Depth x Planes x Batchsize
+
+Multiple inputs can be specified by separating them with a semi-colon.
+
+Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+
+**Modeldir**: path to a model file in ONNX format.
+
+**Outfile**: path to a file where a model in Micron DLA ready format will be saved.
+
+**Images**: a list of inputs (calibration dataset) to the model as a numpy array of type float32.
+
+**Numcard**: number of FPGA cards to use.  Optional.  Default value is 1 if not specified.
+
+**Numclus**: number of clusters to be used.  Optional.  Default value is 1 if not specified.
+
+***Return value:*** Number of results to be returned by the network
+
+******
 ## Init
 
 Loads a bitfile on an FPGA if necessary and prepares to run Micron DLA hardware.
@@ -32,8 +95,20 @@ Loads a bitfile on an FPGA if necessary and prepares to run Micron DLA hardware.
 
 **Bitfile**: path to the bitfile. Send empty string &quot;&quot; if you want to bypass loading a bitfile. In this case it will use a bitfile that is already loaded on the FPGA.
 
-**Return value:** Number of results to be returned by the network
+***Return value:*** Number of results to be returned by the network
 
+******
+## Loadmulti
+
+Loads multiple bitfiles without initializing hardware.
+
+***Parameters:***
+
+**Bins**: list of paths to the bitfiles to load.
+
+***Return value:*** None. <span style="color:red">FIXME FIXME FIXME ????????? .</span>
+
+******
 ## Free
 
 Frees the network.
@@ -42,6 +117,7 @@ Frees the network.
 
 None
 
+******
 ## SetFlag
 
 Set some flags that change the behaviour of the API.
@@ -55,6 +131,7 @@ Set some flags that change the behaviour of the API.
 Currently available options are listed in [here](Codes.md)
 
 
+******
 ## GetInfo
 
 Gets information of the SDK options.
@@ -65,6 +142,7 @@ Gets information of the SDK options.
 
 Currently available options are listed in [here](Codes.md)
 
+******
 ## Run
 
 Runs a single inference on Micron DLA hardware.
@@ -75,6 +153,7 @@ Runs a single inference on Micron DLA hardware.
 
 **Result** output tensor of the model as a preallocated numpy array of type float32
 
+******
 ## Run\_sw
 
 Runs a single inference on the Micron DLA hardware simulator.
@@ -85,6 +164,7 @@ Runs a single inference on the Micron DLA hardware simulator.
 
 **Result** output tensor of the model as a preallocated numpy array of type float32
 
+******
 ## Run\_th
 
 Runs a single inference using thnets.
@@ -96,6 +176,7 @@ Runs a single inference using thnets.
 **Result** output tensor of the model as a preallocated numpy array of type float32
 
 
+******
 ## PutInput
 
 Put an input into a buffer and start Micron DLA hardware
@@ -106,14 +187,60 @@ Put an input into a buffer and start Micron DLA hardware
 
 **userobj** user defined object to keep track of the given input
 
-**Return value:** Error or no error.
+***Return value:*** Error or no error.
+
+******
 
 ## GetResult
 
-Get an output from a buffer. If opt_blocking was set then it will wait Micron DLA hardware
+Get an output from a buffer. If opt_blocking was set then it will wait for Micron DLA hardware.
 
 ***Parameters:***
 
 **Result** output tensor of the model as a preallocated numpy array of type float32
 
-**Return value:**: recover the parameters set for a previously given input
+***Return value:***: recover the parameters set for a previously given input <span style="color:red">FIXME FIXME FIXME.</span>
+
+******
+## WriteWeights
+
+Write weights to an address in shared memory. <span style="color:red">FIXME FIXME FIXME.  address????</span>
+
+***Parameters:***
+
+**Weight** weights as a contiguous array.
+
+**Node** id of the layer for which weights are being overwritten.
+
+***Return value:*** None.
+
+******
+## ReadData
+
+Read data from an address in shared memory.
+
+***Parameters:***
+
+**Addr** shared memory address of the start of the data to read.
+
+**Data** numpy array where the data will be stored.
+
+**Card** FPGA card index.
+
+***Return value:*** None.
+
+******
+## WriteData
+
+Write data to an address in shared memory.
+
+***Parameters:***
+
+**Addr** shared memory address of the location to write the data.
+
+**Data** numpy array containing data to write.
+
+**Card** FPGA card index.
+
+***Return value:*** None.
+
