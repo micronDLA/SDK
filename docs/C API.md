@@ -2,13 +2,29 @@
 
 The [C functions](https://github.com/FWDNXT/SDK/blob/master/api.h) for the Inference Engine are:
 
-## ie_compile
+******
+## void *ie_create
 
-Parse an ONNX model and generates Inference Engine instructions.
+Create a context object.
 
 ***Parameters:***
 
-`const char *image`: it is a string with the image path or the image dimensions. If it is a image path then the size of the image will be used to set up Micron DLA hardware's code. If it is not an image path then it needs to specify the size in the following format: Width x Height x Channels. Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+None
+
+***Return value:*** Pointer to a context object.
+
+******
+## void *ie_compile
+
+Parse an ONNX model and generate Inference Engine instructions.
+
+***Parameters:***
+
+`const char *image`: a string with the image path or the image dimensions. If it
+is an image path then the size of the image will be used to set up Micron DLA
+hardware's code.  If it is not an image path then it needs to specify the size
+in the following format: Width x Height x Channels.  
+Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
 
 `const char *modeldir`: path to a model file in ONNX format.
 
@@ -18,19 +34,83 @@ Parse an ONNX model and generates Inference Engine instructions.
 
 `int numcard`: number of FPGA cards to use.
 
-`int numclus`: number of clusters to be used.
+`int numclus`: number of clusters to use.
 
 `int nlayers`: number of layers to run in the model. Use -1 if you want to run the entire model.
+  
+***Return value:*** pointer to an Inference Engine object.  
 
-**Return value:** Pointer to the Inference Engine object.
+******
+## int ie_go
 
-## ie_init
+All-in-one: Compile a network, Init FPGA and Run accelerator.
+
+***Parameters:***
+
+'void *cmemo': context object, can be null.
+
+`const char *image`: a string with the image path or the image dimensions. If it
+is an image path then the size of the image will be used to set up Micron DLA
+hardware's code.  If it is not an image path then it needs to specify the size
+in the following format: Width x Height x Channels.  
+Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+
+`const char *modelpath`: path to a model file in ONNX format.
+
+`const char* fbitfile`: path to a file where a model in the Inference Engine format will be saved.
+
+`int numcard`: number of FPGA cards to use.
+
+`int numclus`: number of clusters to use.
+
+`const float * const *input`: input data in [P, H, W] order, one pointer per input (in case of multiple inputs).
+
+`float **output`: output data in [P, H, W] order, one pointer per input
+
+***Return value:***  -1 (error), 0 (pass)
+
+******
+## int ie_quantize
+
+Run static quantization of inputs, weight and outputs over a calibration dataset.
+
+***Parameters:***
+
+'void *cmemo': context object, can be null.
+
+`const char *image`: a string with the image path or the image dimensions. If it
+is an image path then the size of the image will be used to set up Micron DLA
+hardware's code.  If it is not an image path then it needs to specify the size
+in the following format: Width x Height x Channels.  
+Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+
+`const char *modelpath`: path to a model file in ONNX format.
+
+`const char* outbin`: path to a file where a model in the Inference Engine format will be saved.
+
+`uint64_t swoutsize`: output size (including the layers run in software) assuming batch 1, in number of elements, one per output.
+
+`int noutputs`: number of returned output arrays.
+
+`int numcard`: number of FPGA cards to use.
+
+`int numclus`: number of clusters to use.
+
+`float **input`: input data in [P, H, W] order, one pointer per input (in case of multiple inputs).
+
+`int num_inputs`: number of inputs in the calibration dataset.
+
+***Return value:***  -1 (error), 0 (pass)
+
+******
+
+## void *ie_init
 
 Loads a bitfile on an FPGA if necessary and prepares to run on the Inference Engine. Load instructions and parameters.
 
 ***Parameters:***
 
-`void *cmemo`: pointer to the Inference Engine object.
+`void *cmemo`: pointer to an Inference Engine object.
 
 `const char* fbitfile`: path to the bitfile. Send empty string &quot;&quot; if you want to bypass loading a bitfile. In this case it will use a bitfile that is already loaded on the FPGA.
 
@@ -38,15 +118,32 @@ Loads a bitfile on an FPGA if necessary and prepares to run on the Inference Eng
 
 `unsigned* outsize`: returns number of output values that the Inference Engine will return. swoutsize is number of output values for `ie_run`.
 
-**Return value:** Pointer to the Inference Engine object.
+***Return value:*** pointer to an Inference Engine object.
 
-## ie_run
+******
+
+## void *ie_loadmulti
+
+Loads multiple bitfiles without initializing hardware.
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+`const char* const *inbins`: array of paths to the bitfiles to load.
+
+`unsigned count`: number of bitfiles to load.
+
+***Return value:*** pointer to an Inference Engine object to pass to ie_init.
+
+******
+## int ie_run
 
 Runs inference on the Micron DLA hardware.
 
 ***Parameters:***
 
-`void *cmemo`: pointer to the Inference Engine object.
+`void *cmemo`: pointer to an Inference Engine object.
 
 `const float *input`: pointer to input. Arrange column first. [W][H][P][Batch]
 
@@ -56,15 +153,16 @@ Runs inference on the Micron DLA hardware.
 
 `unsigned output_elements`: output size
 
-**Return value:** Error or no error.
+***Return value:***  -1 (error), 0 (pass).
 
-## ie_run_sim
+******
+## int ie_run_sim
 
 Runs a single inference using the Inference Engine software implementation (simulator).
 
 ***Parameters:***
 
-`void *cmemo`: pointer to the Inference Engine object.
+`void *cmemo`: pointer to an Inference Engine object.
 
 `const float *input`: pointer to input. Arrange column first. [W][H][P][Batch]
 
@@ -74,15 +172,16 @@ Runs a single inference using the Inference Engine software implementation (simu
 
 `unsigned output_elements`: output size
 
-**Return value:** Error or no error.
+***Return value:*** -1 (error), 0 (pass).
 
-## thnets_run_sim
+******
+## int thnets_run_sim
 
 Runs a single inference using thnets.
 
 ***Parameters:***
 
-`void *cmemo`: pointer tothe Inference Engine object.
+`void *cmemo`: pointer to an Inference Engine object.
 
 `const float *input`: pointer to input. Arrange column first. [W][H][P][Batch]
 
@@ -92,19 +191,21 @@ Runs a single inference using thnets.
 
 `unsigned output_elements`: output size
 
-**Return value:** Error or no error.
+***Return value:*** -1 (error), 0 (pass).
 
-## ie_free
+******
+## void ie_free
 
 Frees the network.
 
 ***Parameters:***
 
-`void *cmemo`: pointer to the Inference Engine object.
+`void *cmemo`: pointer to an Inference Engine object.
 
-## ie_setflag
+******
+## int ie_setflag
 
-Set some flags that change the behaviour of the API.
+Set some flags that change the behavior of the API.
 
 ***Parameters:***
 
@@ -114,7 +215,10 @@ Set some flags that change the behaviour of the API.
 
 Currently available options are listed in [here](Codes.md)
 
-## ie_getinfo
+***Return value:*** <span style="color:red">FIXME FIXME FIXME.</span>
+
+******
+## int ie_getinfo
 
 Get value of a measurement variable.
 
@@ -127,13 +231,14 @@ Get value of a measurement variable.
 Currently available options are listed in [here](Codes.md)
 
 
-## ie_putinput
+******
+## int ie_putinput
 
-Put an input into a buffer and start Micron DLA hardware
+Put an input into a buffer and start Micron DLA hardware.
 
 ***Parameters:***
 
-`void *cmemo` : pointer tothe Inference Engine object.
+`void *cmemo` : pointer to an Inference Engine object.
 
 `const float *input` : pointer to input. Arrange column first. [W][H][P][Batch]
 
@@ -141,20 +246,189 @@ Put an input into a buffer and start Micron DLA hardware
 
 `void *userparam` : parameters defined by the user to keep track of the inputs
 
-**Return value:** Error or no error.
+***Return value:*** -1 (error), 0 (pass).
 
-## ie_getresult
+******
+## int ie_getresult
 
-Get an output from a buffer. If opt_blocking was set then it will wait Micron DLA hardware
+Get an output from a buffer. If opt_blocking was set then it will wait Micron DLA hardware.
 
 ***Parameters:***
 
-`void *cmemo` : pointer tothe Inference Engine object.
+`void *cmemo` : pointer to an Inference Engine object.
 
-`float *output` : pointer to allocated memory for the output. It will put the output values into this location.
+`float *output` : pointer to allocated memory for the output.  It will put the output values into this location.
 
 `uint64_t output_elements` : output size.
 
 `void **userparam` : recover the parameters set for a previously given input.
 
-**Return value:** Error or no error.
+***Return value:*** -1 (error), 0 (pass).
+
+******
+## void ie_read_data
+
+Read data from an address in shared memory.
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+`uint64_t address`: shared memory address of the start of the data to read.
+
+`void *data`: pointer to the buffer that will be filled with the returned data.
+
+`uint64_t nelements`: number of bytes to transfer.
+
+`int card`: FPGA card index.
+
+******
+## void ie_write_data
+
+Write data to an address in shared memory.
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+`uint64_t address`: shared memory address of the location to write the data.
+
+`void *data`: pointer to the data to write.
+
+`uint64_t nelements`: number of bytes to transfer.
+
+`int card`: FPGA card index.
+
+******
+## void ie_write_weights
+
+<span style="color:red">FIXME FIXME FIXME.</span>
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+`float *weight`:     <span style="color:red">FIXME FIXME FIXME.</span>
+
+`int wsize`:      <span style="color:red">FIXME FIXME FIXME.</span>
+
+`int nid`:      <span style="color:red">FIXME FIXME FIXME.</span>
+
+
+******
+## int set_external_interface
+
+Establish externally defined interfaces for interface with the hardware.
+    <span style="color:red">FIXME FIXME FIXME.</span>
+
+***Parameters:***
+
+`void *cmemo` : pointer to an Inference Engine object.
+
+`int64_t (*cfgrd) (uint32_t)`: function pointer for reading config registers from DLA.
+
+`void (*cfgwr) (uint32_t, uint64_t)`: function pointer for writing config registers to DLA.
+
+`void (*readext) (uint64_t, void *, uint64_t)`: function pointer for reading
+      data from external memory connected with DLA.
+
+`void (*writeext) (uint64_t, void *, uint64_t)`: function pointer for writing
+      data to external memory connected with DLA.
+
+***Return value:*** -1 (error), 0 (pass).
+
+
+******
+## int set_external_wait
+
+Establish externally defined interface for the wait/sleep function in hardware simulation (Veloce only).
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+`void (*wait_ext) (int))`: function pointer to the external wait/sleep function.
+    <span style="color:red">FIXME FIXME FIXME.</span>
+
+***Return value:*** -1 (error), 0 (pass).
+
+******
+## SF_INT *ie_get_nonlin_coefs
+
+Create an array of nonlinear coefficients.
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+`int type`:  coefficient type (one of SFT_RELU, SFT_SIGMOID, ...).  <span style="color:red">FIXME FIXME FIXME.   Implementation ignores this parameter and always uses RELU!!!!!</span>
+
+***Return value:*** Pointer to array of coefficients.
+
+******
+## void ie_create_memcard
+
+Create a MainMem for an FPGA card and initialize the FPGA (pico obj).
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+`int nfpga`: number of FPGAs to use and initialize.
+
+`int nclus`: number of clusters to use.
+
+`const char *fbitfile`: pathname of the bitfile to load into the FPGA.
+
+******
+## uint32_t *ie_readcode
+
+Read code from text file, generate assembly and return assembly.
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+`const char *fname`: text file path containing program.
+
+`uint64_t instr_addr`: memory address of instructions.
+
+`uint64_t *programlen`: the generated program length in bytes is returned here.
+
+***Return value:*** uint32_t* pointer to buffer containing machine code instructions, to be freed with free.
+
+******
+## void ie_hwrun
+
+Set initial instructions, and start hw and poll/wait.   
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+`uint64_t instr_addr`: memory address of instructions.
+
+`double *hwtime`: returns amount of time the accelerator ran.   <span style="color:red">FIXME FIXME FIXME.</span>
+
+`double *mvdata`: returns amount of data transferred to the acccelerator.  <span style="color:red">FIXME FIXME FIXME.</span>
+
+`int outsize`: wait for this amount of data to return from the accelerator.   If 0 then wait for two seconds. <span style="color:red">FIXME FIXME FIXME.</span>
+
+
+******
+## uint64_t ie_malloc
+
+Create MemData, add to cmem, and return its address.
+<span style="color:red">FIXME FIXME FIXME Is there an ie_free?.</span>
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+`unsigned len`: number of words to allocate.
+
+`size_t type`: size of each word in bytes.<span style="color:red">FIXME FIXME FIXME Verify.</span>
+
+`int card`: selects which FPGA card to use to allocate memory.
+
+`const char *comment`:  comment for allocation.   Can be used in ASM code, prefixed with @.  <span style="color:red">FIXME FIXME FIXME needs clarification.</span>
