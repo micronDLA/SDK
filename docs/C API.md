@@ -173,11 +173,11 @@ Runs a single inference using the Inference Engine software implementation (simu
 
 `void *cmemo`: pointer to an Inference Engine object.
 
-`const float * const *input`: pointer to inputs. Arranged column first. [W][H][P][Batch
+`const float * const *input`: pointer to inputs. Arranged column first. [W][H][P][Batch]
 <span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span>
 
 `unsigned *input_elements`: number of elements in each input.
-<span style="color:red">FIXME FIXME FIXME api.h says type is const uint64_t</span>
+<span style="color:red">FIXME FIXME FIXME api.h says type is const uint64_t*</span>
 
 `float **output`: pointer to allocated memory for the output. The output values
 are returned in this location.
