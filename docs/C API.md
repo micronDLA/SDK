@@ -1,6 +1,9 @@
 # C API
 
-The [C functions](https://github.com/FWDNXT/SDK/blob/master/api.h) for the Inference Engine are:
+The [C functions](https://github.com/FWDNXT/SDK/blob/master/api.h)
+<span style="color:red">FIXME FIXME FIXME.   link is to an outdated copy of
+api.h</span>
+for the Inference Engine are:
 
 ******
 ## void *ie_create
