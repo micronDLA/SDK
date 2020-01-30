@@ -5,13 +5,13 @@ The [C functions](https://github.com/FWDNXT/SDK/blob/master/api.h) for the Infer
 ******
 ## void *ie_create
 
-Create a context object.
+Create an Inference Engine object.
 
 ***Parameters:***
 
 None
 
-***Return value:*** Pointer to a context object.
+***Return value:*** Pointer to an Inference Engine object.
 
 ******
 ## void *ie_compile
@@ -24,7 +24,7 @@ Parse an ONNX model and generate Inference Engine instructions.
 is an image path then the size of the image will be used to set up Micron DLA
 hardware's code.  If it is not an image path then it needs to specify the size
 in the following format: Width x Height x Channels.  
-Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 
 `const char *modeldir`: path to a model file in ONNX format.
 
@@ -43,17 +43,17 @@ Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
 ******
 ## int ie_go
 
-All-in-one: Compile a network, Init FPGA and Run accelerator.
+All-in-one: Compile a network, initialize FPGA, and Run accelerator.
 
 ***Parameters:***
 
-'void *cmemo': context object, can be null.
+'void *cmemo': pointer to an Inference Engine object. May be null.
 
 `const char *image`: a string with the image path or the image dimensions. If it
 is an image path then the size of the image will be used to set up Micron DLA
 hardware's code.  If it is not an image path then it needs to specify the size
 in the following format: Width x Height x Channels.  
-Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 
 `const char *modelpath`: path to a model file in ONNX format.
 
@@ -76,13 +76,13 @@ Run static quantization of inputs, weight and outputs over a calibration dataset
 
 ***Parameters:***
 
-'void *cmemo': context object, can be null.
+'void *cmemo': pointer to an Inference Engine object.   May be null.
 
 `const char *image`: a string with the image path or the image dimensions. If it
 is an image path then the size of the image will be used to set up Micron DLA
 hardware's code.  If it is not an image path then it needs to specify the size
 in the following format: Width x Height x Channels.  
-Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 
 `const char *modelpath`: path to a model file in ONNX format.
 
@@ -118,6 +118,8 @@ Loads a bitfile on an FPGA if necessary and prepares to run on the Inference Eng
 
 `unsigned* outsize`: returns number of output values that the Inference Engine will return. swoutsize is number of output values for `ie_run`.
 
+<span style="color:red">FIXME FIXME FIXME.   api.h has two more params for noutputs and cmemp</span>
+
 ***Return value:*** pointer to an Inference Engine object.
 
 ******
@@ -145,13 +147,17 @@ Runs inference on the Micron DLA hardware.
 
 `void *cmemo`: pointer to an Inference Engine object.
 
-`const float *input`: pointer to input. Arrange column first. [W][H][P][Batch]
+`const float * const *input`: pointer to inputs. Arranged column first. [W][H][P][Batch]
+<span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span>
 
-`unsigned input_elements`: input size
+`unsigned *input_elements`: number of elements in each input.
+<span style="color:red">FIXME FIXME FIXME api.h says type is const uint64_t</span>
 
-`float *output`: pointer to allocated memory for the output. It will put the output values into this location.
+`float **output`: pointer to allocated memory for the output. The output values
+are returned in this location.
 
-`unsigned output_elements`: output size
+`unsigned *output_elements`: number of elements allocated for each output is
+returned in this location.
 
 ***Return value:***  -1 (error), 0 (pass).
 
@@ -164,13 +170,17 @@ Runs a single inference using the Inference Engine software implementation (simu
 
 `void *cmemo`: pointer to an Inference Engine object.
 
-`const float *input`: pointer to input. Arrange column first. [W][H][P][Batch]
+`const float * const *input`: pointer to inputs. Arranged column first. [W][H][P][Batch
+<span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span>
 
-`unsigned input_elements`: input size
+`unsigned *input_elements`: number of elements in each input.
+<span style="color:red">FIXME FIXME FIXME api.h says type is const uint64_t</span>
 
-`float *output`: pointer to allocated memory for the output. It will put the output values into this location.
+`float **output`: pointer to allocated memory for the output. The output values
+are returned in this location.
 
-`unsigned output_elements`: output size
+`unsigned *output_elements`: number of elements allocated for each output is
+returned in this location.
 
 ***Return value:*** -1 (error), 0 (pass).
 
@@ -183,13 +193,16 @@ Runs a single inference using thnets.
 
 `void *cmemo`: pointer to an Inference Engine object.
 
-`const float *input`: pointer to input. Arrange column first. [W][H][P][Batch]
+`const float * const *input`: pointer to inputs. Arranged column first. [W][H][P][Batch]
+<span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span>
 
-`unsigned input_elements`: input size
+`const unsigned *input_elements`: number of elements in each input.
 
-`float *output`: pointer to allocated memory for the output. It will put the output values into this location.
+`float **output`: pointer to allocated memory for the output. The output values
+are returned in this location.
 
-`unsigned output_elements`: output size
+`unsigned *output_elements`: number of elements allocated for each output is
+returned in this location.
 
 ***Return value:*** -1 (error), 0 (pass).
 
@@ -215,7 +228,7 @@ Set some flags that change the behavior of the API.
 
 Currently available options are listed in [here](Codes.md)
 
-***Return value:*** <span style="color:red">FIXME FIXME FIXME.</span>
+***Return value:*** -1 (error), 0 (pass).
 
 ******
 ## int ie_getinfo
@@ -226,10 +239,11 @@ Get value of a measurement variable.
 
 `const char *name`: name of the variable to get
 
-`void *value`: return value
+`void *value`: pointer to the returned value of the variable
 
 Currently available options are listed in [here](Codes.md)
 
+***Return value:*** -1 (error), 0 (pass).
 
 ******
 ## int ie_putinput
@@ -240,9 +254,10 @@ Put an input into a buffer and start Micron DLA hardware.
 
 `void *cmemo` : pointer to an Inference Engine object.
 
-`const float *input` : pointer to input. Arrange column first. [W][H][P][Batch]
+`const float * const *input ` : pointer to inputs. Arranged column first. [W][H][P][Batch]
+<span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span>
 
-`uint64_t input_elements` : input size
+`uint64_t *input_elements` : number of elements in each input.
 
 `void *userparam` : parameters defined by the user to keep track of the inputs
 
@@ -251,15 +266,18 @@ Put an input into a buffer and start Micron DLA hardware.
 ******
 ## int ie_getresult
 
-Get an output from a buffer. If opt_blocking was set then it will wait for Micron DLA hardware.
+Get an output from a buffer. If opt_blocking was set then it will wait for Micron
+DLA hardware.
 
 ***Parameters:***
 
 `void *cmemo` : pointer to an Inference Engine object.
 
-`float *output` : pointer to allocated memory for the output.  It will put the output values into this location.
+`float **output`: pointer to allocated memory for the output. The output values
+are returned in this location.
 
-`uint64_t output_elements` : output size.
+`uint64_t *output_elements`: number of elements allocated for each output is
+returned in this location.
 
 `void **userparam` : recover the parameters set for a previously given input.
 
