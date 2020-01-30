@@ -16,7 +16,7 @@ Loads a network and prepares it for Micron DLA hardware.
 
 Multiple inputs can be specified by separating them with a semi-colon.
 
-Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 
 **Modeldir**: path to a model file in ONNX format.
 
@@ -44,7 +44,7 @@ All-in-one: Compile a network, Init FPGA and Run accelerator.
 
 Multiple inputs can be specified by separating them with a semi-colon.
 
-Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 
 **Modeldir**: path to a model file in ONNX format.
 
@@ -70,7 +70,7 @@ Loads and quantizes a network over a calibration dataset, and prepares it for Mi
 
 Multiple inputs can be specified by separating them with a semi-colon.
 
-Example: width=224,heigh=256,channels=3 becomes a string "224x256x3".
+Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 
 **Modeldir**: path to a model file in ONNX format.
 
