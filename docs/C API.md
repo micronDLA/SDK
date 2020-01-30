@@ -132,7 +132,7 @@ Loads multiple bitfiles without initializing hardware.
 
 `void *cmemo`: pointer to an Inference Engine object.
 
-`const char* const *inbins`: array of paths to the bitfiles to load.
+`const char* const *inbins`: array of pathnames to the bitfiles to load.
 
 `unsigned count`: number of bitfiles to load.
 
