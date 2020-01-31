@@ -4,7 +4,7 @@ Micron DLA Software Developement Kit - SDK
 
 # Micron DLA set-up steps
 
-1. Obtain necessary hardware: This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example).
+1. Obtain necessary hardware: This SDK supposes that you are working on a desktop computer with Micron FPGA boards. For example: AC-511 and EX-750.
 2. Install pico-computing tools and Micron DLA SDK. Check section [1.](#1-installation)
 3. Run a sample example. Check sections [3.](#3-getting-started-inference-on-microndla-hardware) and [4.](#4-getting-started-inference-on-microndla-hardware-with-c)
 4. Create your own application
@@ -27,7 +27,6 @@ There are more documents in this SDK folder:
   * [Software requirements](#software-requirements)
   * [Docker Image](#docker-image)
   * [Recommended Installation](#recommended-installation)
-  * [Offline Installation](#offline-installation)
   * [Manual Installation](#manual-installation)
 - [2. Getting started with Deep Learning](#2-getting-started-with-deep-learning) : general information about deep learning
   * [Introduction](#introduction)
@@ -58,27 +57,25 @@ There are more documents in this SDK folder:
 - [11. Troubleshooting and Q&A](#11-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
 
 
-Please report issues and bugs [here](https://github.com/FWDNXT/SDK/issues).
-
-
 # 1. Installation
 
 ## System requirements
 
-This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example).
+This SDK supposes that you are working on a desktop computer with Micron FPGA boards.
 
 Tested on:
-  - Ubuntu 14.04 LTS Release, Kernel 4.4.0
   - Ubuntu 16.04 LTS Release, Kernel 4.13.0
   - CentOS 7.5
-  - onnx 1.2.2
-  - torch 0.4.0 and 1.2.0
 
 ## Software requirements
 - GCC 4.9 or higher
 - [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): Currently version: pico-computing-6.1.0.17. Please verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
-- Python 3 together with numpy
-- [Thnets](https://github.com/mvitez/thnets/)
+- Python 3
+- numpy
+- Pillow
+- onnx >= 1.2
+- torch >= 1.0
+- [protobuf 3.6.1](https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz)
 
 ## Docker Image
 
@@ -113,38 +110,42 @@ root@d80174ce2995:/home/mdla#
 Run the example code provided. Check sections [3.](#3-getting-started-inference-on-microndla-hardware) and [4.](#4-getting-started-inference-on-microndla-hardware-with-c)
 
 
-## Recommended Installation
+## Installation
 
-The install script is located in sdk/
-
-
-This script requires internet connection to install the necessary packages. Installation of the SDK can be run with:
+Installation of the SDK can be run with:
 
 `sudo ./install.sh`
 
-## Offline Installation
-The off-line install script is different from the one in sdk/
-
-The install.sh in the offline installer folder will install all packages needed by the SDK and optionally install supporting third-party packages.
-
-All-in-one installation of the SDK can be run with:
-
-`sudo ./install.sh <username>`
-
 ## Manual Installation
 
-**Install protobuf to use ONNX support (required by SDK)**
+
+**Install protobuf for ONNX support (required by SDK)**
+
+Protobuf is used for reading ONNX files. You can install the required version following the commands below. 
 
 ```
 wget https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
 tar xf protobuf-all-3.6.1.tar.gz
 cd protobuf-3.6.1
 ./configure
-make -j4
+make -j
 sudo make install
 sudo ldconfig
 ```
 
+**Install library files**
+
+The docker image provided contains a `libmicrondla.so` file that should be copied to `/usr/local/lib/`.
+
+There is an equivalent library built with CentOS in the CentOS docker image.
+
+Make sure the `microndla.py` can locate the libmicrondla.so library.
+
+setup.py is provided to install microndla as a package.
+
+```
+sudo python3 setup.py install
+```
 
 **Install pytorch (optional for genonnx.py; not required by SDK)**
 
@@ -152,20 +153,13 @@ Install this if you want to convert models from PyTorch to ONNX on your own.
 
 Choose your system configuration at pytorch.org and install the corresponding package.
 
-On ARM CPU you will have to install pytorch from source.
+You can also install torch using pip package.
+
+```
+pip install torch
+```
 
 Check torch version with: `pip show torch`
-
-**Install library files**
-
-The folder provided contains a `libmicrondla.so` file that needs to be copied to `/usr/local/lib/`.
-
-There are a libmicrondla for AC510, AC511, SB852 systems. Their equivalent library built with CentOS are also provided.
-
-AC510 also has a lite version build on ARM. The lite version doesn't have compile function.
-Thus, the user needs to create the bin file from a another computer and use run functions on the embedded system.
-
-Make sure the `microndla.py` can locate the libmicrondla.so library.
 
 # 2. Getting started with Deep Learning
 
@@ -638,7 +632,7 @@ This will limit the output to -1 and 1 (tanh) or 0 and 1 (sigmoid).
 
 # 9. Running a model from your favorite deep learning framework
 
-Micron DLA supports all deep learning frameworks by running models in ONNX format. In order to convert a model from your favorite deep learning framework to ONNX format you should follow the instructions [here](https://github.com/onnx/tutorials). However there are some extra steps you should take with certain frameworks for the best compatibility with Micron DLA and we describe them below.
+Micron DLA supports different deep learning frameworks by running models in ONNX format. In order to convert a model from your favorite deep learning framework to ONNX format you should follow the instructions [here](https://github.com/onnx/tutorials). However there are some extra steps you should take with certain frameworks for the best compatibility with Micron DLA and we describe them below.
 
 There is a list of tutorials on how to convert model to ONNX for each framework in the [ONNX github](https://github.com/onnx/tutorials).
 
@@ -790,58 +784,13 @@ A: They can be found as tarred checkpoint files at
 
 Q: Issue: Can't find FPGA card
 
-A: Make sure the picocomputing-6.1.0.17 release is installed properly. Please run the following commands. It should print the following outputs.
+A: Make sure the picocomputing release is installed properly. Please run the following commands. It should print the following outputs.
 ```
 lspci | grep -i pico
     05:00.0 Memory controller: Pico Computing Device 0045 (rev 05)
     08:00.0 Memory controller: Pico Computing Device 0510 (rev 05)
 lsmod | grep -i pico
     pico                 3493888  12
-dmesg | grep -i pico
-pico: loading out-of-tree module taints kernel.
-pico: module verification failed: signature and/or required key missing - tainting kernel
-pico:init_pico(): Pico driver 5.0.9.18 compiled on Mar  1 2018 at 17:22:20
-pico:init_pico(): debug level: 3
-pico:init_pico(): got major number 240
-pico:pico_init_e17(): id: 19de:45 19de:2045 5
-pico:pico_init_v6_v5(): id: 19de:45 19de:2045 5
-pico 0000:05:00.0: enabling device (0100 -> 0102)
-pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[1] (addr: 0xffffffffc0a2f2a8)
-pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c5f00000 for 0x100000 bytes
-pico:pico_init_8664(): Initializing backplane: 0xffff945549cb2300
-pico:init_jtag(): Initializing JTAG: Backplane (0x8780) (backplane ID: 0x700)
-pico:init_jtag(): Using ex700 Spartan image
-pico:init_jtag(): Initializing JTAG: Module (0x45) (backplane ID: 0x700)
-pico:init_jtag(): Using ex700 Spartan image
-pico:pico_init_v6_v5(): writing 1 to 0x10 to enable stream machine
-pico:pico_init_v6_v5(): Firmware version (0x810): 0x5000708
-pico:update_fpga_cfg(): fpga version: 0x5000000 device: 0x45
-pico:update_fpga_cfg(): card 224 firmware version (from PicoBus): 0x5000708
-pico:update_fpga_cfg(): 0xFFE00050: 0x2020
-pico:update_fpga_cfg(): found a user picobus 32b wide
-pico:update_fpga_cfg(): cap: 0x410, widths: 32, 32
-pico:require_ex500_jtag(): S6 IDCODE: 0x44028093
-pico:require_ex500_jtag(): S6 USERCODE: 0x7000038
-pico:require_ex500_jtag(): S6 status: 0x3cec
-pico:pico_init_e17(): id: 19de:510 19de:2060 5
-pico:pico_init_v6_v5(): id: 19de:510 19de:2060 5
-pico 0000:08:00.0: enabling device (0100 -> 0102)
-pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[2] (addr: 0xffffffffc0a2f2b0)
-pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c6100000 for 0x100000 bytes
-pico:init_jtag(): Initializing JTAG: Module (0x510) (backplane ID: 0x700)
-pico:pico_init_v6_v5(): creating device files for Pico FPGA #1
-pico: creating device with class=0xffff94554054f480, major=240, minor=1
-pico:pico_init_v6_v5(): writing 1 to 0x10 to enable stream machine
-pico:pico_init_v6_v5(): Firmware version (0x810): 0x6000000
-pico:update_fpga_cfg(): fpga version: 0x5000000 device: 0x510
-pico:update_fpga_cfg(): detected non-virgin card (0x4000. probably from driver reload).
-disabling picobuses till the FPGA is reloaded.
-pico:pico_init_e17(): id: 19de:510 19de:2060 5
-pico:pico_init_v6_v5(): id: 19de:510 19de:2060 5
-pico 0000:09:00.0: enabling device (0100 -> 0102)
-pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[3] (addr: 0xffffffffc0a2f2b8).
-pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c7000000 for 0x100000 bytes
-pico:init_jtag(): Initializing JTAG: Module (0x510) (backplane ID: 0x700)
 ```
 
 Q: Can I run my own model?
