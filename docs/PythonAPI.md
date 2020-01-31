@@ -53,13 +53,14 @@ Currently available options are listed in [here](Codes.md)
 ******
 ## GetResult
 
-Get an output from a buffer. If opt_blocking was set then it will wait for Micron DLA hardware.
+Get an output from a buffer. If the blocking blocking was set then it will wait for Micron DLA hardware.
 
 ***Parameters:***
 
 **Result** output tensor of the model as a preallocated numpy array of type float32
 
-***Return value:***: recover the parameters set for a previously given input <img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME.</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+***Return value:***:  The `userobj` that was associated with this
+buffer in the PutInput function call.
 
 ******
 ## GO

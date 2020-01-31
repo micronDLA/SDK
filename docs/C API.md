@@ -83,7 +83,7 @@ are returned in this location.
 `uint64_t *output_elements`: number of elements allocated for each output is
 returned in this location.
 
-`void **userparam` : recover the parameters set for a previously given input.
+`void **userparam` : The `userparm` that was associated with this buffer in the ie_putinput call is returned here.
 
 ***Return value:*** -1 (error), 0 (pass).
 
