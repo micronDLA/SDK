@@ -31,6 +31,37 @@ Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 ***Return value:*** Number of results to be returned by the network
 
 ******
+## Free
+
+Frees the network.
+
+***Parameters:***
+
+None
+
+******
+## GetInfo
+
+Gets information of the SDK options.
+
+***Parameters:***
+
+**Name** info name to be returned
+
+Currently available options are listed in [here](Codes.md)
+
+******
+## GetResult
+
+Get an output from a buffer. If opt_blocking was set then it will wait for Micron DLA hardware.
+
+***Parameters:***
+
+**Result** output tensor of the model as a preallocated numpy array of type float32
+
+***Return value:***: recover the parameters set for a previously given input <img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME.</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+
+******
 ## GO
 
 All-in-one: Compile a network, Init FPGA and Run accelerator.
@@ -57,34 +88,6 @@ Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 ***Return value:*** model's output tensor as a preallocated numpy array of type float32.
 
 ******
-## Quantize
-
-Loads and quantizes a network over a calibration dataset, and prepares it for Micron DLA hardware.
-
-***Parameters:***
-
-**Image**:  a string with the image path or the image dimensions. If it is an image path then the size of the image will be used to set up Micron DLA hardware's code. If it is not an image path then it needs to specify the size in one of the following formats:  
->    Width x Height x Planes  
->    Width x Height x Planes x Batchsize  
->    Width x Height x Depth x Planes x Batchsize
-
-Multiple inputs can be specified by separating them with a semi-colon.
-
-Example: width=224,height=256,channels=3 becomes a string "224x256x3".
-
-**Modeldir**: path to a model file in ONNX format.
-
-**Outfile**: path to a file where a model in Micron DLA ready format will be saved.
-
-**Images**: a list of inputs (calibration dataset) to the model as a numpy array of type float32.
-
-**Numcard**: number of FPGA cards to use.  Optional.  Default value is 1 if not specified.
-
-**Numclus**: number of clusters to be used.  Optional.  Default value is 1 if not specified.
-
-***Return value:*** Number of results to be returned by the network
-
-******
 ## Init
 
 Loads a bitfile on an FPGA if necessary and prepares to run Micron DLA hardware.
@@ -109,40 +112,20 @@ Loads multiple bitfiles without initializing hardware.
 ***Return value:*** None. <img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME ????????? .</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
 
 ******
-## Free
+## PutInput
 
-Frees the network.
-
-***Parameters:***
-
-None
-
-******
-## SetFlag
-
-Set some flags that change the behaviour of the API.
+Put an input into a buffer and start Micron DLA hardware
 
 ***Parameters:***
 
-**Name** name of the flag to be set
+**Image** input data as a numpy array of type float32
 
-**Value** value to set the flag as a numpy string
+**userobj** user defined object to keep track of the given input
 
-Currently available options are listed in [here](Codes.md)
-
-
-******
-## GetInfo
-
-Gets information of the SDK options.
-
-***Parameters:***
-
-**Name** info name to be returned
-
-Currently available options are listed in [here](Codes.md)
+***Return value:*** Error or no error.
 
 ******
+
 ## Run
 
 Runs a single inference on Micron DLA hardware.
@@ -177,31 +160,48 @@ Runs a single inference using thnets.
 
 
 ******
-## PutInput
+## SetFlag
 
-Put an input into a buffer and start Micron DLA hardware
-
-***Parameters:***
-
-**Image** input data as a numpy array of type float32
-
-**userobj** user defined object to keep track of the given input
-
-***Return value:*** Error or no error.
-
-******
-
-## GetResult
-
-Get an output from a buffer. If opt_blocking was set then it will wait for Micron DLA hardware.
+Set some flags that change the behaviour of the API.
 
 ***Parameters:***
 
-**Result** output tensor of the model as a preallocated numpy array of type float32
+**Name** name of the flag to be set
 
-***Return value:***: recover the parameters set for a previously given input <img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME.</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+**Value** value to set the flag as a numpy string
 
+Currently available options are listed in [here](Codes.md)
+
+
+<!--- EVERYTHING BELOW THIS LINE IS NOT INCLUDED
 ******
+## Quantize
+
+Loads and quantizes a network over a calibration dataset, and prepares it for Micron DLA hardware.
+
+***Parameters:***
+
+**Image**:  a string with the image path or the image dimensions. If it is an image path then the size of the image will be used to set up Micron DLA hardware's code. If it is not an image path then it needs to specify the size in one of the following formats:  
+>    Width x Height x Planes  
+>    Width x Height x Planes x Batchsize  
+>    Width x Height x Depth x Planes x Batchsize
+
+Multiple inputs can be specified by separating them with a semi-colon.
+
+Example: width=224,height=256,channels=3 becomes a string "224x256x3".
+
+**Modeldir**: path to a model file in ONNX format.
+
+**Outfile**: path to a file where a model in Micron DLA ready format will be saved.
+
+**Images**: a list of inputs (calibration dataset) to the model as a numpy array of type float32.
+
+**Numcard**: number of FPGA cards to use.  Optional.  Default value is 1 if not specified.
+
+**Numclus**: number of clusters to be used.  Optional.  Default value is 1 if not specified.
+
+***Return value:*** Number of results to be returned by the network
+
 ## WriteWeights
 
 Write weights to an address in shared memory. <img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME.  address????</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
@@ -244,3 +244,4 @@ Write data to an address in shared memory.
 
 ***Return value:*** None.
 
+-->
