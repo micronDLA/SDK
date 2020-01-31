@@ -6,17 +6,6 @@ api.h</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%
 for the Inference Engine are:
 
 ******
-## void *ie_create
-
-Create an Inference Engine object.
-
-***Parameters:***
-
-None
-
-***Return value:*** Pointer to an Inference Engine object.
-
-******
 ## void *ie_compile
 
 Parse an ONNX model and generate Inference Engine instructions.
@@ -44,6 +33,61 @@ Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 ***Return value:*** pointer to an Inference Engine object.  
 
 ******
+## void *ie_create
+
+Create an Inference Engine object.
+
+***Parameters:***
+
+None
+
+***Return value:*** Pointer to an Inference Engine object.
+
+******
+## void ie_free
+
+Frees the network.
+
+***Parameters:***
+
+`void *cmemo`: pointer to an Inference Engine object.
+
+******
+## int ie_getinfo
+
+Get value of a measurement variable.
+
+***Parameters:***
+
+`const char *name`: name of the variable to get
+
+`void *value`: pointer to the returned value of the variable
+
+Currently available options are listed in [here](Codes.md)
+
+***Return value:*** -1 (error), 0 (pass).
+
+******
+## int ie_getresult
+
+Get an output from a buffer. If opt_blocking was set then it will wait for Micron
+DLA hardware.
+
+***Parameters:***
+
+`void *cmemo` : pointer to an Inference Engine object.
+
+`float **output`: pointer to allocated memory for the output. The output values
+are returned in this location.
+
+`uint64_t *output_elements`: number of elements allocated for each output is
+returned in this location.
+
+`void **userparam` : recover the parameters set for a previously given input.
+
+***Return value:*** -1 (error), 0 (pass).
+
+******
 ## int ie_go
 
 All-in-one: Compile a network, initialize FPGA, and Run accelerator.
@@ -60,7 +104,7 @@ Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 
 `const char *modelpath`: path to a model file in ONNX format.
 
-`const char* fbitfile`: path to a file where a model in the Inference Engine format will be saved.
+`const char* fbitfile`: path to a file where a model in the Inference Engine forat will be saved.
 
 `int numcard`: number of FPGA cards to use.
 
@@ -73,40 +117,6 @@ Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 ***Return value:***  -1 (error), 0 (pass)
 
 ******
-## int ie_quantize
-
-Run static quantization of inputs, weight and outputs over a calibration dataset.
-
-***Parameters:***
-
-'void *cmemo': pointer to an Inference Engine object.   May be null.
-
-`const char *image`: a string with the image path or the image dimensions. If it
-is an image path then the size of the image will be used to set up Micron DLA
-hardware's code.  If it is not an image path then it needs to specify the size
-in the following format: Width x Height x Channels.  
-Example: width=224,height=256,channels=3 becomes a string "224x256x3".
-
-`const char *modelpath`: path to a model file in ONNX format.
-
-`const char* outbin`: path to a file where a model in the Inference Engine format will be saved.
-
-`uint64_t swoutsize`: output size (including the layers run in software) assuming batch 1, in number of elements, one per output.
-
-`int noutputs`: number of returned output arrays.
-
-`int numcard`: number of FPGA cards to use.
-
-`int numclus`: number of clusters to use.
-
-`float **input`: input data in [P, H, W] order, one pointer per input (in case of multiple inputs).
-
-`int num_inputs`: number of inputs in the calibration dataset.
-
-***Return value:***  -1 (error), 0 (pass)
-
-******
-
 ## void *ie_init
 
 Loads a bitfile on an FPGA if necessary and prepares to run on the Inference Engine. Load instructions and parameters.
@@ -121,12 +131,13 @@ Loads a bitfile on an FPGA if necessary and prepares to run on the Inference Eng
 
 `unsigned* outsize`: returns number of output values that the Inference Engine will return. swoutsize is number of output values for `ie_run`.
 
-<img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME.   api.h has two more params for noutputs and cmemp</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+`int *noutputs`: number of outputs is returned here.
+
+`void *cmemp`: FPGA info is copied here (copies pico).
 
 ***Return value:*** pointer to an Inference Engine object.
 
 ******
-
 ## void *ie_loadmulti
 
 Loads multiple bitfiles without initializing hardware.
@@ -142,6 +153,24 @@ Loads multiple bitfiles without initializing hardware.
 ***Return value:*** pointer to an Inference Engine object to pass to ie_init.
 
 ******
+## int ie_putinput
+
+Put an input into a buffer and start Micron DLA hardware.
+
+***Parameters:***
+
+`void *cmemo` : pointer to an Inference Engine object.
+
+`const float * const *input ` : pointer to inputs. Arranged column first. [W][H][P][Batch]
+<img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+
+`uint64_t *input_elements` : number of elements in each input.
+
+`void *userparam` : parameters defined by the user to keep track of the inputs
+
+***Return value:*** -1 (error), 0 (pass).
+
+******
 ## int ie_run
 
 Runs inference on the Micron DLA hardware.
@@ -153,8 +182,7 @@ Runs inference on the Micron DLA hardware.
 `const float * const *input`: pointer to inputs. Arranged column first. [W][H][P][Batch]
 <img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
 
-`unsigned *input_elements`: number of elements in each input.
-<img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME api.h says type is const uint64_t</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+`uint64_t *input_elements`: number of elements in each input.
 
 `float **output`: pointer to allocated memory for the output. The output values
 are returned in this location.
@@ -176,14 +204,28 @@ Runs a single inference using the Inference Engine software implementation (simu
 `const float * const *input`: pointer to inputs. Arranged column first. [W][H][P][Batch]
 <img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
 
-`unsigned *input_elements`: number of elements in each input.
-<img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME api.h says type is const uint64_t*</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+`uint64_t *input_elements`: number of elements in each input.
 
 `float **output`: pointer to allocated memory for the output. The output values
 are returned in this location.
 
 `unsigned *output_elements`: number of elements allocated for each output is
 returned in this location.
+
+***Return value:*** -1 (error), 0 (pass).
+
+******
+## int ie_setflag
+
+Set some flags that change the behavior of the API.
+
+***Parameters:***
+
+`const char *name`: name of the option
+
+`const char *value`: value to set the option
+
+Currently available options are listed in [here](Codes.md)
 
 ***Return value:*** -1 (error), 0 (pass).
 
@@ -209,83 +251,7 @@ returned in this location.
 
 ***Return value:*** -1 (error), 0 (pass).
 
-******
-## void ie_free
-
-Frees the network.
-
-***Parameters:***
-
-`void *cmemo`: pointer to an Inference Engine object.
-
-******
-## int ie_setflag
-
-Set some flags that change the behavior of the API.
-
-***Parameters:***
-
-`const char *name`: name of the option
-
-`const char *value`: value to set the option
-
-Currently available options are listed in [here](Codes.md)
-
-***Return value:*** -1 (error), 0 (pass).
-
-******
-## int ie_getinfo
-
-Get value of a measurement variable.
-
-***Parameters:***
-
-`const char *name`: name of the variable to get
-
-`void *value`: pointer to the returned value of the variable
-
-Currently available options are listed in [here](Codes.md)
-
-***Return value:*** -1 (error), 0 (pass).
-
-******
-## int ie_putinput
-
-Put an input into a buffer and start Micron DLA hardware.
-
-***Parameters:***
-
-`void *cmemo` : pointer to an Inference Engine object.
-
-`const float * const *input ` : pointer to inputs. Arranged column first. [W][H][P][Batch]
-<img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
-
-`uint64_t *input_elements` : number of elements in each input.
-
-`void *userparam` : parameters defined by the user to keep track of the inputs
-
-***Return value:*** -1 (error), 0 (pass).
-
-******
-## int ie_getresult
-
-Get an output from a buffer. If opt_blocking was set then it will wait for Micron
-DLA hardware.
-
-***Parameters:***
-
-`void *cmemo` : pointer to an Inference Engine object.
-
-`float **output`: pointer to allocated memory for the output. The output values
-are returned in this location.
-
-`uint64_t *output_elements`: number of elements allocated for each output is
-returned in this location.
-
-`void **userparam` : recover the parameters set for a previously given input.
-
-***Return value:*** -1 (error), 0 (pass).
-
+<!--- ALL FUNCTIONS BELOW THIS LINE ARE NOT INCLUDED
 ******
 ## void ie_read_data
 
@@ -453,3 +419,38 @@ Create MemData, add to cmem, and return its address.
 `int card`: selects which FPGA card to use to allocate memory.
 
 `const char *comment`:  comment for allocation.   Can be used in ASM code, prefixed with @.  <img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME needs clarification.</span>
+
+******
+## int ie_quantize
+
+Run static quantization of inputs, weight and outputs over a calibration dataset.
+
+***Parameters:***
+
+'void *cmemo': pointer to an Inference Engine object.   May be null.
+
+`const char *image`: a string with the image path or the image dimensions. If it
+is an image path then the size of the image will be used to set up Micron DLA
+hardware's code.  If it is not an image path then it needs to specify the size
+in the following format: Width x Height x Channels.  
+Example: width=224,height=256,channels=3 becomes a string "224x256x3".
+
+`const char *modelpath`: path to a model file in ONNX format.
+
+`const char* outbin`: path to a file where a model in the Inference Engine format will be saved.
+
+`uint64_t swoutsize`: output size (including the layers run in software) assuming batch 1, in number of elements, one per output.
+
+`int noutputs`: number of returned output arrays.
+
+`int numcard`: number of FPGA cards to use.
+
+`int numclus`: number of clusters to use.
+
+`float **input`: input data in [P, H, W] order, one pointer per input (in case of multiple inputs).
+
+`int num_inputs`: number of inputs in the calibration dataset.
+
+***Return value:***  -1 (error), 0 (pass)
+
+-->
