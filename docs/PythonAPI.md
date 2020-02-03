@@ -53,7 +53,7 @@ Currently available options are listed in [here](Codes.md)
 ******
 ## GetResult
 
-Get an output from a buffer. If the blocking blocking was set then it will wait for Micron DLA hardware.
+Get an output from a buffer. If the blocking flag was set then it will wait for Micron DLA hardware.
 
 ***Parameters:***
 
@@ -115,7 +115,7 @@ Loads multiple bitfiles without initializing hardware.
 ******
 ## PutInput
 
-Put an input into a buffer and start Micron DLA hardware
+Put an input into a buffer and start Micron DLA hardware.
 
 ***Parameters:***
 
