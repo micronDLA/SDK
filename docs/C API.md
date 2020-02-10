@@ -1,9 +1,6 @@
 # C API
 
-The [C functions](https://github.com/FWDNXT/SDK/blob/master/api.h)
-<img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME.   link is to an outdated copy of
-api.h</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
-for the Inference Engine are:
+The C API for Micron DLA has these functions:
 
 ******
 ## void *ie_compile
@@ -16,7 +13,7 @@ Parse an ONNX model and generate Inference Engine instructions.
 is an image path then the size of the image will be used to set up Micron DLA
 hardware's code.  If it is not an image path then it needs to specify the size
 in the following format: Width x Height x Channels.  
-Example: width=224,height=256,channels=3 becomes a string "224x256x3".
+Example: width=224, height=256, channels=3 becomes a string "224x256x3".
 
 `const char *modeldir`: path to a model file in ONNX format.
 
@@ -100,7 +97,7 @@ All-in-one: Compile a network, initialize FPGA, and Run accelerator.
 is an image path then the size of the image will be used to set up Micron DLA
 hardware's code.  If it is not an image path then it needs to specify the size
 in the following format: Width x Height x Channels.  
-Example: width=224,height=256,channels=3 becomes a string "224x256x3".
+Example: width=224, height=256, channels=3 becomes a string "224x256x3".
 
 `const char *modelpath`: path to a model file in ONNX format.
 
@@ -161,8 +158,7 @@ Put an input into a buffer and start Micron DLA hardware.
 
 `void *cmemo` : pointer to an Inference Engine object.
 
-`const float * const *input ` : pointer to inputs. Arranged column first. [W][H][P][Batch]
-<img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+`const float * const *input ` : pointer to inputs. Arranged column first. [P, H, W]
 
 `uint64_t *input_elements` : number of elements in each input.
 
@@ -179,8 +175,7 @@ Runs inference on the Micron DLA hardware.
 
 `void *cmemo`: pointer to an Inference Engine object.
 
-`const float * const *input`: pointer to inputs. Arranged column first. [W][H][P][Batch]
-<img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+`const float * const *input`: pointer to inputs. Arranged column first. [P, H, W]
 
 `uint64_t *input_elements`: number of elements in each input.
 
@@ -201,8 +196,7 @@ Runs a single inference using the Inference Engine software implementation (simu
 
 `void *cmemo`: pointer to an Inference Engine object.
 
-`const float * const *input`: pointer to inputs. Arranged column first. [W][H][P][Batch]
-<img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+`const float * const *input`: pointer to inputs. Arranged column first. [P, H, W] 
 
 `uint64_t *input_elements`: number of elements in each input.
 
@@ -238,8 +232,7 @@ Runs a single inference using thnets.
 
 `void *cmemo`: pointer to an Inference Engine object.
 
-`const float * const *input`: pointer to inputs. Arranged column first. [W][H][P][Batch]
-<img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME api.h says [P, H, W].</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+`const float * const *input`: pointer to inputs. Arranged column first. [P, H, W]
 
 `const unsigned *input_elements`: number of elements in each input.
 
