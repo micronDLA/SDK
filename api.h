@@ -1,9 +1,10 @@
+//#Copyright 2019 Micron Technology, Inc. All Rights Reserved. This software contains confidential information and trade secrets of Micron Technology, Inc. Use, disclosure, or reproduction is prohibited without the prior express written permission of Micron Technology, Inc
 /// @file
-/// @brief FWDNXT C api
+/// @brief Micron DLA C api
 #ifndef _IE_API_H_INCLUDED_
 #define _IE_API_H_INCLUDED_
 
-static const char *fwdnxt_version = "v0.3.16";
+static const char *microndla_version = "2020.1";
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,10 +12,44 @@ static const char *fwdnxt_version = "v0.3.16";
 extern "C" {
 #endif
 
+typedef int16_t SF_INT;
+
 /*!
 create a context object
 */
 void *ie_create();
+
+/*
+All-in-one: Compile a network, Init FPGA and Run accelerator
+    @param cmemo        context object, can be null
+    @param image        image file or image size in the format WxHxP or WxHxPxB or WxHxDxPxB, multiple inputs separated by semi-colon
+    @param modelpath    path to the onnx file
+    @param fbitfile     path to bitfile with FPGA code (part of the SDK)
+    @param numcard      number of FPGAs to use
+    @param numclus      number of clusters to use
+    @param input        input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
+    @param output       output data in [P, H, W] order, one pointer per input
+    @return -1 (error), 0 (pass)
+*/
+int ie_go(void *cmemo, const char *image, const char *modelpath, const char *fbitfile, int numcard, int numclus, const float * const *input, float **output);
+
+/*
+Run static quatization of inputs, weight and outputs over a calibration dataset
+    @param cmemo        context object, can be null
+    @param image        image file or image size in the format WxHxP or WxHxPxB or WxHxDxPxB, multiple inputs separated by semi-colon
+    @param modelpath    path to the onnx file
+    @param outbin       path to output .bin file
+    @param swoutsize    output size (including the layers run in software) assuming batch 1, in number of elements, one per output
+    @param noutputs     number of returned output arrays
+    @param numcard      number of FPGAs to use
+    @param numclus      number of clusters to use
+    @param input        input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
+    @param num_inputs   number of inputs in the calibration dataset
+    @param output       output data in [P, H, W] order, one pointer per input
+    @return -1 (error), 0 (pass)
+*/
+void *ie_quantize(void *cmemo, const char *image, const char *modelpath, const char* outbin,
+                    uint64_t *swoutsize, int *noutputs, int numcard, int numclus, float **input, int num_inputs);
 
 /*!
 Compile a network and produce a .bin file with everything that is needed to execute in hardware.
@@ -47,7 +82,7 @@ Load a .bin file into the hardware and initialize it
 void *ie_init(void *cmemo, const char *fbitfile, const char *inbin, uint64_t *outsize, int *noutputs, void *cmemp);
 
 /*!
-Run inference engine
+Run hardware
 It does the steps sequentially. putInput, compute, getResult
     @param cmemo            context object
     @param input            input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
@@ -59,7 +94,8 @@ It does the steps sequentially. putInput, compute, getResult
 int ie_run(void *cmemo, const float * const *input, const uint64_t *input_elements, float **output, uint64_t *output_elements);
 
 /*!
-Send input to the inference engine and start FWDNXT hardware
+Send input to the hardware and start Micron DLA hardware
+    @param cmemo            context object
     @param input            input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
     @param input_elements   size of the input in number of elements, one per input
     @param userparam        user defined parameter useful to associate inputs and outputs
@@ -68,7 +104,7 @@ Send input to the inference engine and start FWDNXT hardware
 int ie_putinput(void *cmemo, const float * const *input, const uint64_t *input_elements, void *userparam);
 
 /*!
-Get an output from the inference engine. If opt_blocking was set then it will wait for FWDNXT hardware to finish, otherwise it will return -1
+Get an output from the hardware. If opt_blocking was set then it will wait for Micron DLA hardware to finish, otherwise it will return -1
 in case the output is not ready
     @param cmemo            context object
     @param output           output data in [P, H, W] order, one pointer per input
@@ -88,7 +124,7 @@ Set flags for the compiler
 int ie_setflag(void *cmemo, const char *name, const char *value);
 
 /*!
-Get various info about the inference engine
+Get various info about the hardware
     @param cmemo            context object
     @param name     name of the info to fetch
     @param value    pointer to the returned value
@@ -97,7 +133,7 @@ Get various info about the inference engine
 int ie_getinfo(void *cmemo, const char *name, void *value);
 
 /*!
-Run software inference engine emulator
+Run software Micron DLA emulator
 This runs the model in software using the same data precision of the accelerator
     @param cmemo            context object
     @param input            input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
@@ -129,7 +165,7 @@ void ie_free(void* cmemo);
 
 /*!
 Read data from an address in shared memory.
-    @param cmemo        context objject
+    @param cmemo        context object
     @param address      shared memory address where to fetch the data from
     @param data         pointer to the buffer that will be filled with the returned data
     @param nelements    number of bytes to transfer
@@ -139,7 +175,7 @@ void ie_read_data(void *cmemo, uint64_t address, void *data, uint64_t nelements,
 
 /*!
 write data to an address in shared memory.
-    @param cmemo        context objject
+    @param cmemo        context object
     @param address      shared memory address where to write the data
     @param data         pointer to the data to write
     @param nelements    number of bytes to transfer
@@ -150,9 +186,56 @@ void ie_write_data(void *cmemo, uint64_t address, const void *data, uint64_t nel
 void ie_write_weights(void *cmemo, float *weight, int wsize, int nid);
 
 /*!
+create a MainMem for a FPGA card and initializes the FPGA (pico obj).
+    @param cmemo        context object
+    @param nfpga        set number of FPGAs to use and initialize
+    @param nclus        set number of cluster to use
+    @param fbitfile     bitfile path to load into FPGA
+*/
+void ie_create_memcard(void *cmemo, int nfpga, int nclus, const char* fbitfile);
+
+/*!
+return an array with nonlinear coefficients (can be freed with free)
+    @param cmemo        context object
+    @param type         coefficient type (one of SFT_RELU, SFT_SIGMOUID...)
+*/
+SF_INT* ie_get_nonlin_coefs(void *cmemo, int type);
+
+/*!
+create MemData, add to cmem, return its address: use address to read/write data to memory
+    @param cmemo        context object
+    @param len          number of words
+    @param type         sizeof the word
+    @param card         FPGA card id. select which FPGA to allocate memory for
+    @param comment      comment for allocation, can be used in ASM code, prefixed with @
+*/
+uint64_t ie_malloc(void *cmemo, unsigned len, size_t type, int card, const char *comment);
+
+/*!
+read code from text file, generate assembly and return assembly
+    @param cmemo        context object
+    @param fname        text file path with program
+    @param instr_addr   memory address of instructions
+    @param programlen   the generated program length in bytes will be returned here
+    @return     buffer with machine code instructions, to be freed with free
+*/
+uint32_t* ie_readcode(void *cmemo, const char *fname, uint64_t instr_addr, uint64_t *programlen);
+
+/*!
+set initial instructions, and start hw and poll/wait, return error or success
+    @param cmemo        context object
+    @param instr_addr   memory address of instructions
+    @param hwtime       returns amount of time to run the accelerator
+    @param mvdata       returns amount of data transferred to accelerator
+    @param outsize      wait for this amount of data to return from accelerator. if 0 then wait for 2 sec
+*/
+void ie_hwrun(void* cmemo, uint64_t instr_addr, double* hwtime, double* mvdata, int outsize);
+
+/*!
 Just load multiple bin files without initializing hardware
-    @param      inbins array of bin filenames
-    @param      count number of bin files to load
+    @param cmemo  context object
+    @param inbins array of bin filenames
+    @param count   number of bin files to load
     @return a context obj to pass to ie_init
 */
 void *ie_loadmulti(void *cmemo, const char * const *inbins, unsigned count);
@@ -240,12 +323,12 @@ static inline void *ie_safecreate()
 
     if(ie_getinfo(cmemo, "version", version))
     {
-        fprintf(stderr, "Wrong libfwdnxt.so version\n");
+        fprintf(stderr, "Wrong libmicrondla.so version\n");
         exit(-1);
     }
-    if(strcmp(version, fwdnxt_version))
+    if(strcmp(version, microndla_version))
     {
-        fprintf(stderr, "Wrong libfwdnxt.so version, expecting %s, found %s\n", fwdnxt_version, version);
+        fprintf(stderr, "Wrong libmicrondla.so version, expecting %s, found %s\n", microndla_version, version);
         exit(-1);
     }
     return cmemo;

@@ -1,5 +1,4 @@
 /*
-Author:Andre Chang
 Compile a model onnx file and generate instructions
 */
 #include <stdbool.h>

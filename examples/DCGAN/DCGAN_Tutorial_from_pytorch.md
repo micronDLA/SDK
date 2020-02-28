@@ -378,14 +378,14 @@ You can also load the `.pth` file again and then call `torch.onnx.export` again.
 We are going to run the Generator to print out some imaginary faces.
 
 ```python
-import fwdnxt
+import microndla
 import sys
 import numpy as np
 import torch
 import torchvision.utils as vutils
 
 bitfile = "" # add bitfile path to load bitfile into FPGA
-ie = fwdnxt.FWDNXT()
+ie = microndla.MDLA()
 print('Compile')
 outsz = ie.Compile("1x1x100","generator.onnx","dcgan.bin")
 print('Init')

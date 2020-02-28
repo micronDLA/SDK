@@ -1,22 +1,23 @@
-# FWDNXT SDK
+# Micron DLA SDK
 
-FWDNXT Software Developement Kit - SDK
-To register and download, please send a request to info@fwdnxt.com
+Micron DLA Software Developement Kit - SDK
 
-# FWDNXT set-up steps
+# Micron DLA set-up steps
 
-1. Obtain necessary hardware: This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example).
-2. Install pico-computing tools and FWDNXT SDK. Check section [1.](#1-installation)
-3. Run a sample example. Check sections [3.](#3-getting-started-inference-on-fwdnxt-hardware) and [4.](#4-getting-started-inference-on-fwdnxt-hardware-with-c)
+1. Obtain necessary hardware: This SDK supposes that you are working on a desktop computer with Micron FPGA boards. For example: AC-511 and EX-750.
+2. Install pico-computing tools and Micron DLA SDK. Check section [1.](#1-installation)
+3. Run a sample example. Check sections [3.](#3-getting-started-inference-on-microndla-hardware) and [4.](#4-getting-started-inference-on-microndla-hardware-with-c)
 4. Create your own application
 
-This document provides tutorials and general information about the FWDNXT SDK.
+This document provides tutorials and general information about the Micron DLA SDK.
 
 There are more documents in this SDK folder:
 
-[**Python API**](docs/PythonAPI.md): Documentation of the python API can be found in docs/PythonAPI.md.
+[**Python API**](docs/PythonAPI.md): Documentation of the python API can be
+found in docs/PythonAPI.md.
 
-[**C API**](docs/C%20API.md): Documentation of the C/C++ API can be found in docs/C API.md.
+[**C API**](docs/C%20API.md): Documentation of the C/C++ API can be found in
+docs/C API.md.
 
 [**Examples**](examples/): Example code and Deep Learning tutorial.
 
@@ -26,8 +27,8 @@ There are more documents in this SDK folder:
 - [1. Installation](#1-installation) : install SDK
   * [System requirements](#system-requirements)
   * [Software requirements](#software-requirements)
+  * [Docker Image](#docker-image)
   * [Recommended Installation](#recommended-installation)
-  * [Offline Installation](#offline-installation)
   * [Manual Installation](#manual-installation)
 - [2. Getting started with Deep Learning](#2-getting-started-with-deep-learning) : general information about deep learning
   * [Introduction](#introduction)
@@ -35,8 +36,8 @@ There are more documents in this SDK folder:
   * [My dataset](#my-dataset)
   * [Training a neural network with PyTorch](#training-a-neural-network-with-pytorch)
   * [After training a neural network](#after-training-a-neural-network)
-- [3. Getting started Inference on FWDNXT hardware](#3-getting-started-inference-on-fwdnxt-hardware) : getting started tutorial for running inference on the Inference Engine
-- [4. Getting started Inference on FWDNXT hardware with C](#4-getting-started-inference-on-fwdnxt-hardware-with-c) : getting started tutorial for running inference on the Inference Engine using C
+- [3. Getting started Inference on Micron DLA hardware](#3-getting-started-inference-on-micron-dla-hardware) : getting started tutorial for running inference on the DLA
+- [4. Getting started Inference on Micron DLA hardware with C](#4-getting-started-inference-on-micron-dla-hardware-with-c) : getting started tutorial for running inference on the DLA using C
 - [5. Tutorial - Multiple FPGAs and Clusters](#5-tutorial---multiple-fpgas-and-clusters) : tutorial for running inference on multiple FPGAs and clusters
   * [Multiple FPGAs with input batching <a name="one"></a>](#multiple-fpgas-with-input-batching)
   * [Multiple FPGAs with different models <a name="two"></a>](#multiple-fpgas-with-different-models)
@@ -49,78 +50,104 @@ There are more documents in this SDK folder:
   * [Tensorflow](#tensorflow)
   * [Caffe1](#caffe1)
   * [Keras](#keras)
-- [10. Supported models and layers](#10-supported-models-and-layers) : List of supported layers and models tested on the Inference Engine
+- [10. Supported models and layers](#10-supported-models-and-layers) : List of supported layers and models tested on the DLA
   * [Tested models](#tested-models)
-  * [TF-Slim models tested on FWDNXT inference engine](#tf-slim-models-tested-on-fwdnxt-inference-engine)
+  * [TF-Slim models tested on Micron DLA inference engine](#tf-slim-models-tested-on-microndla-inference-engine)
   * [ONNX model zoo](#onnx-model-zoo)
   * [Keras](#keras)
   * [CNTK](#cntk)
 - [11. Troubleshooting and Q&A](#11-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
 
 
-Please report issues and bugs [here](https://github.com/FWDNXT/SDK/issues).
-
-
 # 1. Installation
 
 ## System requirements
 
-This SDK supposes that you are working on a desktop computer with Micron FPGA boards on a PCI backplane (AC-510 and EX-750 for example).
+This SDK supposes that you are working on a desktop computer with Micron FPGA boards.
 
 Tested on:
-  - Ubuntu 14.04 LTS Release, Kernel 4.4.0
   - Ubuntu 16.04 LTS Release, Kernel 4.13.0
   - CentOS 7.5
-  - onnx 1.2.2
-  - torch 0.4.0 and 1.2.0
 
 ## Software requirements
 - GCC 4.9 or higher
-- [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): Currently version: pico-computing-6.1.0.17. Please verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
-- Python 3 together with numpy
-- [Thnets](https://github.com/mvitez/thnets/)
+- [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): Current version: pico-computing-6.1.0.17. Please verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
+- Python 3
+- numpy
+- Pillow
+- onnx >= 1.2
+- torch >= 1.0
+- [protobuf 3.6.1](https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz)
 
-## Recommended Installation
+## Docker Image
 
-The install script is located in sdk/
+Download  the docker image for your OS [here](https://picocomputing.zendesk.com/hc/en-us/).
+
+Load the docker image using docker load. Example:
+```
+$ docker load < microndla_ubuntu16_04.tgz
+```
+
+Check the tag of the docker image that you just loaded using:
+```
+$ docker images
+```
+
+Run the docker image using the `docker run` command. Example:
+```
+$ docker run -it --rm -v "/path/to/models/on/host":/models --device=/dev/pico1 microndla:ubuntu16.04
+```
+That will start you in the /home/mdla directory where the SDK is preinstalled.
+
+In case you would like to make changes to the container (e.g. install text editor, python libraries), remove the --rm flag so the container persists on exit.
+You can then use the container id to `docker commit <id>` to a new image or `docker restart <id>` and `docker attach <id>` to reconnect stopped container.
+```
+$ docker run -it -v "/path/to/models/on/host":/models --device=/dev/pico1 microndla:ubuntu16.04
+root@d80174ce2995:/home/mdla# exit
+$ docker restart d80174ce2995
+$ docker attach d80174ce2995
+root@d80174ce2995:/home/mdla#
+```
+
+Run the example code provided. Check sections [3](#3-getting-started-inference-on-micron-dla-hardware) and [4](#4-getting-started-inference-on-micron-dla-hardware-with-c).
 
 
-This script requires internet connection to install the necessary packages. Installation of the SDK can be run with:
+## Installation
+
+Installation of the SDK can be run with:
 
 `sudo ./install.sh`
 
-## Offline Installation
-The off-line install script is different from the one in sdk/
-
-The install.sh in the offline installer folder will install all packages needed by the SDK and optionally install supporting third-party packages.
-
-All-in-one installation of the SDK can be run with:
-
-`sudo ./install.sh <username>`
-
 ## Manual Installation
 
-**Install protobuf to use ONNX support (required by SDK)**
+
+**Install protobuf for ONNX support (required by SDK)**
+
+Protobuf is used for reading ONNX files. You can install the required version following the commands below. 
 
 ```
 wget https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
 tar xf protobuf-all-3.6.1.tar.gz
 cd protobuf-3.6.1
 ./configure
-make -j4
+make -j
 sudo make install
 sudo ldconfig
 ```
 
-**Install Thnets with ONNX support (required by SDK)**
+**Install library files**
+
+The docker image provided contains a `libmicrondla.so` file that should be copied to `/usr/local/lib/`.
+
+There is an equivalent library built with CentOS in the CentOS docker image.
+
+Make sure the `microndla.py` can locate the libmicrondla.so library.
+
+setup.py is provided to install microndla as a package.
 
 ```
-git clone https://github.com/mvitez/thnets/
-cd thnets
-make ONNX=1
-sudo make install
+sudo python3 setup.py install
 ```
-
 
 **Install pytorch (optional for genonnx.py; not required by SDK)**
 
@@ -128,33 +155,26 @@ Install this if you want to convert models from PyTorch to ONNX on your own.
 
 Choose your system configuration at pytorch.org and install the corresponding package.
 
-On ARM CPU you will have to install pytorch from source.
+You can also install torch using pip package.
+
+```
+pip install torch
+```
 
 Check torch version with: `pip show torch`
-
-**Install library files**
-
-The folder provided contains a `libfwdnxt.so` file that needs to be copied to `/usr/local/lib/`.
-
-There are a libfwdnxt for AC510, AC511, SB852 systems. Their equivalent library built with CentOS are also provided.
-
-AC510 also has a lite version build on ARM. The lite version doesn't have compile function.
-Thus, the user needs to create the bin file from a another computer and use run functions on the embedded system.
-
-Make sure the `fwdnxt.py` can locate the libfwdnxt.so library.
 
 # 2. Getting started with Deep Learning
 
 ## Introduction
 
-This is a very concise tutorial to help beginners learn how to create and train a Deep Learning model for use with FWDNXT demonstrations, SDK and other products.
+This is a very concise tutorial to help beginners learn how to create and train a Deep Learning model for use with Micron DLA demonstrations, SDK and other products.
 
 Users should have knowledge of Linux and Ubuntu environments, personal computer or workstation maintenance and command line tools, and experience with the Python programming language. Additionally experience in C, C++, CUDA and GPU programming language may be needed for training advanced modules, but not required at the beginning, as PyTorch offers already implemented functions.
 
 
 ## PyTorch: Deep Learning framework
 
-FWDNXT recommends the use of PyTorch [http://pytorch.org/](http://pytorch.org/) as Deep Learning framework. PyTorch is a CPU and GPU tested and ready framework, allowing users to train small models on CPU and larger and faster models on GPUs. PyTorch also features Dynamic Neural Networks, a version of Autograd - automatic differentiation of computational graphs that can be recorded and played like a tape. All this in simple means that PyTorch offers simpler ways to create custom complex models, and that users will see the benefits of PyTorch when trying to create and debug advanced neural network models.
+Micron DLA recommends the use of PyTorch [http://pytorch.org/](http://pytorch.org/) as Deep Learning framework. PyTorch is a CPU and GPU tested and ready framework, allowing users to train small models on CPU and larger and faster models on GPUs. PyTorch also features Dynamic Neural Networks, a version of Autograd - automatic differentiation of computational graphs that can be recorded and played like a tape. All this in simple means that PyTorch offers simpler ways to create custom complex models, and that users will see the benefits of PyTorch when trying to create and debug advanced neural network models.
 
 PyTorch tutorials from beginners to more advanced are linked here: [http://pytorch.org/tutorials/](http://pytorch.org/tutorials/).
 
@@ -168,7 +188,7 @@ For image-based datasets, we recommend the folder of folders arrangement: The da
 
 Training a deep neural network with PyTorch is very simple, and many examples of training scripts: [https://github.com/pytorch/examples](https://github.com/pytorch/examples).
 
-For example, a good starting point is to train FWDNXT supported models on an image classification task. We recommend using this training script:
+For example, a good starting point is to train Micron DLA supported models on an image classification task. We recommend using this training script:
 
 [https://github.com/pytorch/examples/tree/master/imagenet](https://github.com/pytorch/examples/tree/master/imagenet). This script can load a custom dataset of images, please refer to the requirements in the script README file.
 
@@ -176,13 +196,13 @@ Please make sure that all inputs of the neural network are 32-bit float and are 
 
 ## After training a neural network
 
-After training a neural network with PyTorch, you model is ready for use in FWDNXT SDK. Please refer to the SDK manual for use with FWNDXT products.
+After training a neural network with PyTorch, your model is ready for use in Micron DLA SDK. Please refer to the SDK manual for use with FWNDXT products.
 
 
-# 3. Getting started Inference on FWDNXT hardware
+# 3. Getting started Inference on Micron DLA hardware
 
 This tutorial will teach you how to run inference on hardware. We will use a neural network pre-trained on ImageNet.
-The program will process an image and return the top-5 classification of the image. A neural network trained for an object
+The program will process an image and return the top-5 classifications of the image. A neural network trained for an object
 categorization task will output a probability vector. Each element of the vector contains the probability to its correspondent
 category that is listed in a categories file.
 In this tutorial you will need:
@@ -195,7 +215,7 @@ In this tutorial you will need:
 **Pytorch and torchvision pretrained model on ImageNet**
 
 In the SDK folder, there is `genonnx.py`. This script will create an ONNX file from [torchvision models](https://github.com/pytorch/vision/tree/master/torchvision).
-This utility requires the latest pytorch and it can create a ONNX file from most networks present in the
+This utility requires the latest pytorch and it can create an ONNX file from most networks present in the
 torchvision package and also from networks in the pth format.
 
 `python3 genonnx.py alexnet`
@@ -206,19 +226,19 @@ For more information about onnx please visit [https://onnx.ai/](https://onnx.ai/
 
 To convert tensorflow models into ONNX files please reference the section [6. Using with Tensorflow](#6-using-with-tensorflow)
 
-**Running inference on FWDNXT hardware for one image**
+**Running inference on Micron DLA hardware for one image**
 
 In the SDK folder, there is simpledemo.py, which is a python demo application.
 Its main parts are:
 
 1) Parse the model and generate instructions
 2) Get and preprocess input data
-3) Init FWDNXT hardware
-4) Run FWDNXT hardware
+3) Init Micron DLA hardware
+4) Run Micron DLA hardware
 5) Get and display output
 
 The user may modify steps 1 and 5 according to users needs.
-Check out other possible application programs using FWDNXT hardware [here](http://fwdnxt.com/).
+Check out other possible application programs using Micron DLA hardware [here](http://fwdnxt.com/).
 The example program is located in examples/python/
 You can run the demo using this command:
 
@@ -228,9 +248,9 @@ You can run the demo using this command:
 
 
 Loading the FPGA and bringing up the HMC will take at max 5 min.
-Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](Troubleshooting.md).
-After the first run, FWDNXT hardware will be loaded in the FPGA card. The following runs will not need to load the hardware anymore.
-You can run the network on hardware with this command, which will find the FPGA card that was loaded with FWDNXT hardware:
+Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](#11-troubleshooting-and-qa).
+After the first run, Micron DLA hardware will be loaded in the FPGA card. The following runs will not need to load the hardware anymore.
+You can run the network on hardware with this command, which will find the FPGA card that was loaded with Micron DLA hardware:
 
 `python3 simpledemo.py <onnx file> <picture> -c <categories file.txt>`
 
@@ -249,10 +269,10 @@ If you used the example image with alexnet, the demo will output:
 ```
 
 
-# 4. Getting started Inference on FWDNXT hardware with C
+# 4. Getting started Inference on Micron DLA hardware with C
 
-This tutorial will teach you how to run inference on the Inference Engine using C code. We will use a neural network pre-trained on ImageNet.
-The program will process an image and return the top-5 classification of the image.
+This tutorial will teach you how to run inference on the DLA using C code. We will use a neural network pre-trained on ImageNet.
+The program will process an image and return the top-5 classifications of the image.
 In this tutorial you will need:
 * One of the [pre-trained models](http://fwdnxt.com/models/)
 * [Input image](./test-files): located in /test-files/
@@ -260,16 +280,16 @@ In this tutorial you will need:
 * [Source code](./examples/C): located in /examples/C/
 
 
-**Running inference on the Inference Engine for one image**
+**Running inference on the DLA for one image**
 
-In the SDK folder, there is compile.c, which compiles a ONNX model and outputs Inference Engine instructions into a .bin file.
-The simpledemo.c program will read this .bin file and execute it on the Inference Engine.
+In the SDK folder, there is compile.c, which compiles an ONNX model and outputs DLA instructions into a .bin file.
+The simpledemo.c program will read this .bin file and execute it on the DLA.
 The main functions are:
-1) ie_compile: parse ONNX model and generate the Inference Engine instructions.
-2) ie_init: load the Inference Engine bitfile into FPGA and load instructions and model parameters to shared memory.
-3) ie_run: load input image and execute on the Inference Engine.
+1) ie_compile: parse ONNX model and generate the DLA instructions.
+2) ie_init: load the DLA bitfile into FPGA and load instructions and model parameters to shared memory.
+3) ie_run: load input image and execute on the DLA.
 
-Check out other possible application programs using the Inference Engine [here](http://fwdnxt.com/).
+Check out other possible application programs using the DLA [here](http://fwdnxt.com/).
 To run the demo, first run the following commands:
 
 ```
@@ -282,11 +302,11 @@ After creating the `instructions.bin`, you can run the following command to exec
 
 `./simpledemo -i <picturefile> -c <categoriesfile> -s ./instructions.bin -b <bitfile.bit>`
 
-`-b` option will load the specified Inference Engine bitfile into a FPGA card.
-Loading the FPGA and bringing up the HMC will take at max 5 min.
-Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](Troubleshooting.md).
-After the first run, the Inference Engine will be loaded in the FPGA card. The following runs will not need to load the Inference Engine bitfile anymore.
-You can run the network on the Inference Engine with this command, which will find the FPGA card that was loaded with the Inference Engine:
+`-b` option will load the specified DLA bitfile into a FPGA card.
+Loading the FPGA and bringing up the HMC will take a maximum of five minutes.
+Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](#11-troubleshooting-and-qa).
+After the first run, the DLA will be loaded in the FPGA card. The following runs will not need to load the DLA bitfile anymore.
+You can run the network on the DLA with this command, which will find the FPGA card that was loaded with the DLA:
 
 `./simpledemo -i <picturefile> -c <categoriesfile> -s ./instructions.bin`
 
@@ -302,58 +322,58 @@ bloodhound -- 21.5000
 
 # 5. Tutorial - Multiple FPGAs and Clusters
 
-This tutorial will teach you how to run inference on FWDNXT inference engine using multiple FPGAs and clusters.
+This tutorial will teach you how to run inference on Micron DLA inference engine using multiple FPGAs and clusters.
 
 
 ## Multiple FPGAs with input batching
-Suppose that you a desktop computer with 2 AC-510 FPGAs cards connected to a EX-750 PCI backplane. To simplify this example, lets assume there is 1 cluster per FPGA card. We will see how to use multiple clusters in the following sections.
-The SDK can receive 2 images and process 1 image on each FPGA. The FWDNXT instructions and model parameters are broadcast to each FPGA card's main memory (HMC).
+Suppose that you have a desktop computer with two AC-510 FPGAs cards connected to a EX-750 PCI backplane. To simplify this example, let us assume there is one cluster per FPGA card. We will see how to use multiple clusters in the following sections.
+The SDK can receive two images and process one image on each FPGA. The Micron DLA instructions and model parameters are broadcast to each FPGA card's main memory (HMC).
 The following code snippet shows you how to do this:
 
 ```python
-import fwdnxt
+import microndla
 numfpga = 2
 numclus = 1
-# Create FWDNXT API
-sf = fwdnxt.FWDNXT()
+# Create Micron DLA API
+sf = microndla.MDLA()
 # Generate instructions
-snwresults = sf.Compile('224x224x3', 'model.onnx', 'fwdnxt.bin', numfpga, numclus)
+snwresults = sf.Compile('224x224x3', 'model.onnx', 'microndla.bin', numfpga, numclus)
 # Init the FPGA cards
-sf.Init('fwdnxt.bin', 'bitfile.bit')
+sf.Init('microndla.bin', 'bitfile.bit')
 # Create a location for the output
 output = np.ndarray(2*snwresults, dtype=np.float32)
 # ... User's functions to get the input ...
 sf.Run(input_img, output) # Run
 ```
 
-`sf.Compile` will parse the model from model.onnx and save the generated FWDNXT instructions in fwdnxt.bin. Here numfpga=2, so instructions for 2 FPGAs are created.
-`snwresults` is the output size of the model.onnx for 1 input image (no batching).
+`sf.Compile` will parse the model from model.onnx and save the generated Micron DLA instructions in microndla.bin. Here numfpga=2, so instructions for two FPGAs are created.
+`snwresults` is the output size of the model.onnx for one input image (no batching).
 `sf.Init` will initialize the FPGAs. It will load the bitfile.bit, send the instructions and model parameters to each FPGA's main memory.
-The expected output size of `sf.Run` is twice `snwresults`, because numfpga=2 and 2 input images are processed. `input_img` is 2 images concatenated.
+The expected output size of `sf.Run` is twice `snwresults`, because numfpga=2 and two input images are processed. `input_img` is two images concatenated.
 The diagram below shows this type of execution:
 <img src="docs/pics/2fpga2img.png" width="900" height="735"/>
 
 
 ## Multiple FPGAs with different models
-The SDK can also run different models on different FPGAs. Each `fwdnxt.FWDNXT()` instance will create a different set of FWDNXT instructions for a different model and load it to a different FPGA.
+The SDK can also run different models on different FPGAs. Each `microndla.MDLA()` instance will create a different set of Micron DLA instructions for a different model and load it to a different FPGA.
 The following code snippet shows you how to do this:
 
 ```python
-import fwdnxt
+import microndla
 numfpga = 1
 numclus = 1
-# Create FWDNXT API
-sf1 = fwdnxt.FWDNXT()
-# Create second FWDNXT API
-sf2 = fwdnxt.FWDNXT()
+# Create Micron DLA API
+sf1 = microndla.MDLA()
+# Create second Micron DLA API
+sf2 = microndla.MDLA()
 # Generate instructions for model1
-snwresults1 = sf1.Compile('224x224x3', 'model1.onnx', 'fwdnxt1.bin', numfpga, numclus)
+snwresults1 = sf1.Compile('224x224x3', 'model1.onnx', 'microndla1.bin', numfpga, numclus)
 # Generate instructions for model2
-snwresults2 = sf2.Compile2('224x224x3', 'model2.onnx', 'fwdnxt2.bin', numfpga, numclus)
+snwresults2 = sf2.Compile2('224x224x3', 'model2.onnx', 'microndla2.bin', numfpga, numclus)
 # Init the FPGA 1 with model 1
-sf1.Init('fwdnxt1.bin', 'bitfile.bit')
+sf1.Init('microndla1.bin', 'bitfile.bit')
 # Init the FPGA 2 with model 2
-sf2.Init('fwdnxt2.bin', 'bitfile.bit')
+sf2.Init('microndla2.bin', 'bitfile.bit')
 # Create a location for the output1
 output1 = np.ndarray(snwresults1, dtype=np.float32)
 # Create a location for the output2
@@ -368,21 +388,21 @@ The diagram below shows this type of execution:
 <img src="docs/pics/2fpga2model.png" width="900" height="735"/>
 
 ## Multiple Clusters with input batching
-For simplicity, now assume you have 1 FPGA and inside it we have 2 FWDNXT clusters.
-Each cluster execute their own set of instructions, so we can also batch the input (just like the 2 FPGA case before).
+For simplicity, now assume you have one FPGA and inside it we have two Micron DLA clusters.
+Each cluster can execute its own set of instructions, so we can also batch the input (just like the two FPGA case before).
 The difference is that both clusters share the same main memory in the FPGA card.
-Following similar strategy from 2 FPGA with input batching, the following code snippet shows you how to use 2 clusters to process 2 images:
+Following a similar strategy as the two FPGA with input batching example, the following code snippet shows you how to use two clusters to process two images:
 
 ```python
-import fwdnxt
+import microndla
 numfpga = 1
 numclus = 2
-# Create FWDNXT API
-sf = fwdnxt.FWDNXT()
+# Create Micron DLA API
+sf = microndla.MDLA()
 # Generate instructions
-snwresults = sf.Compile('224x224x3', 'model.onnx', 'fwdnxt.bin', numfpga, numclus)
+snwresults = sf.Compile('224x224x3', 'model.onnx', 'microndla.bin', numfpga, numclus)
 # Init the FPGA cards
-sf.Init('fwdnxt.bin', 'bitfile.bit')
+sf.Init('microndla.bin', 'bitfile.bit')
 # Create a location for the output
 output = np.ndarray(2*snwresults, dtype=np.float32)
 # ... User's functions to get the input ...
@@ -393,27 +413,27 @@ The diagram below shows this type of execution:
 <img src="docs/pics/2clus2img.png" width="900" height="735"/>
 
 ## Multiple Clusters without input batching
-The SDK can also use both clusters on the same input image. It will split the operations among the 2 clusters.
-The following code snippet shows you how to use 2 clusters to process 1 image:
+The SDK can also use both clusters on the same input image. It will split the operations among the two clusters.
+The following code snippet shows you how to use two clusters to process one image:
 
 ```python
-import fwdnxt
+import microndla
 numfpga = 1
 numclus = 2
-# Create FWDNXT API
-sf = fwdnxt.FWDNXT()
+# Create Micron DLA API
+sf = microndla.MDLA()
 sf.SetFlag('nobatch', '1')
 # Generate instructions
-snwresults = sf.Compile('224x224x3', 'model.onnx', 'fwdnxt.bin', numfpga, numclus)
+snwresults = sf.Compile('224x224x3', 'model.onnx', 'microndla.bin', numfpga, numclus)
 # Init the FPGA cards
-sf.Init('fwdnxt.bin', 'bitfile.bit')
+sf.Init('microndla.bin', 'bitfile.bit')
 # Create a location for the output
 output = np.ndarray(snwresults, dtype=np.float32)
 # ... User's functions to get the input ...
 sf.Run(input_img, output) # Run
 ```
-Use `sf.SetFlag('nobatch', '1')` to set the compiler to split the workload among 2 clusters and generate the instructions.
-You can find more informantion about the option flags [here](docs/PythonAPI.md).
+Use `sf.SetFlag('nobatch', '1')` to set the compiler to split the workload among two clusters and generate the instructions.
+You can find more information about the option flags [here](docs/Codes.md).
 Now the output size is not twice of `snwresults` because you expect output for one inference run.
 The diagram below shows this type of execution:
 <img src="docs/pics/2clus1img.png" width="900" height="735"/>
@@ -424,25 +444,33 @@ The diagram below shows this type of execution:
 # 6. Tutorial - PutInput and GetResult
 This tutorial teaches you to use PutInput and GetResult API calls.
 
-PutInput will load the input data into the memory that is shared between host and FWDNXT Inference Engine.
+PutInput will load the input data into the memory that is shared between the host and the Micron DLA.
 
-GetOutput will read the output (results) from the memory. GetOutput can be blocking or non-blocking. Use `SetFlag` function to use blocking or non-blocking mode.
+GetOutput will read the output (results) from the memory. GetOutput can be blocking or non-blocking. Use `SetFlag` function to use blocking or non-blocking mode. The user does not need to care to start the inference engine. PutInput and GetResult will take care of that as soon as the inference engine becomes free.
 
-Blocking means that a call to GetResult will wait for the Inference Engine to finish processing.
+Blocking means that a call to GetResult will wait for the DLA to finish processing.
 
-Non-blocking means that GetResult will return immediately: with or without the result depending whether the Inference Engine has finished processing.
+Non-blocking means that GetResult will return immediately: with or without the result depending whether the DLA has finished processing.
 
-These two functions are important in a streaming application. The programmer can overlap the time for these 2 tasks: input loading and getting results.
+These two functions are important in a streaming application. The programmer can overlap the time for these two tasks: input loading and getting results.
+
+Some care has to be taken in order to avoid deadlocks. There is only one inference engine and only two internal buffers where input and output are stored. So if a user issues three PutInput in sequence without any GetResult between (or waiting in another thread), the third PutInput will block indefinitely waiting for a buffer to become available, something that will never happen if the user will not call GetResult to get the result of the first PutInput, freeing the associated results buffer. Particular care has to be taken when dealing with multiple inference engine objects: they all share the common hardware, so again there can be only one outstanding PutInput. Consider this sequence:
+* PutInput on the first object
+* PutInput on the first object
+* PutInput on the second object
+* GetResult on the second object
+
+This will result in a deadlock, because PutInput on the second object will wait for a buffer to become free and this cannot happen until the user calls GetResult on the first object. Having a thread for each object always waiting for the results, will assure that this will not happen.
 
 <img src="docs/pics/Double Buffer Illustration.jpg" width="900" height="240"/>
 
-Examples to use PutInput and GetOutput are located in [examples/python/](examples/python/).
+Examples using PutInput and GetOutput are located in [examples/python/](examples/python/).
 
 * pollingdemo.py : is an example of non-blocking mode. The program will poll GetResult until it returns the output.
 
-* interleavingdemo.py : is an example that shows how to pipeline PutInput and GetResult calls. There are 2 separate memory regions to load inputs and get results. While PutInput loads to one region, GetResult fetches the output from another region. Each image is labeled with the **userobj** to keep track which input produced the returned output.
+* interleavingdemo.py : is an example that shows how to pipeline PutInput and GetResult calls. There are two separate memory regions to load inputs and get results. While PutInput loads to one region, GetResult fetches the output from another region. Each image is labeled with the **userobj** to keep track of which input produced the returned output.
 
-* threadeddemo.py : shows how to use 2 threads to process multiple images in a folder. One thread calls GetResult and another calls PutInput.
+* threadeddemo.py : shows how to use two threads to process multiple images in a folder. One thread calls GetResult and another calls PutInput. This is the preferred way to work, as it will give the best possible performance.
 
 * threadedbatchdemo.py : similar to `threadeddemo.py`. It shows how to process images in a batch using PutInput and GetResult.
 
@@ -452,7 +480,7 @@ For this tutorial, we are going to use Pytorch framework.
 First, you will need to define a model.
 ```python
 #imports needed for this example
-import fwdnxt
+import microndla
 import torch
 import torch.onnx
 import numpy as np
@@ -467,8 +495,8 @@ class Conv(torch.nn.Module):
         y = self.op(x)
         return y
 ```
-The purpose of this example test is to show how to run the computation in the accelerator. Thus, we wont train this Conv model for anything. By default, the weights and bias are random values.
-You need to create an instance of the model and export it into a onnx file.
+The purpose of this example test is to show how to run the computation in the accelerator. Thus, we will not train this Conv model for anything. By default, the weights and bias are random values.
+You need to create an instance of the model and export it into an onnx file.
 ```python
 w = 16 # input sizes
 i = 256 # input planes
@@ -516,8 +544,8 @@ The print output for us was:
 CONV
 Mean/max error compared to pytorch are 1.636/9.055 %
 ```
-Since the input and weights are set random, the output might be different from this. In any case, error is not zero. The results between CPU and accelerator does not match. The precision used by the accelerator is fixed point 16bit ([Q8.8](https://en.wikipedia.org/wiki/Fixed-point_arithmetic)) and the CPU uses float32. Thus, a small error is an expected behaviour of the accelerator.
-The `Init` and `Run` function internally converts all the float32 values into the fix point format.
+Since the input and weights are set randomly, the output might be different from this. In any case, the error is not zero. The results between the CPU and the accelerator do not match. The precision used by the accelerator is fixed point 16bit ([Q8.8](https://en.wikipedia.org/wiki/Fixed-point_arithmetic)) and the CPU uses float32. Thus, a small error is an expected behavior of the accelerator.
+The `Init` and `Run` functions internally convert all the float32 values into fix point format.
 
 There are other layers and model that you can test using this method. Additional example tests are in [here](examples/tests).
 
@@ -532,15 +560,15 @@ The `'nobatch'` compile option enables the compiler to spread the computation of
 
 A debug option won't affect the compiler, it will only print more information. These prints are were used for debugging when developing the compiler, so the prints can have a large amount of information.
 
-You can use `SetFlag('debug', 'b')` to print the basic prints. The debug code `'b'` stands for basic. Debug code and option code are letters (case-sensetive). For a complete list of letters refer to [here](docs/Codes.md).
+You can use `SetFlag('debug', 'b')` to print the basic prints. The debug code `'b'` stands for basic. Debug codes and option codes are letters (case-sensetive). For a complete list of letters refer to [here](docs/Codes.md).
 
-Always put the `SetFlag()` after creating the FWDNXT object. You should see something similar to the following print.
+Always put the `SetFlag()` after creating the Micron DLA object. You should see something similar to the following print.
 
 ```
 ================================================================
-ie_compile: Parse the model and compile into fwdnxt instructions
+ie_compile: Parse the model and compile into microndla instructions
 Input model read is net_conv.onnx
-fwdnxt binary write to net_conv.bin
+microndla binary write to net_conv.bin
 -----------------------------------------------------------
 type conv id=0 in=(H16,W16,P256) out=(H14,W14,P256) k=3x3 stride=1x1 dilation=1x1 pad=(0,0,0,0) 0->1
 LIST:
@@ -550,7 +578,7 @@ inSz_max: 0, numin 1, numout: 1
 ================================================================
 ================================================================
 ie_init: Init inference engine Hardware
-fwdnxt binary to be read is ./net_conv.bin
+microndla binary to be read is ./net_conv.bin
 -----------------------------------------------------------
 Found 0x510 Device 0510
 Finished setting up the FPGAs
@@ -585,21 +613,21 @@ Bandwidth[GB/s] Expected: 4.546 Measured: 4.116
 Eff Measured: 0.905
 Time to arrange output is 2.6211 [ms]
 ```
-The print doesn't need to be identical. We are going to explain the main parts. First, it will list all the layers that it is going to compile from the `net_conv.onnx` and produce a `net_conv.bin`.
+The print does not need to be identical. We are going to explain the main parts. First, it will list all the layers that it is going to compile from the `net_conv.onnx` and produce a `net_conv.bin`.
 
-Then `Init` will find a FPGA system, AC510 in our case. It will also show how much time it took to send the weights and instructions to the external memory in the `Init` function.
+Then `Init` will find an FPGA system, AC510 in our case. It will also show how much time it took to send the weights and instructions to the external memory in the `Init` function.
 
-Then `Run` will rearrange in the input tensor and load into the external memory. It will print the time it took and other properties of the run, such as number of FPGAs and clusters used.
+Then `Run` will rearrange in the input tensor and load it into the external memory. It will print the time it took and other properties of the run, such as number of FPGAs and clusters used.
 
 In the `Run` it will start the accelerator. The accelerator uses configuration registers to count how many output values were produced.
 The software is going to poll this register until the expected amount of results have been produced by the accelerator.
-That is how the software knows that the result is in the external memory and it can be fetched to PC.
+That is how the software knows that the result is ready in the external memory and it can be fetched to the host.
 The "Start card 0 cluster 0" is a print before a while loop that polls that output register. And "Reset card 0 cluster 0" is a print after the while loop exits.
 
 Then profiling for the run will appear afterwards.
 The expected bandwidth is calculated as the ratio between data transferred and expected execution time.
-data transferred is calculated during compilation. It just counts how many words are send and received between HMC and accelerator. (this is not between HMC and pcie)
-expected execution time is also calculated in compilation. It uses the number of operations, accelerator frequency and number of MACs used to get the expected execution time assuming running at peak performance.
+data transferred is calculated during compilation. It just counts how many words are send and received between HMC and the accelerator. (This is not between HMC and pcie.)
+Expected execution time is also calculated in during compilation. It uses the number of operations, accelerator frequency and number of MACs used to get the expected execution time assuming running at peak performance.
 Measured bandwidth just uses the measured time instead of expected time in the bandwidth calculation. Eff Measured is the ratio between expected time and measured time.
 
 Then the output is rearranged back to the original data arrangement.
@@ -614,25 +642,25 @@ This will limit the output to -1 and 1 (tanh) or 0 and 1 (sigmoid).
 
 # 9. Running a model from your favorite deep learning framework
 
-FWDNXT Inference Engine supports all deep learning frameworks by running models in ONNX format. In order to convert a model from your favorite deep learning framework to ONNX format you should follow the instructions [here](https://github.com/onnx/tutorials). However there are some extra steps you should take with certain frameworks for the best compatibility with FWDNXT Inference Engine and we describe them below.
+Micron DLA supports different deep learning frameworks by running models in ONNX format. In order to convert a model from your favorite deep learning framework to ONNX format you should follow the instructions [here](https://github.com/onnx/tutorials). However there are some extra steps you should take with certain frameworks for the best compatibility with Micron DLA and we describe them below.
 
 There is a list of tutorials on how to convert model to ONNX for each framework in the [ONNX github](https://github.com/onnx/tutorials).
 
 ## Tensorflow
 
 The content provided in this section is equivalent to the [tensorflow to ONNX tutorial](https://github.com/onnx/tutorials/blob/master/tutorials/TensorflowToOnnx-1.ipynb).
- The files for that tutorial is in the [assets folder](https://github.com/onnx/tutorials/tree/master/tutorials/assets), so git clone the onnx tutorial repo.
+ The files for that tutorial are in the [assets folder](https://github.com/onnx/tutorials/tree/master/tutorials/assets), so git clone the onnx tutorial repo.
 
 To convert tensorflow models into ONNX format, you will need this converter [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx).
 
 Tensorflow uses various file formats to represent a model: checkpoint files, frozen graphs (graph with weights) and saved_model. For more details please refer to [tensorflow guides](https://www.tensorflow.org/guide/extend/model_files).
 
-After step 2 from [Convert Tensorflow model to ONNX]((https://github.com/onnx/tutorials/blob/master/tutorials/TensorflowToOnnx-1.ipynb), you should have a mnist1.onnx.
+After step 2 from [Convert Tensorflow model to ONNX](https://github.com/onnx/tutorials/blob/master/tutorials/TensorflowToOnnx-1.ipynb), you should have a mnist1.onnx.
  Now, you only need to run that on the accelerator.
 
 ```python
 img = np.load("./image.npz").reshape([1, 784])
-sf = fwdnxt.FWDNXT()
+sf = microndla.MDLA()
 snwresults = sf.Compile(
         '{:d}x{:d}x{:d}'.format(28, 28, 1),
         'mnist1.onnx', 'mnist.bin', 1, 1)
@@ -650,17 +678,12 @@ To create a frozen graph of your tensorflow model you need to know its input and
 You also need to use the "--fold_const" option during the conversion. For example to convert Inception-v1 from TF-slim you will run:
 
 ```
-python -m tf2onnx.convert
---input ./inception_v1_2016_08_28_frozen.pb
---inputs input:0
---outputs InceptionV1/Logits/Predictions/Softmax:0
---output ./googlenet_v1_slim.onnx
---fold_const
+python -m tf2onnx.convert --input ./inception_v1_2016_08_28_frozen.pb --inputs input:0 --outputs InceptionV1/Logits/Predictions/Softmax:0 --output ./googlenet_v1_slim.onnx --fold_const
 ```
 
 Then you can use the same code to run the ONNX file with the SDK
 
-Another good resource for you to refer about tensorflow pre-trained model is [here](https://github.com/tensorflow/models/tree/master/research/slim#Export).
+Another good resource for you to refer to about tensorflow pre-trained model is [here](https://github.com/tensorflow/models/tree/master/research/slim#Export).
 
 ## Caffe1
 
@@ -727,7 +750,7 @@ These models are available [here](http://fwdnxt.com/models/).
   * [Linknet](https://arxiv.org/pdf/1707.03718.pdf)
   * [Neural Style Transfer Network](https://arxiv.org/pdf/1603.08155.pdf)
 
-## TF-Slim models tested on FWDNXT inference engine
+## TF-Slim models tested on Micron DLA inference engine
 
 * Inception V1
 * Inception V3
@@ -766,58 +789,13 @@ A: They can be found as tarred checkpoint files at
 
 Q: Issue: Can't find FPGA card
 
-A: Make sure the picocomputing-6.1.0.17 release is installed properly. Please run the following commands. It should print the following outputs.
+A: Make sure the picocomputing release is installed properly. Please run the following commands. It should print the following outputs.
 ```
 lspci | grep -i pico
     05:00.0 Memory controller: Pico Computing Device 0045 (rev 05)
     08:00.0 Memory controller: Pico Computing Device 0510 (rev 05)
 lsmod | grep -i pico
     pico                 3493888  12
-dmesg | grep -i pico
-pico: loading out-of-tree module taints kernel.
-pico: module verification failed: signature and/or required key missing - tainting kernel
-pico:init_pico(): Pico driver 5.0.9.18 compiled on Mar  1 2018 at 17:22:20
-pico:init_pico(): debug level: 3
-pico:init_pico(): got major number 240
-pico:pico_init_e17(): id: 19de:45 19de:2045 5
-pico:pico_init_v6_v5(): id: 19de:45 19de:2045 5
-pico 0000:05:00.0: enabling device (0100 -> 0102)
-pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[1] (addr: 0xffffffffc0a2f2a8)
-pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c5f00000 for 0x100000 bytes
-pico:pico_init_8664(): Initializing backplane: 0xffff945549cb2300
-pico:init_jtag(): Initializing JTAG: Backplane (0x8780) (backplane ID: 0x700)
-pico:init_jtag(): Using ex700 Spartan image
-pico:init_jtag(): Initializing JTAG: Module (0x45) (backplane ID: 0x700)
-pico:init_jtag(): Using ex700 Spartan image
-pico:pico_init_v6_v5(): writing 1 to 0x10 to enable stream machine
-pico:pico_init_v6_v5(): Firmware version (0x810): 0x5000708
-pico:update_fpga_cfg(): fpga version: 0x5000000 device: 0x45
-pico:update_fpga_cfg(): card 224 firmware version (from PicoBus): 0x5000708
-pico:update_fpga_cfg(): 0xFFE00050: 0x2020
-pico:update_fpga_cfg(): found a user picobus 32b wide
-pico:update_fpga_cfg(): cap: 0x410, widths: 32, 32
-pico:require_ex500_jtag(): S6 IDCODE: 0x44028093
-pico:require_ex500_jtag(): S6 USERCODE: 0x7000038
-pico:require_ex500_jtag(): S6 status: 0x3cec
-pico:pico_init_e17(): id: 19de:510 19de:2060 5
-pico:pico_init_v6_v5(): id: 19de:510 19de:2060 5
-pico 0000:08:00.0: enabling device (0100 -> 0102)
-pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[2] (addr: 0xffffffffc0a2f2b0)
-pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c6100000 for 0x100000 bytes
-pico:init_jtag(): Initializing JTAG: Module (0x510) (backplane ID: 0x700)
-pico:pico_init_v6_v5(): creating device files for Pico FPGA #1
-pico: creating device with class=0xffff94554054f480, major=240, minor=1
-pico:pico_init_v6_v5(): writing 1 to 0x10 to enable stream machine
-pico:pico_init_v6_v5(): Firmware version (0x810): 0x6000000
-pico:update_fpga_cfg(): fpga version: 0x5000000 device: 0x510
-pico:update_fpga_cfg(): detected non-virgin card (0x4000. probably from driver reload).
-disabling picobuses till the FPGA is reloaded.
-pico:pico_init_e17(): id: 19de:510 19de:2060 5
-pico:pico_init_v6_v5(): id: 19de:510 19de:2060 5
-pico 0000:09:00.0: enabling device (0100 -> 0102)
-pico:pico_init_v6_v5(): fpga 0 assigned to dev_table[3] (addr: 0xffffffffc0a2f2b8).
-pico:pico_init_v6_v5(): bar 0 at 0xffffa2b9c7000000 for 0x100000 bytes
-pico:init_jtag(): Initializing JTAG: Module (0x510) (backplane ID: 0x700)
 ```
 
 Q: Can I run my own model?
@@ -826,8 +804,8 @@ A: yes, all models that are derivatives of the ones listed in the Supported Netw
 
 Q: How will developers be able to develop on your platform?
 
-A: They will need to provide a neural network model only. No need to write any special code. FWDNXT will update the software periodically based on users and market needs.
+A: They will need to provide a neural network model only. No need to write any special code. Micron DLA will update the software periodically based on users and market needs.
 
 Q: What tools will I need at minimum?
 
-A: FWDNXT inference engine on an FPGA and FWDNXT SDK tools
+A: Micron DLA inference engine on an FPGA and Micron DLA SDK tools

@@ -1,5 +1,6 @@
 /*
-Example to run FWDNXT inference engine using put and get_result
+Example to run Micron DLA using put and get_result
+Use multiple thread and batch of inputs
 */
 #include <stdbool.h>
 #include <stdlib.h>
@@ -16,7 +17,7 @@ static void print_help()
 {
     printf("Syntax: simpledemo\n");
     printf("\t-i <directory with image files>\n");
-    printf("\t-c <categories file>\t-b <bitfile>\t-s <fwdnxt.bin file>\n");
+    printf("\t-c <categories file>\t-b <bitfile>\t-s <microndla.bin file>\n");
     printf("\t-f <number of FPGAs to use>\n\t-C <number of clusters>\n");
 }
 
@@ -157,7 +158,7 @@ int main(int argc, char **argv)
             int err = ie_putinput(sf_handle, (const float * const *)&info->input, &inputsize, info);
             if(err==-1)
             {
-                fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
+                fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
                 return -1;
             }
             batchidx = 0;
@@ -170,7 +171,7 @@ int main(int argc, char **argv)
         int err = ie_putinput(sf_handle, (const float * const *)&info->input, &inputsize, info);
         if(err==-1)
         {
-            fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
+            fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
             return -1;
         }
     }
@@ -210,7 +211,7 @@ void *getresults_thread(void *dummy)
         int err = ie_getresult(sf_handle, &output, &totoutsize, (void **)&info);
         if(err==-1)
         {
-            fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
+            fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
             exit(-1);
         }
         if (!info) // We sent no info to notify that we finished

@@ -4,7 +4,7 @@
 
 import sys
 sys.path.insert(0, '../../')
-import fwdnxt
+import microndla
 import torch
 import torch.onnx
 import numpy as np
@@ -23,6 +23,7 @@ _('-i', type=int, default=256, help='input planes')
 _('-o', type=int, default=256, help='output planes')
 
 args = parser.parse_args()
+torch.manual_seed(0)
 
 class Conv(torch.nn.Module):
     #k: kernel size, s: stride, p: padding
@@ -42,7 +43,7 @@ inVec1 = torch.randn(1, i, w, w, dtype=torch.float32)
 modelConv = Conv(i, o, k, s, p)
 torch.onnx.export(modelConv, inVec1, "net_conv.onnx")
 
-sf = fwdnxt.FWDNXT()
+sf = microndla.MDLA()
 if args.verbose:
     sf.SetFlag('debug', 'b')#debug options
 

@@ -1,6 +1,5 @@
 /*
-Author: Andre Chang
-Run FWDNXT inference engine instructions
+Run 2 different models on Micron DLA
 */
 #include <stdbool.h>
 #include <stdlib.h>
@@ -47,7 +46,7 @@ int main(int argc, char **argv)
 {
     const char *image[2] = {0,0};
     const char *categ = "./categories.txt";//categories list
-    const char *f_bitfile = "";//FGPA bitfile with FWDNXT inference engine
+    const char *f_bitfile = "";//FGPA bitfile with Micron DLA
     const char *binfile[2];
     int nfpga = 1;
     int nclus = 1;
@@ -89,7 +88,7 @@ int main(int argc, char **argv)
         return -1;
     }
 // initialize FPGA: load hardware and load instructions into memory
-    printf("Initialize FWDNXT inference engine FPGA\n");
+    printf("Initialize FPGA\n");
     uint64_t outsize[2];//number of output values produced
     void *sf_handle = ie_loadmulti(0, binfile, 2);
     int noutputs;
@@ -119,11 +118,11 @@ int main(int argc, char **argv)
     output[1] = (float*) malloc(output_elements[1]*sizeof(float));//allocate memory to hold output
     int err = 0;
 // run inference
-    printf("Run FWDNXT inference engine\n");
+    printf("Run Micron DLA\n");
     err = ie_run(sf_handle, (const float * const *)input, input_elements, output, output_elements);
     if(err==-1)
     {
-        fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
+        fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
         return -1;
     }
     if(input[0])

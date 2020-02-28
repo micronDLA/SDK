@@ -1,11 +1,14 @@
+#Copyright 2019 Micron Technology, Inc. All Rights Reserved. This software contains confidential information and trade secrets of Micron Technology, Inc. Use, disclosure, or reproduction is prohibited without the prior express written permission of Micron Technology, Inc
+
 import sys
 from ctypes import *
 import numpy as np
 from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
-f = CDLL("libfwdnxt.so")
+f = CDLL("libmicrondla.so")
+libc = CDLL("libc.so.6")
 
-curversion = 'v0.3.16'
+curversion = '2020.1'
 
 #Allows None to be passed instead of a ndarray
 def wrapped_ndptr(*args, **kwargs):
@@ -18,9 +21,22 @@ def wrapped_ndptr(*args, **kwargs):
 
 FloatNdPtr = wrapped_ndptr(dtype=np.float32, flags='C_CONTIGUOUS')
 
-class FWDNXT:
+class MDLA:
     def __init__(self):
         self.userobjs = {}
+
+        self.NONLIN_BLOCKS = 4
+        self.NUM_VV = 4
+        self.NUM_MM = 4
+        self.NONLIN_LINE = self.NUM_VV * self.NUM_MM * 2
+        self.MAX_NONLINBIT = 6
+        self.NONLIN_BLOCK_SIZE = (1<<(self.MAX_NONLINBIT+1))
+        self.NONLIN_SIZE = self.NONLIN_BLOCK_SIZE * self.NONLIN_LINE
+
+        self.SFT_RELU = 0
+        self.SFT_SIGMOID = 1
+        self.SFT_NORELU = 2
+        self.SFT_TANH = 3
 
         self.ie_create = f.ie_create
         self.ie_create.restype = c_void_p
@@ -30,6 +46,12 @@ class FWDNXT:
         self.ie_loadmulti = f.ie_loadmulti
         self.ie_loadmulti.argtypes = [c_void_p, POINTER(c_char_p), c_int]
         self.ie_loadmulti.restype = c_void_p
+
+        self.ie_go = f.ie_go
+        self.ie_go.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, c_int, c_int, POINTER(POINTER(c_float)), POINTER(POINTER(c_float))]
+
+        self.ie_quantize = f.ie_quantize
+        self.ie_quantize.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_ulonglong), POINTER(c_int), c_int, c_int, POINTER(POINTER(c_float)), c_int]
 
         self.ie_compile = f.ie_compile
         self.ie_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_ulonglong), POINTER(c_int), c_int, c_int, c_int]
@@ -56,13 +78,31 @@ class FWDNXT:
         self.ie_getresult.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_void_p]
 
         self.ie_read_data = f.ie_read_data
-        self.ie_read_data.argtypes = [c_void_p, c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_int]
+        self.ie_read_data.argtypes = [c_void_p, c_ulonglong, c_void_p, c_ulonglong, c_int]
 
         self.ie_write_data = f.ie_write_data
-        self.ie_write_data.argtypes = [c_void_p, c_ulonglong, ndpointer(c_float, flags="C_CONTIGUOUS"), c_ulonglong, c_int]
+        self.ie_write_data.argtypes = [c_void_p, c_ulonglong, c_void_p, c_ulonglong, c_int]
 
         self.ie_write_weights = f.ie_write_weights
         self.ie_write_weights.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int]
+
+        self.ie_create_memcard = f.ie_create_memcard
+        self.ie_create_memcard.argtypes = [c_void_p, c_int, c_int, c_char_p]
+
+        self.ie_malloc = f.ie_malloc
+        self.ie_malloc.argtypes = [c_void_p, c_ulonglong, c_int, c_int, c_char_p]
+        self.ie_malloc.restype = c_ulonglong
+
+        self.ie_get_nonlin_coefs = f.ie_get_nonlin_coefs
+        self.ie_get_nonlin_coefs.argtypes = [c_void_p, c_int]
+        self.ie_get_nonlin_coefs.restype = POINTER(c_short)
+
+        self.ie_readcode = f.ie_readcode
+        self.ie_readcode.argtypes = [c_void_p, c_char_p, c_ulonglong, POINTER(c_ulonglong)]
+        self.ie_readcode.restype = POINTER(c_uint32)
+
+        self.ie_hwrun = f.ie_hwrun
+        self.ie_hwrun.argtypes = [c_void_p, c_ulonglong, POINTER(c_double), POINTER(c_double), c_int]
 
         self.ie_run_sim = f.ie_run_sim
         self.ie_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), POINTER(POINTER(c_float)), POINTER(c_ulonglong)]
@@ -96,7 +136,7 @@ class FWDNXT:
         self.trainlinear_end.argtypes = [c_void_p]
         v = self.GetInfo('version')
         if v != curversion:
-            print('Wrong libfwdnxt.so found, expecting', curversion, 'and found', v, 'quitting')
+            print('Wrong libmicrondla.so found, expecting', curversion, 'and found', v, 'quitting')
             quit()
 
     def TrainlinearStart(self, batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate):
@@ -131,9 +171,9 @@ class FWDNXT:
                 b[i] = bytes(bins[i], 'utf-8')
         self.ie_loadmulti(self.handle, b, len(bins))
 
-    #compile a network and produce .bin file with everything that is needed to execute
+    #All-in-one: Compile a network, Init FPGA and Run accelerator
     # image: it is a string with the image path or the image dimensions.
-    #        If it is a image path then the size of the image will be used to set up FWDNXT hardware's code.
+    #        If it is a image path then the size of the image will be used to set up Micron DLA hardware's code.
     #        If it is not an image path then it needs to specify the size in one of the following formats:
     #        Width x Height x Planes
     #        Width x Height x Planes x Batchsize
@@ -141,7 +181,66 @@ class FWDNXT:
     #        Multiple inputs can be specified by separating them with a semi-colon
     #        Example: Two inputs with width=640, height=480, planes=3 becomes a string "640x480x3;640x480x3".
     # modeldir: path to a model file in ONNX format.
-    # outfile: path to a file where a model in FWDNXT ready format will be saved.
+    # bitfile: FPGA bitfile to be loaded
+    # numcard: number of FPGA cards to use.
+    # numclus: number of clusters to be used.
+    # image: input to the model as a numpy array of type float32
+    #Returns:
+    # result: model's output tensor as a preallocated numpy array of type float32
+    def GO(self, image, modeldir, bitfile, images, result, numcard = 1, numclus = 1):
+        imgs, sizes = self.params(images)
+        r, rs = self.params(result)
+        rc = self.ie_go(self.handle, bytes(image, 'ascii'), bytes(modeldir, 'ascii'), bytes(bitfile, 'ascii'), \
+            numcard, numclus, imgs, r)
+        if rc != 0:
+            raise Exception(rc)
+
+    #compile and quantize a network over a calibration dataset. Produce .bin file with everything that is needed to execute
+    # image: it is a string with the image path or the image dimensions.
+    #        If it is a image path then the size of the image will be used to set up Micron DLA hardware's code.
+    #        If it is not an image path then it needs to specify the size in one of the following formats:
+    #        Width x Height x Planes
+    #        Width x Height x Planes x Batchsize
+    #        Width x Height x Depth x Planes x Batchsize
+    #        Multiple inputs can be specified by separating them with a semi-colon
+    #        Example: Two inputs with width=640, height=480, planes=3 becomes a string "640x480x3;640x480x3".
+    # modeldir: path to a model file in ONNX format.
+    # outfile: path to a file where a model in Micron DLA ready format will be saved.
+    # images: a list of inputs (calibration dataset) to the model as a numpy array of type float32
+    # nimg: number of images in calibration dataset
+    # numcard: number of FPGA cards to use.
+    # numclus: number of clusters to be used.
+    # Return:
+    #   Number of results to be returned by the network
+    def Quantize(self, image, modeldir, outfile, images, numcard = 1, numclus = 1):
+        self.swoutsize = (c_ulonglong * 16)()
+        self.noutputs = c_int()
+        nim = int(len(images))
+        if nim <= 0:
+            raise Exception('No images')
+        imgs, sizes = self.params(images)
+        self.handle = self.ie_quantize(self.handle, bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
+            bytes(outfile, 'ascii'), self.swoutsize, byref(self.noutputs), numcard, numclus, imgs, nim)
+        if self.handle == None:
+            raise Exception('Init failed')
+        if self.noutputs.value == 1:
+                return self.swoutsize[0]
+        ret = ()
+        for i in range(self.noutputs.value):
+            ret += (self.swoutsize[i],)
+        return ret
+
+    #compile a network and produce .bin file with everything that is needed to execute
+    # image: it is a string with the image path or the image dimensions.
+    #        If it is a image path then the size of the image will be used to set up Micron DLA hardware's code.
+    #        If it is not an image path then it needs to specify the size in one of the following formats:
+    #        Width x Height x Planes
+    #        Width x Height x Planes x Batchsize
+    #        Width x Height x Depth x Planes x Batchsize
+    #        Multiple inputs can be specified by separating them with a semi-colon
+    #        Example: Two inputs with width=640, height=480, planes=3 becomes a string "640x480x3;640x480x3".
+    # modeldir: path to a model file in ONNX format.
+    # outfile: path to a file where a model in Micron DLA ready format will be saved.
     # numcard: number of FPGA cards to use.
     # numclus: number of clusters to be used.
     # nlayers: number of layers to run in the model. Use -1 if you want to run the entire model.
@@ -150,8 +249,10 @@ class FWDNXT:
     def Compile(self, image, modeldir, outfile, numcard = 1, numclus = 1, nlayers = -1):
         self.swoutsize = (c_ulonglong * 16)()
         self.noutputs = c_int()
-        self.ie_compile(self.handle, bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
+        self.handle = self.ie_compile(self.handle, bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
             bytes(outfile, 'ascii'), self.swoutsize, byref(self.noutputs), numcard, numclus, nlayers, False)
+        if self.handle == None:
+            raise Exception('Init failed')
         if self.noutputs.value == 1:
                 return self.swoutsize[0]
         ret = ()
@@ -162,13 +263,15 @@ class FWDNXT:
     #returns the context obj
     def get_handle(self):
         return self.handle
-    #initialization routines for FWDNXT inference engine
+    #initialization routines for Micron DLA hardware
     # infile: model binary file path
     # bitfile: FPGA bitfile to be loaded
     def Init(self, infile, bitfile, cmem = None):
         self.outsize = (c_ulonglong * 16)()
         self.noutputs = c_int()
         self.handle = self.ie_init(self.handle, bytes(bitfile, 'ascii'), bytes(infile, 'ascii'), byref(self.outsize), byref(self.noutputs), cmem)
+        if self.handle == None:
+            raise Exception('Init failed')
         if self.noutputs.value == 1:
                 return self.outsize[0]
         ret = ()
@@ -194,7 +297,7 @@ class FWDNXT:
     # paddingalgo: can be 0 or 1, default is 0. 1 will run padding optimization on the convolution layers.
     # blockingmode: default is 1. 1 ie_getresult will wait for hardware to finish.
     #       0 will return immediately if hardware did not finish.
-    # max_instr: set a bound for the maximum number of FWDNXT inference engine instructions to be generated.
+    # max_instr: set a bound for the maximum number of Micron DLA hardware instructions to be generated.
     #       If this option is set, then instructions will be placed before data. Note: If the amount of data
     #       (input, output and weights) stored in memory exceeds 4GB, then this option must be set.
     # debug: default 'w', which prints only warnings. An empty string will remove those warnings.
@@ -204,33 +307,33 @@ class FWDNXT:
         if rc != 0:
             raise Exception(rc)
 
-    #Get various info about the inference engine
+    #Get various info about the hardware
     # name: string with the info name that is going to be returned
     #Currently available values are:
-    # hwtime: float value of the processing time in FWDNXT inference engine only
+    # hwtime: float value of the processing time in Micron DLA hardware only
     # numcluster: int value of the number of clusters to be used
     # numfpga: int value of the number of FPGAs to be used
     # numbatch: int value of the number of batch to be processed
-    # freq: int value of the FWDNXT inference engine's frequency
-    # maxcluster: int value of the maximum number of clusters in FWDNXT inference engine
+    # freq: int value of the Micron DLA hardware's frequency
+    # maxcluster: int value of the maximum number of clusters in Micron DLA hardware
     # maxfpga: int value of the maximum number of FPGAs available
     def GetInfo(self, name):
         if name == 'hwtime':
             return_val = c_float()
-        elif name == 'version':
-            return_val = create_string_buffer(10)
+        elif name == 'version' or name == 'build' or name == 'hwversion' or name == 'hwbuild':
+            return_val = create_string_buffer(20)
         else:
             return_val = c_int()
         rc = self.ie_getinfo(self.handle, bytes(name, 'ascii'), byref(return_val))
         if rc != 0:
             raise Exception(rc)
-        if name == 'version':
+        if name == 'version' or name == 'build' or name == 'hwversion' or name == 'hwbuild':
             return str(return_val.value, 'ascii')
         return return_val.value
     def params(self, images):
         if type(images) == np.ndarray:
             return byref(images.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(images.size))
-        elif type(images) == tuple:
+        elif type(images) == tuple or type(images) == list:
             cimages = (POINTER(c_float) * len(images))()
             csizes = (c_ulonglong * len(images))()
             for i in range(len(images)):
@@ -241,7 +344,7 @@ class FWDNXT:
             raise Exception('Input must be ndarray or tuple to ndarrays')
 
 
-    #Run inference engine. It does the steps sequentially. putInput, compute, getResult
+    #Run hardware. It does the steps sequentially. putInput, compute, getResult
     # image: input to the model as a numpy array of type float32
     #Returns:
     # result: model's output tensor as a preallocated numpy array of type float32
@@ -252,7 +355,7 @@ class FWDNXT:
         if rc != 0:
             raise Exception(rc)
 
-    #Put an input into shared memory and start FWDNXT hardware
+    #Put an input into shared memory and start Micron DLA hardware
     # image: input to the model as a numpy array of type float32
     # userobj: user defined object to keep track of the given input
     #Return:
@@ -272,7 +375,7 @@ class FWDNXT:
             raise Exception(rc)
         return True
 
-    #Get an output from shared memory. If opt_blocking was set then it will wait FWDNXT hardware
+    #Get an output from shared memory. If opt_blocking was set then it will wait Micron DLA hardware
     #Return:
     # result: model's output tensor as a preallocated numpy array of type float32
     def GetResult(self, result):
@@ -287,7 +390,7 @@ class FWDNXT:
         del self.userobjs[userobj.value]
         return retuserobj.value
 
-    #Run software inference engine emulator
+    #Run software Micron DLA emulator
     # image: input to the model as a numpy array of type float32
     #Return:
     # result: models output tensor as a preallocated numpy array of type float32
@@ -309,13 +412,19 @@ class FWDNXT:
         if rc != 0:
             raise Exception(rc)
 
-    #read data from an address in shared memory
+    #Read data from an address in shared memory
+    # addr: address in shared memory where to read data from
+    # data: numpy array where to store data
+    # card: card index
     def ReadData(self, addr, data, card):
-        self.ie_read_data(self.handle, addr, data, data.size*sizeof(c_float), card)
+        self.ie_read_data(self.handle, addr, data.ctypes.data, data.size * data.itemsize, card)
 
-    #write data to an address in shared memory
+    #Write data to an address in shared memory
+    # addr: address in shared memory where to write data
+    # data: numpy array to write
+    # card: card index
     def WriteData(self, addr, data, card):
-        self.ie_write_data(self.handle, addr, data, data.size*sizeof(c_float), card)
+        self.ie_write_data(self.handle, addr, data.ctypes.data, data.size * data.itemsize, card)
 
     #write weights to an address in shared memory
     # weight: weights as a contiguous array
@@ -323,3 +432,50 @@ class FWDNXT:
     def WriteWeights(self, weight, node):
         self.ie_write_weights(self.handle, weight, weight.size, node)
 
+    #Allocate memory in shared memory
+    # nelements: number of elements to allocate
+    # datasize:  size of each element
+    # card:      card index
+    # name:      name to give to the buffer
+    #Return:
+    # the address in the shared memory
+    def Malloc(self, nelements, datasize, card, name):
+        return self.ie_malloc(self.handle, nelements, datasize, card, bytes(name, 'ascii'))
+
+    #Initialize the device for low level operations
+    # nfpga: number of FPGAs
+    # nclus: number of clusters
+    # fbitfile: optional, bitfile name
+    def CreateMemcard(self, nfpga, nclus, fbitfile):
+        self.ie_create_memcard(self.handle, nfpga, nclus, bytes(fbitfile, 'ascii'))
+
+    #Get nonlinear tables in a numpy array
+    # type: type of the coefficients, one of the SFT_... constants
+    def GetNonlinCoefs(self, type):
+        buf = np.ndarray(self.NONLIN_SIZE, dtype = np.int16)
+        nl = self.ie_get_nonlin_coefs(self.handle, type)
+        memmove(buf.ctypes.data, nl, self.NONLIN_SIZE * 2)
+        libc.free(nl)
+        return buf
+
+    #Read a program from a file
+    # filename:   file where to read it from
+    # instr_addr: address in shared memory where to store
+    #Return:
+    # the program as a numpy array
+    def ReadCode(self, filename, instr_addr):
+        proglen = c_ulonglong()
+        code = self.ie_readcode(self.handle, bytes(filename, 'ascii'), instr_addr, byref(proglen))
+        data = np.ndarray(proglen.value//4, dtype=np.int32)
+        memmove(data.ctypes.data, code, proglen)
+        libc.free(code)
+        return data
+
+    #Run the program in the device
+    # instr_addr: starting address
+    # outsize: number of 32-byte blocks to expect as output
+    def HwRun(self, instr_addr, outsize):
+        hwtime = c_double()
+        mvdata = c_double()
+        self.ie_hwrun(self.handle, instr_addr, byref(hwtime), byref(mvdata), outsize)
+        return hwtime.value, mvdata.value

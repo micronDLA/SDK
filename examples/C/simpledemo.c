@@ -1,6 +1,5 @@
 /*
-Author: Andre Chang
-Run FWDNXT inference engine instructions
+Run simple object classification on Micron DLA
 */
 #include <stdbool.h>
 #include <stdlib.h>
@@ -13,7 +12,7 @@ static void print_help()
 {
     printf("Syntax: simpledemo\n");
     printf("\t-i <image file>\n");
-    printf("\t-c <categories file>\n\t-b <bitfile>\n\t-s <fwdnxt.bin file>\n");
+    printf("\t-c <categories file>\n\t-b <bitfile>\n\t-s <microndla.bin file>\n");
     printf("\t-f <number of FPGAs to use>\n\t-C <number of clusters>\n");
 }
 
@@ -48,8 +47,8 @@ int main(int argc, char **argv)
 {
     const char *image = "./dog224.jpg";//input image
     const char *categ = "./categories.txt";//categories list
-    const char *f_bitfile = "";//FGPA bitfile with FWDNXT inference engine
-    const char *outbin = "save.bin";//file with fwdnxt inference engine instructions
+    const char *f_bitfile = "";//FGPA bitfile with Micron DLA inference engine
+    const char *outbin = "save.bin";//file with microndla inference engine instructions
     int nfpga = 1;
     int nclus = 1;
     int i;
@@ -95,7 +94,7 @@ int main(int argc, char **argv)
         return -1;
     }
 // initialize FPGA: load hardware and load instructions into memory
-    printf("Initialize FWDNXT inference engine FPGA\n");
+    printf("Initialize Micron DLA inference engine FPGA\n");
     uint64_t outsize = 0;//number of output values produced
     int noutputs;
     void* sf_handle = ie_init(NULL, f_bitfile, outbin, &outsize, &noutputs, 0);
@@ -127,11 +126,11 @@ int main(int argc, char **argv)
     float *output = (float*) malloc(output_elements*sizeof(float));//allocate memory to hold output
     int err = 0;
 // run inference
-    printf("Run FWDNXT inference engine\n");
+    printf("Run Micron DLA inference engine\n");
     err = ie_run(sf_handle, (const float * const *)&input, &input_elements, &output, &output_elements);
     if(err==-1)
     {
-        fprintf(stderr,"Sorry an error occured, please contact fwdnxt for help. We will try to solve it asap\n");
+        fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
         return -1;
     }
     if(input)

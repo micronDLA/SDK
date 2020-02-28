@@ -7,7 +7,7 @@ import os
 
 from argparse import ArgumentParser
 # argument Checking
-parser = ArgumentParser(description="FWDNXT Person Identification Demonstration")
+parser = ArgumentParser(description="Create ONNX file using pytorch")
 _ = parser.add_argument
 _('model', type=str, default='', help='Model name or pth file')
 _('-r', '--res', type=int, default=[3, 224, 224], nargs='+', help='expected image size (planes, height, width)')

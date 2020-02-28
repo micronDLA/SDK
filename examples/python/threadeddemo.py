@@ -2,7 +2,7 @@
 
 import sys
 sys.path.insert(0, '../../')
-import fwdnxt
+import microndla
 import sys
 import threading
 import os
@@ -12,7 +12,7 @@ import numpy as np
 
 from argparse import ArgumentParser
 # argument Checking
-parser = ArgumentParser(description="FWDNXT Person Identification Demonstration")
+parser = ArgumentParser(description="Micron DLA Person Identification Demonstration")
 _ = parser.add_argument
 _('modelpath', type=str, default='', help='Path to the model file')
 _('imagesdir', type=str, default='', help='A directory name with input files')
@@ -76,8 +76,7 @@ xres = args.res[2]
 yres = args.res[1]
 
 #Create and initialize the snowflow object
-ie = fwdnxt.FWDNXT()
-#ie.SetFlag('hwlinear','0')
+ie = microndla.MDLA()
 #ie.SetFlag('debug','bw')
 
 #Compile to a file
