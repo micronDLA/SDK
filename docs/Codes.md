@@ -34,14 +34,13 @@ to be passed to SetFlag.
 
 - 'options': configures compile options of the SDK
   * 'V': enable variable fix-point precision. Default precision is Q8.8
-  * 'H': run linear on DLA. Same as `SetFlag('hwlinear', '1')`
+  * 'H': run linear on DLA. Same as `SetFlag('hwlinear', 1)`
   * 'M': enable multi-MM vertical padding optimization
-  * 'C': no batch mode for multiple clusters. Same as `SetFlag('nobatch', '1')`
+  * 'C': no batch mode for multiple clusters. Same as `SetFlag('nobatch', 1)`
   * 'p': pipeline execution mode across multiple clusters
   * 'B': sandbox mode. Reads DLA instruction from a text file.
-  * 'k': try kernel_stationary optimization if possible. For more info refer to
-         [here](https://www.emc2-workshop.com/assets/docs/asplos-18/paper5.pdf).
-         This is same as `SetFlag('convalgo', '1')`
+  * 'k': try kernel_stationary optimization if possible. [[Paper reference]](https://www.emc2-workshop.com/assets/docs/asplos-18/paper5.pdf).
+         Same as `SetFlag('convalgo', 1)`
   * 'r': try kernel_stationary option if possible.  maxpool will reshape output
   * 'K': try kernel_stationary option if possible, with yPxp ordering.
          maxpool will reshape output
@@ -52,7 +51,7 @@ to be passed to SetFlag.
   * 'S': do not run DLA. Only run software version
   * 'Q': do not run DLA. Only run software version using float precision and
          save quantization metrics: variable fix-point for inputs, intermediate
-	 activations and outputs. Same as `SetFlag('quantize',1)`
+	 activations and outputs. Same as `SetFlag('quantize', 2)`
   * 'i': measure time to load the initial data into DLA
   * 'L': profile each layer separately: run each layer in the model individually
          (measure execution time of each layer)
@@ -61,10 +60,9 @@ to be passed to SetFlag.
   * 't': save input and output of the inference in a file
   * 'T': create two programs, one for each bank instead of modifying addresses
          during execution. This is used when data transfer to external memory
-	 is a bottleneck.
-	 <img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" /><span style="color:red">FIXME FIXME FIXME Same as two_programs?</span><img src="https://nam01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmedia.giphy.com%2Fmedia%2FbqOXGPltRyedrOrB6h%2Fgiphy.gif&amp;data=02%7C01%7Crandymeyer%40micron.com%7C6389ac7145ea4040aa9308d7a5caed32%7Cf38a5ecd28134862b11bac1d563c806f%7C0%7C0%7C637160163285007550&amp;sdata=r%2BTqU%2FNg6iWXKrPC4i4aWOEfNkHF1KoxmldNsAHjAdU%3D&amp;reserved=0" width="30" height="30" />
+	 is a bottleneck. Same as `SetFlag('two_programs', 1)`
   * 'a': compile, run and check which option works better. loop{ compile, run,
-         save_best_choice }. Same as `SetFlag('profile',1)`
+         save_best_choice }. Same as `SetFlag('profile', 1)`
 
 *****
 The following are flags that can be set with `SetFlag` without the need of a
