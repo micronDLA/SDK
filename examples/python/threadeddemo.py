@@ -12,7 +12,7 @@ import numpy as np
 
 from argparse import ArgumentParser
 # argument Checking
-parser = ArgumentParser(description="Micron DLA Person Identification Demonstration")
+parser = ArgumentParser(description="Micron DLA Example")
 _ = parser.add_argument
 _('modelpath', type=str, default='', help='Path to the model file')
 _('imagesdir', type=str, default='', help='A directory name with input files')
