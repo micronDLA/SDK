@@ -71,7 +71,7 @@ Tested on:
 
 ## Software requirements
 - GCC 4.9 or higher
-- [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): Current version: pico-computing-6.1.0.17. Please verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
+- [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): Current version: pico-computing-2020.1. Please verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
 - Python 3
 - numpy
 - Pillow
@@ -123,7 +123,7 @@ Installation of the SDK can be run with:
 
 **Install protobuf for ONNX support (required by SDK)**
 
-Protobuf is used for reading ONNX files. You can install the required version following the commands below. 
+Protobuf is used for reading ONNX files. You can install the required version following the commands below.
 
 ```
 wget https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
@@ -326,23 +326,25 @@ This tutorial will teach you how to run inference on Micron DLA inference engine
 
 
 ## Multiple FPGAs with input batching
-Suppose that you have a desktop computer with two AC-510 FPGAs cards connected to a EX-750 PCI backplane. To simplify this example, let us assume there is one cluster per FPGA card. We will see how to use multiple clusters in the following sections.
+Suppose that you have a desktop computer with two AC-511 FPGAs cards connected to a EX-750 PCI backplane. To simplify this example, let us assume there is one cluster per FPGA card. We will see how to use multiple clusters in the following sections.
 The SDK can receive two images and process one image on each FPGA. The Micron DLA instructions and model parameters are broadcast to each FPGA card's main memory (HMC).
 The following code snippet shows you how to do this:
 
 ```python
 import microndla
+import numpy as np
 numfpga = 2
 numclus = 1
 # Create Micron DLA API
 sf = microndla.MDLA()
 # Generate instructions
-snwresults = sf.Compile('224x224x3', 'model.onnx', 'microndla.bin', numfpga, numclus)
+snwresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
 # Init the FPGA cards
-sf.Init('microndla.bin', 'bitfile.bit')
+sf.Init('microndla.bin', 'bitfile.tgz')
+in1 = np.random.rand(224,224,3,2)
+input_img = np.ascontiguousarray(in1)
 # Create a location for the output
 output = np.ndarray(2*snwresults, dtype=np.float32)
-# ... User's functions to get the input ...
 sf.Run(input_img, output) # Run
 ```
 
@@ -360,6 +362,7 @@ The following code snippet shows you how to do this:
 
 ```python
 import microndla
+import numpy as np
 numfpga = 1
 numclus = 1
 # Create Micron DLA API
@@ -367,22 +370,25 @@ sf1 = microndla.MDLA()
 # Create second Micron DLA API
 sf2 = microndla.MDLA()
 # Generate instructions for model1
-snwresults1 = sf1.Compile('224x224x3', 'model1.onnx', 'microndla1.bin', numfpga, numclus)
+snwresults1 = sf1.Compile('224x224x3', 'resnet50.onnx', 'microndla1.bin', numfpga, numclus)
 # Generate instructions for model2
-snwresults2 = sf2.Compile2('224x224x3', 'model2.onnx', 'microndla2.bin', numfpga, numclus)
+snwresults2 = sf2.Compile('224x224x3', 'resnet18.onnx', 'microndla2.bin', numfpga, numclus)
 # Init the FPGA 1 with model 1
-sf1.Init('microndla1.bin', 'bitfile.bit')
+sf1.Init('microndla1.bin', 'bitfile.tgz')
 # Init the FPGA 2 with model 2
-sf2.Init('microndla2.bin', 'bitfile.bit')
+sf2.Init('microndla2.bin', '')
+in1 = np.random.rand(224,224,3)
+in2 = np.random.rand(224,224,3)
+input_img1 = np.ascontiguousarray(in1)
+input_img2 = np.ascontiguousarray(in2)
 # Create a location for the output1
 output1 = np.ndarray(snwresults1, dtype=np.float32)
 # Create a location for the output2
 output2 = np.ndarray(snwresults2, dtype=np.float32)
-
-# ... User's functions to get the input ...
 sf1.Run(input_img1, output1) # Run
 sf2.Run(input_img2, output2)
 ```
+
 The code is similar to the previous section. Each instance will compile, init and execute a different model on different FPGA.
 The diagram below shows this type of execution:
 <img src="docs/pics/2fpga2model.png" width="900" height="735"/>
@@ -395,19 +401,22 @@ Following a similar strategy as the two FPGA with input batching example, the fo
 
 ```python
 import microndla
+import numpy as np
 numfpga = 1
 numclus = 2
 # Create Micron DLA API
 sf = microndla.MDLA()
 # Generate instructions
-snwresults = sf.Compile('224x224x3', 'model.onnx', 'microndla.bin', numfpga, numclus)
+snwresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
 # Init the FPGA cards
-sf.Init('microndla.bin', 'bitfile.bit')
+sf.Init('microndla.bin', 'bitfile.tgz')
+in1 = np.random.rand(224,224,3,2)
+input_img = np.ascontiguousarray(in1)
 # Create a location for the output
 output = np.ndarray(2*snwresults, dtype=np.float32)
-# ... User's functions to get the input ...
 sf.Run(input_img, output) # Run
 ```
+
 The only difference is that nclus=2 and nfpga=1.
 The diagram below shows this type of execution:
 <img src="docs/pics/2clus2img.png" width="900" height="735"/>
@@ -418,20 +427,23 @@ The following code snippet shows you how to use two clusters to process one imag
 
 ```python
 import microndla
+import numpy as np
 numfpga = 1
 numclus = 2
 # Create Micron DLA API
 sf = microndla.MDLA()
 sf.SetFlag('nobatch', '1')
 # Generate instructions
-snwresults = sf.Compile('224x224x3', 'model.onnx', 'microndla.bin', numfpga, numclus)
+snwresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
 # Init the FPGA cards
-sf.Init('microndla.bin', 'bitfile.bit')
+sf.Init('microndla.bin', 'bitfile.tgz')
+in1 = np.random.rand(224,224,3)
+input_img = np.ascontiguousarray(in1)
 # Create a location for the output
 output = np.ndarray(snwresults, dtype=np.float32)
-# ... User's functions to get the input ...
 sf.Run(input_img, output) # Run
 ```
+
 Use `sf.SetFlag('nobatch', '1')` to set the compiler to split the workload among two clusters and generate the instructions.
 You can find more information about the option flags [here](docs/Codes.md).
 Now the output size is not twice of `snwresults` because you expect output for one inference run.
@@ -566,56 +578,55 @@ Always put the `SetFlag()` after creating the Micron DLA object. You should see 
 
 ```
 ================================================================
-ie_compile: Parse the model and compile into microndla instructions
+ie_compile: Parse the model and compile into DLA instructions
 Input model read is net_conv.onnx
-microndla binary write to net_conv.bin
+DLA binary write to net_conv.bin
 -----------------------------------------------------------
-type conv id=0 in=(H16,W16,P256) out=(H14,W14,P256) k=3x3 stride=1x1 dilation=1x1 pad=(0,0,0,0) 0->1
-LIST:
-inSz_max: 0, numin 1, numout: 1
- type conv id=0 in=(H16,W16,P256) out=(H14,W14,P256) k=3x3 stride=1x1 dilation=1x1 pad=(0,0,0,0) 0->1
- End of ie_compile. It took 0.0167 [s]
+type conv name=3 id=0 in=(Z1,H16,W16,P256) out=(Z1,H14,W14,P256) k=(Z1,H3,W3) stride=(Z1,H1,W1) dilation=(Z1,H1,W1) pad=(Z0,Ze0,T0,B0,R0,L0) opad=(Z0,H0,W0) 0->1
+End of ie_compile. It took 0.0151 [s]
 ================================================================
 ================================================================
-ie_init: Init inference engine Hardware
-microndla binary to be read is ./net_conv.bin
+ie_init: Initialize Micron DLA system
+DLA binary to be read is ./net_conv.bin
 -----------------------------------------------------------
-Found 0x510 Device 0510
+Using FPGA 0x511 Device 0511
 Finished setting up the FPGAs
-End of ie_init. It took 0.0355 [s]
+End of ie_init. It took 0.0436 [s]
 ================================================================
 iter 0
 ================================================================
-ie_putinput_internal: send input to inference engine
-Input size given is 65536 elements
+ie_putinput_internal: send input to Micron DLA
 -----------------------------------------------------------
 Total batchsize given is 1
 Max number of FPGAs is 1, number of FPGAs used is 1
-Max number of clusters is 1
+Max number of clusters is 2, number of clusters used is 1
 Number of clusters used per image is 1
 -----------------------------------------------------------
-Rearrange input and convert float to int took 2.1289 [ms]
+Rearrange input and convert float to int took 1.0500 ms
 -----------------------------------------------------------
-Move input to main memory took 0.0930 [ms]
+Move input to main memory took 0.0880 ms
 -----------------------------------------------------------
-hardware start
+Micron DLA hardware start
 Start card 0 cluster 0
 Reset card 0 cluster 0
-data moved from main memory to inference engine: 8716288 [B]
-data moved from inference engine to main memory: 100352 [B]
-inference engine hardware execution took 2.2600 [ms]
+data moved from main memory to DLA: 8716288 [B]
+data moved from DLA to main memory: 100352 [B]
+Micron DLA execution took 0.7160 ms
 -----------------------------------------------------------
-Get results back from main memory took 0.0500 [ms]
+Get results back from main memory took 0.0610 ms
 -----------------------------------------------------------
-Ops: 231211008 [ops]
-Time[ms] Expected: 1.8063 Measured: 1.9949
-Bandwidth[GB/s] Expected: 4.546 Measured: 4.116
-Eff Measured: 0.905
-Time to arrange output is 2.6211 [ms]
+Ops: 231211008 (0.23 G)
+Expected Time: 0.4516 ms
+Expected Bandwidth: 0.207 GB/s
+Measured Time: 0.5519 ms
+Measured Bandwidth: 0.169 GB/s
+Efficiency: 0.818
+Time to arrange output is 9.1190 ms
 ```
+
 The print does not need to be identical. We are going to explain the main parts. First, it will list all the layers that it is going to compile from the `net_conv.onnx` and produce a `net_conv.bin`.
 
-Then `Init` will find an FPGA system, AC510 in our case. It will also show how much time it took to send the weights and instructions to the external memory in the `Init` function.
+Then `Init` will find an FPGA system, AC511 in our case. It will also show how much time it took to send the weights and instructions to the external memory in the `Init` function.
 
 Then `Run` will rearrange in the input tensor and load it into the external memory. It will print the time it took and other properties of the run, such as number of FPGAs and clusters used.
 
@@ -639,6 +650,34 @@ Note: `SetFlag('debug', 'w')` will enable warning prints. The warning prints are
 There are a few suggestions when designing a neural network that will avoid this case.
 Check that a batchnorm layer is present after each convolution and linear layer. Another suggestion is to use tanh or sigmoid instead of relu after the layers that have values overflowing.
 This will limit the output to -1 and 1 (tanh) or 0 and 1 (sigmoid).
+
+
+In the example, the layer that is going to be run is printed in the beginning:
+```
+type conv name=3 id=0 in=(Z1,H16,W16,P256) out=(Z1,H14,W14,P256) k=(Z1,H3,W3) stride=(Z1,H1,W1) dilation=(Z1,H1,W1) pad=(Z0,Ze0,T0,B0,R0,L0) opad=(Z0,H0,W0) 0->1
+```
+The meaning of each part is:
+ - type: shows what type is the layer. e.g.: conv, maxpool, concat.
+ - name: shows the output name id from onnx. Use [Netron](https://lutzroeder.github.io/netron/) to visualize the onnx model and click on the layer to see the layer's outputs section.
+ - id: internal id to reference the layer.
+ - in: input sizes. Z1 means on z dimension is size of 1. P256 means on planes dimension is size of 256. H16 means on height size is 16. (or y dimension). W16 means on width size is 16. (or x dimension).
+Conv2D have x, y dimensions and channels (W, H, P). Conv3D also have z dimension which is Z (W, H, Z, P).
+ - out: output sizes.
+ - k: kernel sizes.
+ - stride: stride sizes.
+ - dilation: dilation sizes.
+ - pad: padding sizes. T1: 1 r ow of padding on top. B1: 1 row of padding on bottom. R1: 1 column of padding on right. L1: 1 column of padding on left. Z0: 0 padding along z-dimension. Ze0: 0 padding along z-dimension in the other end
+ - opad: output padding sizes.
+ - `0->1`: internal indexes to output buffer that connect between different layers.
+
+Example code for running an onnx model is provided [here](examples/tests/test_model.py). It will run and compare the results from Micron DLA and [onnxruntime](https://github.com/microsoft/onnxruntime).
+The example takes, path to onnx file and input shape `WxHxP`. It prints the output comparison just like the `test_conv.py` example. You can run it like this:
+
+```
+python3 test_model.py resnet18.onnx 224x224x3
+```
+
+The code also have a profile option, which will execute each layer of the model and print the time measurements into a `.csv` file.
 
 # 9. Running a model from your favorite deep learning framework
 
