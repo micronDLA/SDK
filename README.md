@@ -687,42 +687,69 @@ There is a list of tutorials on how to convert model to ONNX for each framework 
 
 ## Tensorflow
 
-The content provided in this section is equivalent to the [tensorflow to ONNX tutorial](https://github.com/onnx/tutorials/blob/master/tutorials/TensorflowToOnnx-1.ipynb).
- The files for that tutorial are in the [assets folder](https://github.com/onnx/tutorials/tree/master/tutorials/assets), so git clone the onnx tutorial repo.
-
-To convert tensorflow models into ONNX format, you will need this converter [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx).
+To convert tensorflow models into ONNX format, you will need to install [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx).
 
 Tensorflow uses various file formats to represent a model: checkpoint files, frozen graphs (graph with weights) and saved_model. For more details please refer to [tensorflow guides](https://www.tensorflow.org/guide/extend/model_files).
 
-After step 2 from [Convert Tensorflow model to ONNX](https://github.com/onnx/tutorials/blob/master/tutorials/TensorflowToOnnx-1.ipynb), you should have a mnist1.onnx.
- Now, you only need to run that on the accelerator.
-
-```python
-img = np.load("./image.npz").reshape([1, 784])
-sf = microndla.MDLA()
-snwresults = sf.Compile(
-        '{:d}x{:d}x{:d}'.format(28, 28, 1),
-        'mnist1.onnx', 'mnist.bin', 1, 1)
-
-sf.Init("mnist.bin", "")
-inVec_c = np.ascontiguousarray(img)
-result = np.ascontiguousarray(np.ndarray((1, 1, snwresults), dtype=np.float32))
-sf.Run(inVec_c, result)
-```
-
-Another method to convert tensorflow models to ONNX is through frozen graph. This is shown in [part 2 of the Convert Tensorflow model to ONNX tutorial](https://github.com/onnx/tutorials/blob/c4ae39b04619970160453f87b3bceb3b269cb10d/tutorials/TensorflowToOnnx-2.ipynb)
-
-To create a frozen graph of your tensorflow model you need to know its input and output.
-
-You also need to use the "--fold_const" option during the conversion. For example to convert Inception-v1 from TF-slim you will run:
+The simplest way is to save the model in the saved_model.pb format and then convert it with
 
 ```
-python -m tf2onnx.convert --input ./inception_v1_2016_08_28_frozen.pb --inputs input:0 --outputs InceptionV1/Logits/Predictions/Softmax:0 --output ./googlenet_v1_slim.onnx --fold_const
+python -m tf2onnx.convert --saved-model savedmodeldir --output model.onnx
 ```
 
 Then you can use the same code to run the ONNX file with the SDK
 
-Another good resource for you to refer to about tensorflow pre-trained model is [here](https://github.com/tensorflow/models/tree/master/research/slim#Export).
+For example, you can take the basic example from the [basic Tensorflow tutorial](https://www.tensorflow.org/overview)
+
+```
+import tensorflow as tf
+mnist = tf.keras.datasets.mnist
+
+(x_train, y_train),(x_test, y_test) = mnist.load_data()
+x_train, x_test = x_train / 255.0, x_test / 255.0
+
+model = tf.keras.models.Sequential([
+  tf.keras.layers.Flatten(input_shape=(28, 28)),
+  tf.keras.layers.Dense(128, activation='relu'),
+  tf.keras.layers.Dropout(0.2),
+  tf.keras.layers.Dense(10, activation='softmax')
+])
+
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+model.fit(x_train, y_train, epochs=5)
+model.evaluate(x_test, y_test)
+model.save('mnist')
+```
+
+export it to mnist.onnx with
+
+```
+python -m tf2onnx.convert --saved-model mnist --output mnist.onnx
+```
+
+and then try with our inference engine:
+
+```
+import microndla
+import numpy as np
+import tensorflow as tf
+mnist = tf.keras.datasets.mnist
+
+(x_train, y_train),(x_test, y_test) = mnist.load_data()
+x_train, x_test = x_train / 255.0, x_test / 255.0
+
+ie = microndla.MDLA()
+swnresults = ie.Compile('28x28x1', 'mnist.onnx', 'save.bin')
+ie.Init('save.bin', '')
+result = np.ndarray(swnresults, dtype=np.float32)
+for i in range(0, 10):
+    ie.Run(x_test[i].astype(np.float32), result)
+    print(y_test[i], np.argmax(result))
+
+```
 
 ## Caffe1
 
