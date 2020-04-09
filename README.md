@@ -26,6 +26,7 @@ docs/C API.md.
 
 - [1. Installation](#1-installation) : install SDK
   * [System requirements](#system-requirements)
+  * [Pico computing](#pico-computing)
   * [Software requirements](#software-requirements)
   * [Docker Image](#docker-image)
   * [Recommended Installation](#recommended-installation)
@@ -81,7 +82,7 @@ Tested on:
 - torch >= 1.0
 - [protobuf 3.6.1](https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz)
 
-## Pico-computing
+## Pico computing
 
 Pico-computing installer package can be found in this [link](https://picocomputing.zendesk.com/hc/en-us/). To make sure your FPGA system is working properly, install pico-computing tools.
 For an Ubuntu 16.04 system use this command to install the package:
