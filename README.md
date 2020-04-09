@@ -65,6 +65,8 @@ docs/C API.md.
 
 This SDK supposes that you are working on a desktop computer with Micron FPGA boards.
 
+Check out this [link](https://www.micron.com/products/advanced-solutions/advanced-computing-solutions) to see what Micron FPGA system you have.
+
 Tested on:
   - Ubuntu 16.04 LTS Release, Kernel 4.13.0
   - CentOS 7.5
@@ -79,9 +81,59 @@ Tested on:
 - torch >= 1.0
 - [protobuf 3.6.1](https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz)
 
+## Pico-computing
+
+Pico-computing installer package can be found in this [link](https://picocomputing.zendesk.com/hc/en-us/). To make sure your FPGA system is working properly, install pico-computing tools.
+For an Ubuntu 16.04 system use this command to install the package:
+
+```
+sudo dpkg -i picocomputing_2020.1_all.deb
+```
+
+For a CentOS 7.5 system use this command to install:
+
+```
+sudo rpm -i picocomputing-2020.1.el6.x86_64.rpm
+```
+
+After installation, pico-computing package should be in:
+
+```
+/usr/src/picocomputing-2020.1/
+```
+
+After installation, reboot the machine.
+
+The pico-computing documentation is in `/usr/src/picocomputing-2020.1/doc/PicoUsersGuide.pdf`.
+
+It is highly recommended to read this PicoUsersGuide to learn about your FPGA system as this SDK uses pico-computing tools.
+
+If you have a previous version of pico-computing installed then uninstall it. And remove all `picocomputing-2020.1` and `HMC_release` folders before installing a new version of pico-computing.
+
+If you have an [AC511 FPGA board](https://www.micron.com/products/advanced-solutions/advanced-computing-solutions/ac-series-hpc-modules/ac-511), then you need to run a script once after installation. Inside `/usr/src/picocomputing-2020.1/bin` folder there are pico-computing scripts. Run this one:
+
+```
+update_ac511_flash.sh
+```
+
+`update_ac511_flash.sh` will update the boards flash. For more details, check Apendix B in `PicoUserGuide.pdf`.
+
+To check if pico-computing tools installation was successful, you can run a sample program in `/usr/src/picocomputing-2020.1/samples`.
+
+Check section `1.4.2 Running a Sample Program` in `PicoUsersGuide.pdf` for more details.
+
+If there is an issue going through this section, a quick check is to run the following commands. It should print the following outputs.
+```
+lspci | grep -i pico
+    05:00.0 Memory controller: Pico Computing Device 0045 (rev 05)
+    08:00.0 Memory controller: Pico Computing Device 0511 (rev 05)
+lsmod | grep -i pico
+    pico                 3493888  12
+```
+
 ## Docker Image
 
-Download  the docker image for your OS [here](https://picocomputing.zendesk.com/hc/en-us/).
+Download the docker image for your OS [here](https://picocomputing.zendesk.com/hc/en-us/).
 
 Load the docker image using docker load. Example:
 ```
