@@ -27,9 +27,7 @@ docs/C API.md.
 - [1. Installation](#1-installation) : install SDK
   * [System requirements](#system-requirements)
   * [Pico computing](#pico-computing)
-  * [Software requirements](#software-requirements)
   * [Docker Image](#docker-image)
-  * [Recommended Installation](#recommended-installation)
   * [Manual Installation](#manual-installation)
 - [2. Getting started with Deep Learning](#2-getting-started-with-deep-learning) : general information about deep learning
   * [Introduction](#introduction)
@@ -62,6 +60,10 @@ docs/C API.md.
 
 # 1. Installation
 
+There are 2 ways to setup:
+ 1. install [pico-computing](#pico-computing) and use the [docker image](#docker-image)
+ 2. install [pico-computing](#pico-computing) and do [manual installation of SDK](#manual-installation)
+
 ## System requirements
 
 This SDK supposes that you are working on a desktop computer with Micron FPGA boards.
@@ -69,18 +71,18 @@ This SDK supposes that you are working on a desktop computer with Micron FPGA bo
 Check out this [link](https://www.micron.com/products/advanced-solutions/advanced-computing-solutions) to see what Micron FPGA system you have.
 
 Tested on:
-  - Ubuntu 16.04 LTS Release, Kernel 4.13.0
-  - CentOS 7.5
+- Ubuntu 16.04 LTS Release, Kernel 4.13.0
+- CentOS 7.5
 
-## Software requirements
-- GCC 4.9 or higher
+Requirements:
 - [Pico-computing tools](https://picocomputing.zendesk.com/hc/en-us/): Current version: pico-computing-2020.1. Please verify pico-computing functionality by refering to the document "PicoUsersGuide.pdf" and section "Running a Sample Program"
+- [protobuf 3.6.1](https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz)
+- GCC 4.9 or higher
 - Python 3
 - numpy
 - Pillow
-- onnx >= 1.2
-- torch >= 1.0
-- [protobuf 3.6.1](https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz)
+- onnx
+- torch
 
 ## Pico computing
 
@@ -123,7 +125,7 @@ To check if pico-computing tools installation was successful, you can run a samp
 
 Check section `1.4.2 Running a Sample Program` in `PicoUsersGuide.pdf` for more details.
 
-If there is an issue going through this section, a quick check is to run the following commands. It should print the following outputs.
+If there is an issue going through this section, a quick check is to run the following commands. It should print the following outputs for AC511 system.
 ```
 lspci | grep -i pico
     05:00.0 Memory controller: Pico Computing Device 0045 (rev 05)
@@ -165,12 +167,6 @@ root@d80174ce2995:/home/mdla#
 Run the example code provided. Check sections [3](#3-getting-started-inference-on-micron-dla-hardware) and [4](#4-getting-started-inference-on-micron-dla-hardware-with-c).
 
 
-## Installation
-
-Installation of the SDK can be run with:
-
-`sudo ./install.sh`
-
 ## Manual Installation
 
 
@@ -188,7 +184,11 @@ sudo make install
 sudo ldconfig
 ```
 
-**Install library files**
+**Installation**
+
+Installation of the SDK can be run with:
+
+`sudo ./install.sh`
 
 The docker image provided contains a `libmicrondla.so` file that should be copied to `/usr/local/lib/`.
 
@@ -692,6 +692,7 @@ Then profiling for the run will appear afterwards.
 The expected bandwidth is calculated as the ratio between data transferred and expected execution time.
 data transferred is calculated during compilation. It just counts how many words are send and received between HMC and the accelerator. (This is not between HMC and pcie.)
 Expected execution time is also calculated in during compilation. It uses the number of operations, accelerator frequency and number of MACs used to get the expected execution time assuming running at peak performance.
+Measured time is measured between start and end of hardware accelerator execution.
 Measured bandwidth just uses the measured time instead of expected time in the bandwidth calculation. Eff Measured is the ratio between expected time and measured time.
 
 Then the output is rearranged back to the original data arrangement.
