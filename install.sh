@@ -1,15 +1,13 @@
 #!/bin/bash
 accept_eula=''
-skip_lib_copy=''
 
 print_usage() {
-  printf "Usage: $0 [ -a Accept EULA ] [ -s skip library copy ]"
+  printf "Usage: $0 [ -a Accept EULA ]"
 }
 
 while getopts 'as' flag; do
   case "${flag}" in
     a) accept_eula='y' ;;
-    s) skip_lib_copy='y' ;;
     *) print_usage
        exit 1 ;;
   esac
@@ -32,7 +30,6 @@ then
 	read_eula
 	if [[ $accept_eula =~ ^[Yy]$ ]]
 	then
-		if [[ -z "$skip_lib_copy" ]]; then cp libmicrondla.so /usr/local/lib; fi
 		apt-get update
 		apt-get -y install python3-pip
 		pip3 install --upgrade numpy
@@ -66,7 +63,6 @@ then
 		else
 			echo /usr/local/lib >/etc/ld.so.conf.d/local.conf
 		fi
-		if [[ -z "$skip_lib_copy" ]]; then cp libmicrondla.so /usr/local/lib; fi
 		yum install unzip
 		if ! [ -x "$(command -v python3)" ]; then
 			echo "Installing Python3 from source"

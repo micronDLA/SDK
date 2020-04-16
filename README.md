@@ -169,21 +169,6 @@ Run the example code provided. Check sections [3](#3-getting-started-inference-o
 
 ## Manual Installation
 
-
-**Install protobuf for ONNX support (required by SDK)**
-
-Protobuf is used for reading ONNX files. You can install the required version following the commands below.
-
-```
-wget https://github.com/google/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
-tar xf protobuf-all-3.6.1.tar.gz
-cd protobuf-3.6.1
-./configure
-make -j
-sudo make install
-sudo ldconfig
-```
-
 **Installation**
 
 Installation of the SDK can be run with:
@@ -196,13 +181,7 @@ There is an equivalent library built with CentOS in the CentOS docker image.
 
 Make sure the `microndla.py` can locate the libmicrondla.so library.
 
-setup.py is provided to install microndla as a package.
-
-```
-sudo python3 setup.py install
-```
-
-**Install pytorch (optional for genonnx.py; not required by SDK)**
+**Install pytorch (optional)**
 
 Install this if you want to convert models from PyTorch to ONNX on your own.
 
