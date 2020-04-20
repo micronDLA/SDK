@@ -175,11 +175,7 @@ Installation of the SDK can be run with:
 
 `sudo ./install.sh`
 
-The docker image provided contains a `libmicrondla.so` file that should be copied to `/usr/local/lib/`.
-
-There is an equivalent library built with CentOS in the CentOS docker image.
-
-Make sure the `microndla.py` can locate the libmicrondla.so library.
+Make sure the `microndla.py` can locate the libmicrondla.so library in `/usr/local/lib/`.
 
 **Install pytorch (optional)**
 
