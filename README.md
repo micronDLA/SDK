@@ -150,14 +150,16 @@ $ docker images
 
 Run the docker image using the `docker run` command. Example:
 ```
-$ docker run -it --rm -v "/path/to/models/on/host":/models --device=/dev/pico1 microndla:ubuntu16.04
+$ docker run -it --rm -v "/path/to/models/on/host":/models
+--device=/dev/pico1 microndla:ubuntu16.04
 ```
 That will start you in the /home/mdla directory where the SDK is preinstalled.
 
 In case you would like to make changes to the container (e.g. install text editor, python libraries), remove the --rm flag so the container persists on exit.
 You can then use the container id to `docker commit <id>` to a new image or `docker restart <id>` and `docker attach <id>` to reconnect stopped container.
 ```
-$ docker run -it -v "/path/to/models/on/host":/models --device=/dev/pico1 microndla:ubuntu16.04
+$ docker run -it -v "/path/to/models/on/host":/models
+--device=/dev/pico1 microndla:ubuntu16.04
 root@d80174ce2995:/home/mdla# exit
 $ docker restart d80174ce2995
 $ docker attach d80174ce2995
@@ -313,9 +315,9 @@ In this tutorial you will need:
 In the SDK folder, there is compile.c, which compiles an ONNX model and outputs DLA instructions into a .bin file.
 The simpledemo.c program will read this .bin file and execute it on the DLA.
 The main functions are:
-1) ie_compile: parse ONNX model and generate the DLA instructions.
-2) ie_init: load the DLA bitfile into FPGA and load instructions and model parameters to shared memory.
-3) ie_run: load input image and execute on the DLA.
+1) `ie_compile`: parse ONNX model and generate the DLA instructions.
+2) `ie_init`: load the DLA bitfile into FPGA and load instructions and model parameters to shared memory.
+3) `ie_run`: load input image and execute on the DLA.
 
 Check out other possible application programs using the DLA [here](http://fwdnxt.com/).
 To run the demo, first run the following commands:
@@ -544,28 +546,35 @@ o = 256 # output planes
 k = 3 # kernel size
 s = 1 # stride
 p = 0 # padding
-inV = torch.randn(1, i, w, w, dtype=torch.float32) # input tensor. Use float32, don't use float16
-modelConv = Conv(i, o, k, s, p) # create a model instance
-torch.onnx.export(modelConv, inV, "net_conv.onnx") # export the model from pytorch to an onnx file
+# input tensor. Use float32, don't use float16
+inV = torch.randn(1, i, w, w, dtype=torch.float32)
+# create a model instance
+modelConv = Conv(i, o, k, s, p)
+# export the model from pytorch to an onnx file
+torch.onnx.export(modelConv, inV, "net_conv.onnx")
 ```
 
 Now we need to run this model using CPU with Pytorch. You can run this model by adding the following:
 
 ```python
-outhw = modelConv(inV) # this will call the forward function in the Conv class that you defined above
+# this will call the forward function in the Conv class that you defined above
+outhw = modelConv(inV)
 result_pyt = outhw.view(-1)
-result_pyt = result_pyt.detach().numpy() # convert a tensor to numpy. We will use this to compare the results
+# convert a tensor to numpy. We will use this to compare the results
+result_pyt = result_pyt.detach().numpy()
 ```
 Now we need to run this model using the accelerator with the SDK.
 ```python
 # pass the model's onnx file to Compile to generate the accelerator's instructions.
-# the instructions, quantized weights and metadata need to run on the accelerator are stored in 'net_conv.bin'
+# the instructions, quantized weights and metadata need to run on the
+# accelerator are stored in 'net_conv.bin'
 outsize = sf.Compile(
         '{:d}x{:d}x{:d}'.format(w, w, i),
         'net_conv.onnx', 'net_conv.bin', 1, 1)
 
-#start the FPGA system. If a bitfile path is given then it will load the bitfile into the FPGA.
-#you only need to load the bitfile once after powering up the system.
+# start the FPGA system. If a bitfile path is given then it
+# will load the bitfile into the FPGA.
+# you only need to load the bitfile once after powering up the system.
 sf.Init("./net_conv.bin", "")
 
 in_1 = np.ascontiguousarray(inV)
@@ -577,7 +586,8 @@ The results from the accelerator are in `result` and the results from the CPU ar
 error_mean=(np.absolute(result-result_pyt).mean()/np.absolute(result_pyt).max())*100.0
 error_max=(np.absolute(result-result_pyt).max()/np.absolute(result_pyt).max())*100.0
 print("CONV")
-print('\x1b[32mMean/max error compared to pytorch are {:.3f}/{:.3f} %\x1b[0m'.format(error_mean, error_max))
+print('Mean/max error compared to pytorch are {:.3f}/{:.3f} %'
+.format(error_mean, error_max))
 ```
 The print output for us was:
 ```python
@@ -610,7 +620,9 @@ ie_compile: Parse the model and compile into DLA instructions
 Input model read is net_conv.onnx
 DLA binary write to net_conv.bin
 -----------------------------------------------------------
-type conv name=3 id=0 in=(Z1,H16,W16,P256) out=(Z1,H14,W14,P256) k=(Z1,H3,W3) stride=(Z1,H1,W1) dilation=(Z1,H1,W1) pad=(Z0,Ze0,T0,B0,R0,L0) opad=(Z0,H0,W0) 0->1
+type conv name=3 id=0 in=(Z1,H16,W16,P256) out=(Z1,H14,W14,P256)
+k=(Z1,H3,W3) stride=(Z1,H1,W1) dilation=(Z1,H1,W1)
+pad=(Z0,Ze0,T0,B0,R0,L0) opad=(Z0,H0,W0) 0->1
 End of ie_compile. It took 0.0151 [s]
 ================================================================
 ================================================================
@@ -683,7 +695,9 @@ This will limit the output to -1 and 1 (tanh) or 0 and 1 (sigmoid).
 
 In the example, the layer that is going to be run is printed in the beginning:
 ```
-type conv name=3 id=0 in=(Z1,H16,W16,P256) out=(Z1,H14,W14,P256) k=(Z1,H3,W3) stride=(Z1,H1,W1) dilation=(Z1,H1,W1) pad=(Z0,Ze0,T0,B0,R0,L0) opad=(Z0,H0,W0) 0->1
+type conv name=3 id=0 in=(Z1,H16,W16,P256) out=(Z1,H14,W14,P256)
+k=(Z1,H3,W3) stride=(Z1,H1,W1) dilation=(Z1,H1,W1)
+pad=(Z0,Ze0,T0,B0,R0,L0) opad=(Z0,H0,W0) 0->1
 ```
 The meaning of each part is:
  - type: shows what type is the layer. e.g.: conv, maxpool, concat.
@@ -809,7 +823,8 @@ import onnx
 import onnxmltools
 import keras
 
-model = keras.applications.resnet50.ResNet50(include_top=True, weights='imagenet', input_tensor=None, input_shape=None, pooling=None, classes=1000)
+model = keras.applications.resnet50.ResNet50(include_top=True, weights='imagenet',
+input_tensor=None, input_shape=None, pooling=None, classes=1000)
 onnx_model = onnxmltools.convert_keras(model)
 onnx.save(onnx_model, 'resnet50.onnx')
 ```
