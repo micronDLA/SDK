@@ -1,0 +1,42 @@
+FROM centos:7.5.1804
+
+RUN useradd --user-group --system --create-home --no-log-init mdla 
+
+WORKDIR /tmp/build
+
+# install dependencies and tools
+# dkms is found in epel-release
+# python3 is in Inline with Upstream Stable (https://ius.io) community repo
+# 2 stage yum install so repos are updated and packages are discoverable 
+RUN yum -y update && yum install -y https://repo.ius.io/ius-release-el7.rpm epel-release \
+ && yum install -y \
+    dkms  \
+    gcc-c++  \
+    git \
+    kernel-devel \
+    make \
+    pciutils \
+    python36u \
+    python36u-libs \
+    python36u-devel \
+    python36u-pip \
+    vim \
+    wget \ 
+    wxBase \
+    wxGTK-devel \
+    yum-utils  \
+ && yum clean all
+
+#install Pico Framework
+ARG pico_framework=picocomputing-2020.1.35.1-1.el7.x86_64.rpm
+COPY $pico_framework .
+RUN rpm -i $pico_framework && . /etc/profile.d/picocomputing.sh
+
+#install python deps & SDK
+RUN python3 -m pip install --user numpy pillow==6.1.0 \
+ && cd /home/mdla && git clone https://github.com/FWDNXT/SDK.git \
+ && cd SDK && ./install.sh -a 
+
+ENV LD_LIBRARY_PATH "$LD_LIBRARY_PATH:/usr/local/lib"
+WORKDIR /home/mdla
+CMD ["/bin/bash"]

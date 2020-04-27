@@ -135,31 +135,55 @@ lsmod | grep -i pico
 ```
 
 ## Docker Image
+To start a docker with the Micron DLA SDK you can either download prebuilt images or build them yourself. The benefit of custom building the image is that you can adjust the OS packages you want installed at build time. The trade-off is waiting through the build process of about 15-30min (depending on network and CPU speed). 
 
+### Load prebuilt Image.
 Download the docker image for your OS [here](https://picocomputing.zendesk.com/hc/en-us/).
 
-Load the docker image using docker load. Example:
+For Ubuntu 16.04:
 ```
-$ docker load < microndla_ubuntu16_04.tgz
+$ docker load < mdla_ubuntu16.04.tgz
 ```
 
-Check the tag of the docker image that you just loaded using:
+For CentOS 7.5:
+```
+$ docker load < mdla_centos7.5.tgz
+```
+### Build Image with Dockerfile
+Copy the OS specific picocomputing package to your docker build folder. Then build and tag the image (we add the latest tag for user convenience when running containers):
+
+For Ubuntu 16.04:
+```
+$ mkdir docker_build
+$ cp /path/to/picocomputing_2020.1_all.deb docker_build
+$ cd docker_build
+$ docker build -f ../docker/Dockerfile.ubuntu -t micron/mdla:2020.1-ubuntu16.04 -t micron/mdla:latest . 
+```
+
+For CentOS 7.5:
+```
+$ mkdir docker_build
+$ cp /path/to/picocomputing-2020.1.el6.x86_64.rpm docker_build
+$ cd docker_build
+$ docker build ../docker/Dockerfile.centos -t micron/mdla:2020.1-centos7.5 -t micron/mdla:latest . 
+```
+
+### Run Container
+Check the tag of the docker image that you just loaded/built using:
 ```
 $ docker images
 ```
 
-Run the docker image using the `docker run` command. Example:
+Run the docker image using the `docker run` command:
 ```
-$ docker run -it --rm -v "/path/to/models/on/host":/models
---device=/dev/pico1 microndla:ubuntu16.04
+$ docker run -it --rm -v "/path/to/models/on/host":/models --device=/dev/pico1 micron/dla
 ```
-That will start you in the /home/mdla directory where the SDK is preinstalled.
+That will start you in the /home/mdla directory where the SDK is preinstalled. The -it flag means interactive, --rm deletes the container on exit, -v mounts a directory into the container, and --device mounts a host device into the container.
 
-In case you would like to make changes to the container (e.g. install text editor, python libraries), remove the --rm flag so the container persists on exit.
-You can then use the container id to `docker commit <id>` to a new image or `docker restart <id>` and `docker attach <id>` to reconnect stopped container.
+To make changes to the container (e.g. install editors, python libraries), remove the --rm flag so the container persists on exit.
+You can then use the container id to `docker commit <id>` to a new image or `docker restart <id>` and `docker attach <id>` to reconnect a stopped container. You can also --name the container on run if you prefer not to use ids.
 ```
-$ docker run -it -v "/path/to/models/on/host":/models
---device=/dev/pico1 microndla:ubuntu16.04
+$ docker run -it -v "/path/to/models/on/host":/models --device=/dev/pico1 micron/dla
 root@d80174ce2995:/home/mdla# exit
 $ docker restart d80174ce2995
 $ docker attach d80174ce2995
