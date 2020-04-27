@@ -1,0 +1,34 @@
+FROM ubuntu:16.04
+
+RUN useradd --user-group --system --create-home --no-log-init mdla
+
+WORKDIR /tmp/build
+# install build and runtime dependencies 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential  \
+    ca-certificates  \
+    dkms  \
+    g++  \
+    git \
+    libwxgtk3.0-dev  \
+    linux-headers-$(uname -r) \
+    lsb-release \
+    pciutils \
+    python3-dev \
+    python3-pip \
+    vim \
+    wget
+
+#install Pico Framework
+ARG pico_framework=picocomputing_2020.1.35.1_all.deb
+COPY $pico_framework .
+RUN dpkg -i $pico_framework && . /etc/profile.d/picocomputing.sh
+
+#install python deps & SDK
+RUN python3 -m pip install numpy pillow==6.1.0 \
+ && cd /home/mdla && git clone https://github.com/FWDNXT/SDK.git \
+ && cd SDK && ./install.sh -a
+
+ENV LD_LIBRARY_PATH "$LD_LIBRARY_PATH:/usr/local/lib"
+WORKDIR /home/mdla
+CMD ["/bin/bash"]
