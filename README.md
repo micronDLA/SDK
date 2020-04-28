@@ -60,6 +60,8 @@ docs/C API.md.
 
 # 1. Installation
 
+Request pico-computing installer and docker images in [here](https://picocomputing.zendesk.com/hc/en-us). We will reply your request with the files you need for installation.
+
 There are 2 ways to setup:
  1. install [pico-computing](#pico-computing) and use the [docker image](#docker-image)
  2. install [pico-computing](#pico-computing) and do [manual installation of SDK](#manual-installation)
@@ -86,7 +88,7 @@ Requirements:
 
 ## Pico computing
 
-Pico-computing installer package can be found in this [link](https://picocomputing.zendesk.com/hc/en-us/). To make sure your FPGA system is working properly, install pico-computing tools.
+Pico-computing installer package can be requested from this [link](https://picocomputing.zendesk.com/hc/en-us/). To make sure your FPGA system is working properly, install pico-computing tools.
 For an Ubuntu 16.04 system use this command to install the package:
 
 ```
@@ -138,7 +140,7 @@ lsmod | grep -i pico
 To start a docker with the Micron DLA SDK you can either download prebuilt images or build them yourself. The benefit of custom building the image is that you can adjust the OS packages you want installed at build time. The trade-off is waiting through the build process of about 15-30min (depending on network and CPU speed). 
 
 ### Load prebuilt Image.
-Download the docker image for your OS [here](https://picocomputing.zendesk.com/hc/en-us/).
+Download the docker image for your OS after requesting it [here](https://picocomputing.zendesk.com/hc/en-us/).
 
 For Ubuntu 16.04:
 ```
