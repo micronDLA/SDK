@@ -760,13 +760,7 @@ To convert tensorflow models into ONNX format, you will need to install [tensorf
 
 Tensorflow uses various file formats to represent a model: checkpoint files, frozen graphs (graph with weights) and saved_model. For more details please refer to [tensorflow guides](https://www.tensorflow.org/guide/extend/model_files).
 
-The simplest way is to save the model in the saved_model.pb format and then convert it with
-
-```
-python -m tf2onnx.convert --saved-model savedmodeldir --output model.onnx
-```
-
-Then you can use the same code to run the ONNX file with the SDK
+The simplest way is to save the model in the saved_model.pb, as our SDK will automatically call tensorflow-onnx to convert it to ONNX. Just pass the directory with the saved_model.pb file to Compile. Otherwise follow the instructions of tensorflow-onnx to convert the tensorflow model to ONNX.
 
 For example, you can take the basic example from the [basic Tensorflow tutorial](https://www.tensorflow.org/overview)
 
@@ -793,12 +787,6 @@ model.evaluate(x_test, y_test)
 model.save('mnist')
 ```
 
-export it to mnist.onnx with
-
-```
-python -m tf2onnx.convert --saved-model mnist --output mnist.onnx
-```
-
 and then try with our inference engine:
 
 ```
@@ -811,7 +799,7 @@ mnist = tf.keras.datasets.mnist
 x_train, x_test = x_train / 255.0, x_test / 255.0
 
 ie = microndla.MDLA()
-swnresults = ie.Compile('28x28x1', 'mnist.onnx', 'save.bin')
+swnresults = ie.Compile('28x28x1', 'mnist', 'save.bin')
 ie.Init('save.bin', '')
 result = np.ndarray(swnresults, dtype=np.float32)
 for i in range(0, 10):

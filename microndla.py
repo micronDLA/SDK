@@ -1,6 +1,7 @@
 #Copyright 2019 Micron Technology, Inc. All Rights Reserved. This software contains confidential information and trade secrets of Micron Technology, Inc. Use, disclosure, or reproduction is prohibited without the prior express written permission of Micron Technology, Inc
 
 import sys
+import os
 from ctypes import *
 import numpy as np
 from numpy.ctypeslib import as_ctypes
@@ -163,6 +164,28 @@ class MDLA:
     def TrainlinearEnd(self):
         self.trainlinear_end(self.handle)
 
+    # Geneate ONNX file if the source is not ONNX
+    def GetONNX(self, path):
+        if os.path.isfile(path + '/saved_model.pb'):
+            try:
+                os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+                import tensorflow as tf
+                import tf2onnx
+            except:
+                raise Exception("ERROR: The model is a tensorflow model, please install tf2onnx first")
+            graph_def, inputs, outputs = tf2onnx.tf_loader.from_saved_model(path, None, None)
+            with tf.Graph().as_default() as tf_graph:
+                tf.import_graph_def(graph_def, name='')
+            with tf2onnx.tf_loader.tf_session(graph = tf_graph):
+                onnx_graph = tf2onnx.tfonnx.process_tf_graph(tf_graph, input_names = list(inputs.keys()), output_names = list(outputs.keys()))
+            onnx_graph = tf2onnx.optimizer.optimize_graph(onnx_graph)
+            model_proto = onnx_graph.make_model(path)
+            onnxfile = '/tmp/' + os.path.basename(path) + '.onnx'
+            tf2onnx.utils.save_protobuf(onnxfile, model_proto)
+            return onnxfile
+        else:
+            return path
+
     #loads a different model binary file
     # bins: model binary file path
     def Loadmulti(self, bins):
@@ -180,17 +203,17 @@ class MDLA:
     #        Width x Height x Depth x Planes x Batchsize
     #        Multiple inputs can be specified by separating them with a semi-colon
     #        Example: Two inputs with width=640, height=480, planes=3 becomes a string "640x480x3;640x480x3".
-    # modeldir: path to a model file in ONNX format.
+    # modelpath: path to a model file in ONNX format.
     # bitfile: FPGA bitfile to be loaded
     # numcard: number of FPGA cards to use.
     # numclus: number of clusters to be used.
     # image: input to the model as a numpy array of type float32
     #Returns:
     # result: model's output tensor as a preallocated numpy array of type float32
-    def GO(self, image, modeldir, bitfile, images, result, numcard = 1, numclus = 1):
+    def GO(self, image, modelpath, bitfile, images, result, numcard = 1, numclus = 1):
         imgs, sizes = self.params(images)
         r, rs = self.params(result)
-        rc = self.ie_go(self.handle, bytes(image, 'ascii'), bytes(modeldir, 'ascii'), bytes(bitfile, 'ascii'), \
+        rc = self.ie_go(self.handle, bytes(image, 'ascii'), bytes(self.GetONNX(modelpath), 'ascii'), bytes(bitfile, 'ascii'), \
             numcard, numclus, imgs, r)
         if rc != 0:
             raise Exception(rc)
@@ -204,7 +227,7 @@ class MDLA:
     #        Width x Height x Depth x Planes x Batchsize
     #        Multiple inputs can be specified by separating them with a semi-colon
     #        Example: Two inputs with width=640, height=480, planes=3 becomes a string "640x480x3;640x480x3".
-    # modeldir: path to a model file in ONNX format.
+    # modelpath: path to a model file in ONNX format.
     # outfile: path to a file where a model in Micron DLA ready format will be saved.
     # images: a list of inputs (calibration dataset) to the model as a numpy array of type float32
     # nimg: number of images in calibration dataset
@@ -212,14 +235,14 @@ class MDLA:
     # numclus: number of clusters to be used.
     # Return:
     #   Number of results to be returned by the network
-    def Quantize(self, image, modeldir, outfile, images, numcard = 1, numclus = 1):
+    def Quantize(self, image, modelpath, outfile, images, numcard = 1, numclus = 1):
         self.swoutsize = (c_ulonglong * 16)()
         self.noutputs = c_int()
         nim = int(len(images))
         if nim <= 0:
             raise Exception('No images')
         imgs, sizes = self.params(images)
-        self.handle = self.ie_quantize(self.handle, bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
+        self.handle = self.ie_quantize(self.handle, bytes(image, 'ascii'), bytes(self.GetONNX(modelpath), 'ascii'), \
             bytes(outfile, 'ascii'), self.swoutsize, byref(self.noutputs), numcard, numclus, imgs, nim)
         if self.handle == None:
             raise Exception('Init failed')
@@ -239,17 +262,17 @@ class MDLA:
     #        Width x Height x Depth x Planes x Batchsize
     #        Multiple inputs can be specified by separating them with a semi-colon
     #        Example: Two inputs with width=640, height=480, planes=3 becomes a string "640x480x3;640x480x3".
-    # modeldir: path to a model file in ONNX format.
+    # modelpath: path to a model file in ONNX format.
     # outfile: path to a file where a model in Micron DLA ready format will be saved.
     # numcard: number of FPGA cards to use.
     # numclus: number of clusters to be used.
     # nlayers: number of layers to run in the model. Use -1 if you want to run the entire model.
     # Return:
     #   Number of results to be returned by the network
-    def Compile(self, image, modeldir, outfile, numcard = 1, numclus = 1, nlayers = -1):
+    def Compile(self, image, modelpath, outfile, numcard = 1, numclus = 1, nlayers = -1):
         self.swoutsize = (c_ulonglong * 16)()
         self.noutputs = c_int()
-        self.handle = self.ie_compile(self.handle, bytes(image, 'ascii'), bytes(modeldir, 'ascii'), \
+        self.handle = self.ie_compile(self.handle, bytes(image, 'ascii'), bytes(self.GetONNX(modelpath), 'ascii'), \
             bytes(outfile, 'ascii'), self.swoutsize, byref(self.noutputs), numcard, numclus, nlayers, False)
         if self.handle == None:
             raise Exception('Init failed')
