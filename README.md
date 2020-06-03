@@ -137,7 +137,7 @@ lsmod | grep -i pico
 ```
 
 ## Docker Image
-To start a docker with the Micron DLA SDK you can either download prebuilt images or build them yourself. The benefit of custom building the image is that you can adjust the OS packages you want installed at build time. The trade-off is waiting through the build process of about 15-30min (depending on network and CPU speed). 
+To start a docker with the Micron DLA SDK you can either download prebuilt images or build them yourself. The benefit of custom building the image is that you can adjust the OS packages you want installed at build time. The trade-off is waiting through the build process of about 15-30min (depending on network and CPU speed).
 
 ### Load prebuilt Image.
 Download the docker image for your OS after requesting it [here](https://picocomputing.zendesk.com/hc/en-us/).
@@ -159,7 +159,7 @@ For Ubuntu 16.04:
 $ mkdir docker_build
 $ cp /path/to/picocomputing_2020.1_all.deb docker_build
 $ cd docker_build
-$ docker build -f ../docker/Dockerfile.ubuntu -t micron/mdla:2020.1-ubuntu16.04 -t micron/mdla:latest . 
+$ docker build -f ../docker/Dockerfile.ubuntu -t micron/mdla:2020.1-ubuntu16.04 -t micron/mdla:latest .
 ```
 
 For CentOS 7.5:
@@ -167,7 +167,7 @@ For CentOS 7.5:
 $ mkdir docker_build
 $ cp /path/to/picocomputing-2020.1.el6.x86_64.rpm docker_build
 $ cd docker_build
-$ docker build ../docker/Dockerfile.centos -t micron/mdla:2020.1-centos7.5 -t micron/mdla:latest . 
+$ docker build ../docker/Dockerfile.centos -t micron/mdla:2020.1-centos7.5 -t micron/mdla:latest .
 ```
 
 ### Run Container
@@ -409,7 +409,8 @@ sf.Run(input_img, output) # Run
 `sf.Init` will initialize the FPGAs. It will load the bitfile.bit, send the instructions and model parameters to each FPGA's main memory.
 The expected output size of `sf.Run` is twice `snwresults`, because numfpga=2 and two input images are processed. `input_img` is two images concatenated.
 The diagram below shows this type of execution:
-<img src="docs/pics/2fpga2img.png" width="900" height="735"/>
+
+<img src="docs/pics/2fpga2img.png" width="900" height="550"/>
 
 
 ## Multiple FPGAs with different models
@@ -447,7 +448,8 @@ sf2.Run(input_img2, output2)
 
 The code is similar to the previous section. Each instance will compile, init and execute a different model on different FPGA.
 The diagram below shows this type of execution:
-<img src="docs/pics/2fpga2model.png" width="900" height="735"/>
+
+<img src="docs/pics/2fpga2model.png" width="900" height="550"/>
 
 ## Multiple Clusters with input batching
 For simplicity, now assume you have one FPGA and inside it we have two Micron DLA clusters.
@@ -475,7 +477,8 @@ sf.Run(input_img, output) # Run
 
 The only difference is that nclus=2 and nfpga=1.
 The diagram below shows this type of execution:
-<img src="docs/pics/2clus2img.png" width="900" height="735"/>
+
+<img src="docs/pics/2clus2img.png" width="400" height="550"/>
 
 ## Multiple Clusters without input batching
 The SDK can also use both clusters on the same input image. It will split the operations among the two clusters.
@@ -504,7 +507,8 @@ Use `sf.SetFlag('nobatch', '1')` to set the compiler to split the workload among
 You can find more information about the option flags [here](docs/Codes.md).
 Now the output size is not twice of `snwresults` because you expect output for one inference run.
 The diagram below shows this type of execution:
-<img src="docs/pics/2clus1img.png" width="900" height="735"/>
+
+<img src="docs/pics/2clus1img.png" width="600" height="550"/>
 
 
 
