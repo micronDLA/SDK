@@ -45,17 +45,18 @@ docs/C API.md.
 - [6. Tutorial - PutInput and GetResult](#6-tutorial---putinput-and-getresult) : tutorial for using PutInput and GetOutput
 - [7. Tutorial - Writing tests](#7-tutorial---writing-tests) : Tutorial on running tests
 - [8. Tutorial - Debugging](#8-tutorial---debugging) : Tutorial on debugging and printing
-- [9. Running a model from your favorite deep learning framework](#9-running-a-model-from-your-favorite-deep-learning-framework) : Tutorial on converting models to ONNX
+- [9. Variable Fix Point Quantization](#9-variable-fix-point-quantization) : Tutorial on using variable fix-point
+- [10. Running a model from your favorite deep learning framework](#10-running-a-model-from-your-favorite-deep-learning-framework) : Tutorial on converting models to ONNX
   * [Tensorflow](#tensorflow)
   * [Caffe1](#caffe1)
   * [Keras](#keras)
-- [10. Supported models and layers](#10-supported-models-and-layers) : List of supported layers and models tested on the DLA
+- [11. Supported models and layers](#11-supported-models-and-layers) : List of supported layers and models tested on the DLA
   * [Tested models](#tested-models)
   * [TF-Slim models tested on Micron DLA inference engine](#tf-slim-models-tested-on-microndla-inference-engine)
   * [ONNX model zoo](#onnx-model-zoo)
   * [Keras](#keras)
   * [CNTK](#cntk)
-- [11. Troubleshooting and Q&A](#11-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
+- [12. Troubleshooting and Q&A](#12-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
 
 
 # 1. Installation
@@ -752,7 +753,52 @@ python3 test_model.py resnet18.onnx 224x224x3
 
 The code also have a profile option, which will execute each layer of the model and print the time measurements into a `.csv` file.
 
-# 9. Running a model from your favorite deep learning framework
+# 9. Variable Fix Point Quantization
+
+Micro DLA uses 16-bit fix point to represent numbers. The `Compile` function will convert the numbers in the onnx model from float 32-bit into 16-bit fix-point [Q8.8](https://en.wikipedia.org/wiki/Q_(number_format)). The default Micron DLA bitfile will run the model using Q8.8.
+
+A Micron DLA bitfile with variable fix-point support is provided in order to reduce the discrepancy between the float 32-bit and the Q8.8 representation.
+
+This bitfile allows the software to choose different QX.Y representations that is the best fit for different parts of the neural network model.
+
+The SDK provides 2 options for variable fix-point quantization. **Before you try** these options, make sure to load the bitfile that supports variable fix-point into the FPGA.
+
+**Option 1**: For each layer of the model, their weights and biases are converted into different QX.Y representations.
+
+In this case, you can set 'V' in the options using `SetFlag` function before `Compile`:
+
+```python
+ie = microndla.MDLA()
+ie.SetFlag('options', 'V')
+#Compile to a file
+swnresults = ie.Compile('224x224x3', 'resnet18.onnx', 'save.bin')
+```
+
+**Option 2**: Variable fix-point can be determined for input and output of each layer if one or more sample inputs are provided.
+
+You will need to provide a set of sample inputs (calibration data) to `Quantize` funtion. In addition to compiling the model, `Quantize` will run the model with the calibration inputs using float32 and save the variable fix-point configuration for each input/output of each layer in the model. `Quantize` will also convert the static data (weights and biases) to the appropriate fix-point representation, so no need for `ie.SetFlag('options', 'V')` in this case.
+
+Instead of using ie.Compile, you use `Quantize` and give an array of input data:
+
+```python
+#Load image into a numpy array
+img = LoadImage(args.image, args)
+imgs = []
+for fn in os.listdir(args.imagesdir):
+    x = LoadImage(args.imagesdir + '/' + fn, args)
+    imgs.append(x)
+
+#Create and initialize the Inference Engine object
+ie = microndla.MDLA()
+#Compile to a file
+swnresults = ie.Quantize('224x224x3', 'resnet18.onnx', 'save.bin', imgs)
+```
+
+After that, `Init` and `Run` runs as usual using the saved variable fix-point configuration.
+
+Checkout the example [quantize.py](examples/python/quantize.py) which takes same arguments as `simpledemo.py`. The only addition is a folder with the calibration input images for calibration data.
+
+# 10. Running a model from your favorite deep learning framework
 
 Micron DLA supports different deep learning frameworks by running models in ONNX format. In order to convert a model from your favorite deep learning framework to ONNX format you should follow the instructions [here](https://github.com/onnx/tutorials). However there are some extra steps you should take with certain frameworks for the best compatibility with Micron DLA and we describe them below.
 
@@ -847,7 +893,7 @@ onnx_model = onnxmltools.convert_keras(model)
 onnx.save(onnx_model, 'resnet50.onnx')
 ```
 
-# 10. Supported models and layers
+# 11. Supported models and layers
 
   * [Add](examples/tests/test_vectoradd.py)
   * AveragePool
@@ -907,7 +953,7 @@ Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not su
 * [ResNet50](https://www.cntk.ai/Models/CNTK_Pretrained/ResNet50_ImageNet_CNTK.model)
 * [VGG16](https://www.cntk.ai/Models/Caffe_Converted/VGG16_ImageNet_Caffe.model)
 
-# 11. Troubleshooting and Q&A
+# 12. Troubleshooting and Q&A
 
 Q: Where can I find weights for pretrained TF-slim models?
 
