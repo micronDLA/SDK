@@ -21,6 +21,7 @@ docs/C API.md.
 
 [**Examples**](examples/): Example code and Deep Learning tutorial.
 
+[**Pytorch-torchscript**](torch_mdla/README.md): Tutorial on how to add Micro DLA into pytorch using torchscript.
 
 ## Table of Contents:
 
@@ -914,7 +915,6 @@ onnx.save(onnx_model, 'resnet50.onnx')
   * Upsample
 
 ## Tested models
-These models are available [here](http://fwdnxt.com/models/).
 
   * Alexnet OWT (versions without LRN)
   * Resnet 18, 34, 50
@@ -923,6 +923,12 @@ These models are available [here](http://fwdnxt.com/models/).
   * [LightCNN-9](https://arxiv.org/pdf/1511.02683.pdf)
   * [Linknet](https://arxiv.org/pdf/1707.03718.pdf)
   * [Neural Style Transfer Network](https://arxiv.org/pdf/1603.08155.pdf)
+  * LSTM
+  * GRU
+  * [Mobilenet](https://github.com/onnx/models/blob/master/vision/classification/mobilenet/model/mobilenetv2-7.onnx)
+  * [Linknet](https://arxiv.org/abs/1707.03718)
+  * [Enet](https://arxiv.org/abs/1606.02147)
+  * [SqueezeNet](https://arxiv.org/abs/1602.07360)
 
 ## TF-Slim models tested on Micron DLA inference engine
 
