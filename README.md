@@ -284,6 +284,22 @@ For more information about onnx please visit [https://onnx.ai/](https://onnx.ai/
 
 To convert tensorflow models into ONNX files please reference the section [6. Using with Tensorflow](#6-using-with-tensorflow)
 
+**Loading hardware into FPGA**
+
+When you turn on the system, it will have the FPGA programmed with a default hardware definition. You need to load the MDLA bitfile only once after turning on the system.
+
+You can load a MDLA bitfile of choice using:
+
+`python3 loadbitfile.py <bitfile path>`
+
+You can find the MDLA bitfiles in the pico-computing folder:
+
+`/usr/src/picocomputing`
+
+Loading the FPGA will take at max 5 min.
+Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](#11-troubleshooting-and-qa).
+Micron DLA hardware will be loaded in the FPGA card. The following MDLA runs will not need to load the hardware anymore.
+
 **Running inference on Micron DLA hardware for one image**
 
 In the SDK folder, there is simpledemo.py, which is a python demo application.
@@ -298,16 +314,7 @@ Its main parts are:
 The user may modify steps 1 and 5 according to users needs.
 Check out other possible application programs using Micron DLA hardware [here](http://fwdnxt.com/).
 The example program is located in examples/python/
-You can run the demo using this command:
 
-`python3 simpledemo.py <onnx file> <picture> -c <categories file.txt> -l <bitfile.bit>`
-
-`-l` option will load the hardware into a FPGA card.
-
-
-Loading the FPGA and bringing up the HMC will take at max 5 min.
-Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](#11-troubleshooting-and-qa).
-After the first run, Micron DLA hardware will be loaded in the FPGA card. The following runs will not need to load the hardware anymore.
 You can run the network on hardware with this command, which will find the FPGA card that was loaded with Micron DLA hardware:
 
 `python3 simpledemo.py <onnx file> <picture> -c <categories file.txt>`
@@ -348,6 +355,9 @@ The main functions are:
 3) `ie_run`: load input image and execute on the DLA.
 
 Check out other possible application programs using the DLA [here](http://fwdnxt.com/).
+
+Make sure the MDLA bitfile was loaded into the FPGA before running it.
+
 To run the demo, first run the following commands:
 
 ```
@@ -356,15 +366,7 @@ make
 ./compile -m <model.onnx> -i 224x224x3 -o instructions.bin
 ```
 Where `-i` is the input sizes: width x height x channels.
-After creating the `instructions.bin`, you can run the following command to execute it:
-
-`./simpledemo -i <picturefile> -c <categoriesfile> -s ./instructions.bin -b <bitfile.bit>`
-
-`-b` option will load the specified DLA bitfile into a FPGA card.
-Loading the FPGA and bringing up the HMC will take a maximum of five minutes.
-Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](#11-troubleshooting-and-qa).
-After the first run, the DLA will be loaded in the FPGA card. The following runs will not need to load the DLA bitfile anymore.
-You can run the network on the DLA with this command, which will find the FPGA card that was loaded with the DLA:
+After creating the `instructions.bin`, you can run the network on the DLA with this command, which will find the FPGA card that was loaded with the DLA:
 
 `./simpledemo -i <picturefile> -c <categoriesfile> -s ./instructions.bin`
 
