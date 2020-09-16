@@ -6,10 +6,14 @@ from ctypes import *
 import numpy as np
 from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
-f = CDLL("libmicrondla.so")
+try:
+    f = CDLL("./libmicrondla.so")
+except:
+    f = CDLL("libmicrondla.so")
+
 libc = CDLL("libc.so.6")
 
-curversion = '2020.1'
+curversion = '2020.2.0'
 
 #Allows None to be passed instead of a ndarray
 def wrapped_ndptr(*args, **kwargs):
@@ -55,7 +59,7 @@ class MDLA:
         self.ie_quantize.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_ulonglong), POINTER(c_int), c_int, c_int, POINTER(POINTER(c_float)), c_int]
 
         self.ie_compile = f.ie_compile
-        self.ie_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_ulonglong), POINTER(c_int), c_int, c_int, c_int]
+        self.ie_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_ulonglong), POINTER(c_int), c_int, c_int]
         self.ie_compile.restype = c_void_p
 
         self.ie_init = f.ie_init
@@ -85,7 +89,7 @@ class MDLA:
         self.ie_write_data.argtypes = [c_void_p, c_ulonglong, c_void_p, c_ulonglong, c_int]
 
         self.ie_write_weights = f.ie_write_weights
-        self.ie_write_weights.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int]
+        self.ie_write_weights.argtypes = [c_void_p, ndpointer(c_float, flags="C_CONTIGUOUS"), ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int, c_int]
 
         self.ie_create_memcard = f.ie_create_memcard
         self.ie_create_memcard.argtypes = [c_void_p, c_int, c_int, c_char_p]
@@ -211,8 +215,8 @@ class MDLA:
     #Returns:
     # result: model's output tensor as a preallocated numpy array of type float32
     def GO(self, image, modelpath, bitfile, images, result, numcard = 1, numclus = 1):
-        imgs, sizes = self.params(images)
-        r, rs = self.params(result)
+        imgs, sizes, keepalive = self.inparams(images)
+        r, rs = self.outparams(result)
         rc = self.ie_go(self.handle, bytes(image, 'ascii'), bytes(self.GetONNX(modelpath), 'ascii'), bytes(bitfile, 'ascii'), \
             numcard, numclus, imgs, r)
         if rc != 0:
@@ -236,22 +240,19 @@ class MDLA:
     # Return:
     #   Number of results to be returned by the network
     def Quantize(self, image, modelpath, outfile, images, numcard = 1, numclus = 1):
-        self.swoutsize = (c_ulonglong * 16)()
-        self.noutputs = c_int()
+        swoutsize = (c_ulonglong * 16)()
+        noutputs = c_int()
         nim = int(len(images))
         if nim <= 0:
             raise Exception('No images')
-        imgs, sizes = self.params(images)
+        imgs, sizes, keepalive = self.inparams(images)
         self.handle = self.ie_quantize(self.handle, bytes(image, 'ascii'), bytes(self.GetONNX(modelpath), 'ascii'), \
-            bytes(outfile, 'ascii'), self.swoutsize, byref(self.noutputs), numcard, numclus, imgs, nim)
+            bytes(outfile, 'ascii'), swoutsize, byref(noutputs), numcard, numclus, imgs, nim)
         if self.handle == None:
             raise Exception('Init failed')
-        if self.noutputs.value == 1:
-                return self.swoutsize[0]
-        ret = ()
-        for i in range(self.noutputs.value):
-            ret += (self.swoutsize[i],)
-        return ret
+        self.out_size = self._format_outsize(swoutsize, noutputs)
+        return self.out_size
+
 
     #compile a network and produce .bin file with everything that is needed to execute
     # image: it is a string with the image path or the image dimensions.
@@ -266,21 +267,27 @@ class MDLA:
     # outfile: path to a file where a model in Micron DLA ready format will be saved.
     # numcard: number of FPGA cards to use.
     # numclus: number of clusters to be used.
-    # nlayers: number of layers to run in the model. Use -1 if you want to run the entire model.
     # Return:
     #   Number of results to be returned by the network
-    def Compile(self, image, modelpath, outfile, numcard = 1, numclus = 1, nlayers = -1):
-        self.swoutsize = (c_ulonglong * 16)()
-        self.noutputs = c_int()
+    def Compile(self, image, modelpath, outfile, numcard = 1, numclus = 1):
+        swoutsize = (c_ulonglong * 16)()
+        noutputs = c_int()
         self.handle = self.ie_compile(self.handle, bytes(image, 'ascii'), bytes(self.GetONNX(modelpath), 'ascii'), \
-            bytes(outfile, 'ascii'), self.swoutsize, byref(self.noutputs), numcard, numclus, nlayers, False)
+            bytes(outfile, 'ascii'), swoutsize, byref(noutputs), numcard, numclus)
         if self.handle == None:
             raise Exception('Init failed')
-        if self.noutputs.value == 1:
-                return self.swoutsize[0]
+        self.out_size = self._format_outsize(swoutsize, noutputs)
+        return self.out_size
+
+    #format output size from c_ulong_Array_16 to list
+    # outsize: c_ulong_Array_16
+    # nvar: c_int number of values in array
+    def _format_outsize(self, outsize, nvar):
+        if nvar.value == 1:
+            return outsize[0]
         ret = ()
-        for i in range(self.noutputs.value):
-            ret += (self.swoutsize[i],)
+        for i in range(nvar.value):
+            ret += (outsize[i],)
         return ret
 
     #returns the context obj
@@ -290,17 +297,13 @@ class MDLA:
     # infile: model binary file path
     # bitfile: FPGA bitfile to be loaded
     def Init(self, infile, bitfile, cmem = None):
-        self.outsize = (c_ulonglong * 16)()
-        self.noutputs = c_int()
-        self.handle = self.ie_init(self.handle, bytes(bitfile, 'ascii'), bytes(infile, 'ascii'), byref(self.outsize), byref(self.noutputs), cmem)
+        swoutsize = (c_ulonglong * 16)()
+        noutputs = c_int()
+        self.handle = self.ie_init(self.handle, bytes(bitfile, 'ascii'), bytes(infile, 'ascii'), byref(swoutsize), byref(noutputs), cmem)
         if self.handle == None:
             raise Exception('Init failed')
-        if self.noutputs.value == 1:
-                return self.outsize[0]
-        ret = ()
-        for i in range(self.noutputs.value):
-            ret += (self.outsize[i],)
-        return ret
+        self.out_size = self._format_outsize(swoutsize, noutputs)
+        return self.out_size
 
     #Free FPGA instance
     def Free(self):
@@ -343,6 +346,12 @@ class MDLA:
     def GetInfo(self, name):
         if name == 'hwtime':
             return_val = c_float()
+        elif name == 'temperature':
+            return_val = c_int()
+            rc = self.ie_getinfo(self.handle, bytes("numfpga", 'ascii'), byref(return_val))
+            if rc != 0:
+                raise Exception(rc)
+            return_val = (c_float * return_val.value)()
         elif name == 'version' or name == 'build' or name == 'hwversion' or name == 'hwbuild':
             return_val = create_string_buffer(20)
         else:
@@ -350,19 +359,47 @@ class MDLA:
         rc = self.ie_getinfo(self.handle, bytes(name, 'ascii'), byref(return_val))
         if rc != 0:
             raise Exception(rc)
-        if name == 'version' or name == 'build' or name == 'hwversion' or name == 'hwbuild':
+        if name == 'temperature':
+            return return_val[:]
+        elif name == 'version' or name == 'build' or name == 'hwversion' or name == 'hwbuild':
             return str(return_val.value, 'ascii')
         return return_val.value
-    def params(self, images):
+
+    def outparams(self, results):
+        if type(results) == np.ndarray:
+            if results.dtype != np.float32:
+                raise Exception('Output must be float32')
+            if not results.flags['C_CONTIGUOUS']:
+                raise Exception('Output must be a contiguous array')
+            return byref(results.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(results.size))
+        elif type(results) == tuple or type(results) == list:
+            cresults = (POINTER(c_float) * len(results))()
+            csizes = (c_ulonglong * len(results))()
+            for i in range(len(results)):
+                if results[i].dtype != np.float32:
+                    raise Exception('Output must be float32')
+                if not results[i].flags['C_CONTIGUOUS']:
+                    raise Exception('Output must be a contiguous array')
+                cresults[i] = results[i].ctypes.data_as(POINTER(c_float))
+                csizes[i] = results[i].size
+            return cresults, csizes
+        else:
+            raise Exception('Output must be ndarray or tuple to ndarrays')
+
+    def inparams(self, images):
         if type(images) == np.ndarray:
-            return byref(images.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(images.size))
+            keepalive = np.ascontiguousarray(images.astype(np.float32))
+            return byref(keepalive.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(images.size)), keepalive
         elif type(images) == tuple or type(images) == list:
             cimages = (POINTER(c_float) * len(images))()
+            keepalive = []
             csizes = (c_ulonglong * len(images))()
             for i in range(len(images)):
-                cimages[i] = images[i].ctypes.data_as(POINTER(c_float))
+                cf = np.ascontiguousarray(images[i].astype(np.float32))
+                keepalive.append(cf)
+                cimages[i] = cf.ctypes.data_as(POINTER(c_float))
                 csizes[i] = images[i].size
-            return cimages, csizes
+            return cimages, csizes, keepalive
         else:
             raise Exception('Input must be ndarray or tuple to ndarrays')
 
@@ -372,8 +409,8 @@ class MDLA:
     #Returns:
     # result: model's output tensor as a preallocated numpy array of type float32
     def Run(self, images, result):
-        imgs, sizes = self.params(images)
-        r, rs = self.params(result)
+        imgs, sizes, keepalive = self.inparams(images)
+        r, rs = self.outparams(result)
         rc = self.ie_run(self.handle, imgs, sizes, r, rs)
         if rc != 0:
             raise Exception(rc)
@@ -390,7 +427,7 @@ class MDLA:
         if images is None:
             imgs, sizes = None, None
         else:
-            imgs, sizes = self.params(images)
+            imgs, sizes, keepalive = self.inparams(images)
         rc = self.ie_putinput(self.handle, imgs, sizes, key)
         if rc == -99:
             return False
@@ -398,12 +435,12 @@ class MDLA:
             raise Exception(rc)
         return True
 
-    #Get an output from shared memory. If opt_blocking was set then it will wait Micron DLA hardware
+    #Get an output from shared memory. If the blockingmode flag was set then it will wait Micron DLA hardware
     #Return:
     # result: model's output tensor as a preallocated numpy array of type float32
     def GetResult(self, result):
         userobj = c_long()
-        r, rs = self.params(result)
+        r, rs = self.outparams(result)
         rc = self.ie_getresult(self.handle, r, rs, byref(userobj))
         if rc == -99:
             return None
@@ -418,8 +455,8 @@ class MDLA:
     #Return:
     # result: models output tensor as a preallocated numpy array of type float32
     def Run_sw(self, images, result):
-        imgs, sizes = self.params(images)
-        r, rs = self.params(result)
+        imgs, sizes, keepalive = self.inparams(images)
+        r, rs = self.outparams(result)
         rc = self.ie_run_sim(self.handle, imgs, sizes, r, rs)
         if rc != 0:
             raise Exception(rc)
@@ -429,8 +466,8 @@ class MDLA:
     #Return:
     # result: models output tensor as a preallocated numpy array of type float32
     def Run_th(self, image, result):
-        imgs, sizes = self.params(images)
-        r, rs = self.params(result)
+        imgs, sizes, keepalive = self.inparams(images)
+        r, rs = self.outparams(result)
         rc = self.thnets_run_sim(self.handle, imgs, sizes, r, rs)
         if rc != 0:
             raise Exception(rc)
@@ -451,9 +488,10 @@ class MDLA:
 
     #write weights to an address in shared memory
     # weight: weights as a contiguous array
+    # bias: bias as a contiguous array
     # node: id to the layer that weights are being overwritten
-    def WriteWeights(self, weight, node):
-        self.ie_write_weights(self.handle, weight, weight.size, node)
+    def WriteWeights(self, weights, bias, node):
+        self.ie_write_weights(self.handle, weights, bias, weights.size, bias.size, node)
 
     #Allocate memory in shared memory
     # nelements: number of elements to allocate

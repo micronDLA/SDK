@@ -21,6 +21,7 @@ docs/C API.md.
 
 [**Examples**](examples/): Example code and Deep Learning tutorial.
 
+[**Pytorch-torchscript**](torch_mdla/README.md): Tutorial on how to add Micro DLA into pytorch using torchscript.
 
 ## Table of Contents:
 
@@ -45,17 +46,18 @@ docs/C API.md.
 - [6. Tutorial - PutInput and GetResult](#6-tutorial---putinput-and-getresult) : tutorial for using PutInput and GetOutput
 - [7. Tutorial - Writing tests](#7-tutorial---writing-tests) : Tutorial on running tests
 - [8. Tutorial - Debugging](#8-tutorial---debugging) : Tutorial on debugging and printing
-- [9. Running a model from your favorite deep learning framework](#9-running-a-model-from-your-favorite-deep-learning-framework) : Tutorial on converting models to ONNX
+- [9. Variable Fix Point Quantization](#9-variable-fix-point-quantization) : Tutorial on using variable fix-point
+- [10. Running a model from your favorite deep learning framework](#10-running-a-model-from-your-favorite-deep-learning-framework) : Tutorial on converting models to ONNX
   * [Tensorflow](#tensorflow)
   * [Caffe1](#caffe1)
   * [Keras](#keras)
-- [10. Supported models and layers](#10-supported-models-and-layers) : List of supported layers and models tested on the DLA
+- [11. Supported models and layers](#11-supported-models-and-layers) : List of supported layers and models tested on the DLA
   * [Tested models](#tested-models)
   * [TF-Slim models tested on Micron DLA inference engine](#tf-slim-models-tested-on-microndla-inference-engine)
   * [ONNX model zoo](#onnx-model-zoo)
   * [Keras](#keras)
   * [CNTK](#cntk)
-- [11. Troubleshooting and Q&A](#11-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
+- [12. Troubleshooting and Q&A](#12-troubleshooting-and-qa) : Troubleshooting common issues and answering common questions
 
 
 # 1. Installation
@@ -282,6 +284,22 @@ For more information about onnx please visit [https://onnx.ai/](https://onnx.ai/
 
 To convert tensorflow models into ONNX files please reference the section [6. Using with Tensorflow](#6-using-with-tensorflow)
 
+**Loading hardware into FPGA**
+
+When you turn on the system, it will have the FPGA programmed with a default hardware definition. You need to load the MDLA bitfile only once after turning on the system.
+
+You can load a MDLA bitfile of choice using:
+
+`python3 loadbitfile.py <bitfile path>`
+
+You can find the MDLA bitfiles in the pico-computing folder:
+
+`/usr/src/picocomputing`
+
+Loading the FPGA will take at max 5 min.
+Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](#11-troubleshooting-and-qa).
+Micron DLA hardware will be loaded in the FPGA card. The following MDLA runs will not need to load the hardware anymore.
+
 **Running inference on Micron DLA hardware for one image**
 
 In the SDK folder, there is simpledemo.py, which is a python demo application.
@@ -296,16 +314,7 @@ Its main parts are:
 The user may modify steps 1 and 5 according to users needs.
 Check out other possible application programs using Micron DLA hardware [here](http://fwdnxt.com/).
 The example program is located in examples/python/
-You can run the demo using this command:
 
-`python3 simpledemo.py <onnx file> <picture> -c <categories file.txt> -l <bitfile.bit>`
-
-`-l` option will load the hardware into a FPGA card.
-
-
-Loading the FPGA and bringing up the HMC will take at max 5 min.
-Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](#11-troubleshooting-and-qa).
-After the first run, Micron DLA hardware will be loaded in the FPGA card. The following runs will not need to load the hardware anymore.
 You can run the network on hardware with this command, which will find the FPGA card that was loaded with Micron DLA hardware:
 
 `python3 simpledemo.py <onnx file> <picture> -c <categories file.txt>`
@@ -346,6 +355,9 @@ The main functions are:
 3) `ie_run`: load input image and execute on the DLA.
 
 Check out other possible application programs using the DLA [here](http://fwdnxt.com/).
+
+Make sure the MDLA bitfile was loaded into the FPGA before running it.
+
 To run the demo, first run the following commands:
 
 ```
@@ -354,15 +366,7 @@ make
 ./compile -m <model.onnx> -i 224x224x3 -o instructions.bin
 ```
 Where `-i` is the input sizes: width x height x channels.
-After creating the `instructions.bin`, you can run the following command to execute it:
-
-`./simpledemo -i <picturefile> -c <categoriesfile> -s ./instructions.bin -b <bitfile.bit>`
-
-`-b` option will load the specified DLA bitfile into a FPGA card.
-Loading the FPGA and bringing up the HMC will take a maximum of five minutes.
-Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](#11-troubleshooting-and-qa).
-After the first run, the DLA will be loaded in the FPGA card. The following runs will not need to load the DLA bitfile anymore.
-You can run the network on the DLA with this command, which will find the FPGA card that was loaded with the DLA:
+After creating the `instructions.bin`, you can run the network on the DLA with this command, which will find the FPGA card that was loaded with the DLA:
 
 `./simpledemo -i <picturefile> -c <categoriesfile> -s ./instructions.bin`
 
@@ -752,7 +756,52 @@ python3 test_model.py resnet18.onnx 224x224x3
 
 The code also have a profile option, which will execute each layer of the model and print the time measurements into a `.csv` file.
 
-# 9. Running a model from your favorite deep learning framework
+# 9. Variable Fix Point Quantization
+
+Micro DLA uses 16-bit fix point to represent numbers. The `Compile` function will convert the numbers in the onnx model from float 32-bit into 16-bit fix-point [Q8.8](https://en.wikipedia.org/wiki/Q_(number_format)). The default Micron DLA bitfile will run the model using Q8.8.
+
+A Micron DLA bitfile with variable fix-point support is provided in order to reduce the discrepancy between the float 32-bit and the Q8.8 representation.
+
+This bitfile allows the software to choose different QX.Y representations that is the best fit for different parts of the neural network model.
+
+The SDK provides 2 options for variable fix-point quantization. **Before you try** these options, make sure to load the bitfile that supports variable fix-point into the FPGA.
+
+**Option 1**: For each layer of the model, their weights and biases are converted into different QX.Y representations.
+
+In this case, you can set 'V' in the options using `SetFlag` function before `Compile`:
+
+```python
+ie = microndla.MDLA()
+ie.SetFlag('options', 'V')
+#Compile to a file
+swnresults = ie.Compile('224x224x3', 'resnet18.onnx', 'save.bin')
+```
+
+**Option 2**: Variable fix-point can be determined for input and output of each layer if one or more sample inputs are provided.
+
+You will need to provide a set of sample inputs (calibration data) to `Quantize` funtion. In addition to compiling the model, `Quantize` will run the model with the calibration inputs using float32 and save the variable fix-point configuration for each input/output of each layer in the model. `Quantize` will also convert the static data (weights and biases) to the appropriate fix-point representation, so no need for `ie.SetFlag('options', 'V')` in this case.
+
+Instead of using ie.Compile, you use `Quantize` and give an array of input data:
+
+```python
+#Load image into a numpy array
+img = LoadImage(args.image, args)
+imgs = []
+for fn in os.listdir(args.imagesdir):
+    x = LoadImage(args.imagesdir + '/' + fn, args)
+    imgs.append(x)
+
+#Create and initialize the Inference Engine object
+ie = microndla.MDLA()
+#Compile to a file
+swnresults = ie.Quantize('224x224x3', 'resnet18.onnx', 'save.bin', imgs)
+```
+
+After that, `Init` and `Run` runs as usual using the saved variable fix-point configuration.
+
+Checkout the example [quantize.py](examples/python/quantize.py) which takes same arguments as `simpledemo.py`. The only addition is a folder with the calibration input images for calibration data.
+
+# 10. Running a model from your favorite deep learning framework
 
 Micron DLA supports different deep learning frameworks by running models in ONNX format. In order to convert a model from your favorite deep learning framework to ONNX format you should follow the instructions [here](https://github.com/onnx/tutorials). However there are some extra steps you should take with certain frameworks for the best compatibility with Micron DLA and we describe them below.
 
@@ -847,7 +896,7 @@ onnx_model = onnxmltools.convert_keras(model)
 onnx.save(onnx_model, 'resnet50.onnx')
 ```
 
-# 10. Supported models and layers
+# 11. Supported models and layers
 
   * [Add](examples/tests/test_vectoradd.py)
   * AveragePool
@@ -868,7 +917,6 @@ onnx.save(onnx_model, 'resnet50.onnx')
   * Upsample
 
 ## Tested models
-These models are available [here](http://fwdnxt.com/models/).
 
   * Alexnet OWT (versions without LRN)
   * Resnet 18, 34, 50
@@ -877,6 +925,12 @@ These models are available [here](http://fwdnxt.com/models/).
   * [LightCNN-9](https://arxiv.org/pdf/1511.02683.pdf)
   * [Linknet](https://arxiv.org/pdf/1707.03718.pdf)
   * [Neural Style Transfer Network](https://arxiv.org/pdf/1603.08155.pdf)
+  * LSTM
+  * GRU
+  * [Mobilenet](https://github.com/onnx/models/blob/master/vision/classification/mobilenet/model/mobilenetv2-7.onnx)
+  * [Linknet](https://arxiv.org/abs/1707.03718)
+  * [Enet](https://arxiv.org/abs/1606.02147)
+  * [SqueezeNet](https://arxiv.org/abs/1602.07360)
 
 ## TF-Slim models tested on Micron DLA inference engine
 
@@ -907,7 +961,7 @@ Note: BVLC models, Inception_v1, ZFNet512 are not supported because we do not su
 * [ResNet50](https://www.cntk.ai/Models/CNTK_Pretrained/ResNet50_ImageNet_CNTK.model)
 * [VGG16](https://www.cntk.ai/Models/Caffe_Converted/VGG16_ImageNet_Caffe.model)
 
-# 11. Troubleshooting and Q&A
+# 12. Troubleshooting and Q&A
 
 Q: Where can I find weights for pretrained TF-slim models?
 
