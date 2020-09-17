@@ -8,16 +8,17 @@ from PIL import Image
 import numpy as np
 
 from argparse import ArgumentParser
-# argument Checking
 parser = ArgumentParser(description="Micron DLA Load bitfile")
 _ = parser.add_argument
 _('bitfile', type=str, default='', help='Path to the bitfile')
+_('-f','--fpga', type=str, default='', help='Select fpga type to use: 511 or 852')
 
 args = parser.parse_args()
 
-#Create and initialize the Inference Engine object
-ie = microndla.MDLA()
-ie.SetFlag('bitfile', args.bitfile)
-#Free
-ie.Free()
+ie = microndla.MDLA() # create MDLA obj
+if args.fpga == "511" or args.fpga == "852":
+    ie.SetFlag('fpgaid', args.fpga) # select fpga type
+ie.SetFlag('bitfile', args.bitfile) # load bitfile
+
+ie.Free() # free MDLA obj
 print('done')

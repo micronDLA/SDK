@@ -28,9 +28,11 @@ RUN yum -y update && yum install -y https://repo.ius.io/ius-release-el7.rpm epel
  && yum clean all
 
 #install Pico Framework
-ARG pico_framework=picocomputing-2020.1.35.1-1.el7.x86_64.rpm
+ARG pico_framework=picocomputing-2020.2.80.run
 COPY $pico_framework .
-RUN rpm -i $pico_framework && . /etc/profile.d/picocomputing.sh
+ARG pico_mdla=pico-2020.2.80-dla.tgz
+COPY $pico_mdla .
+RUN ./$pico_framework --accept -- --install_all
 
 #install python deps & SDK
 RUN python3 -m pip install --user numpy pillow==6.1.0 \

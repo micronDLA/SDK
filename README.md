@@ -292,9 +292,11 @@ You can load a MDLA bitfile of choice using:
 
 `python3 loadbitfile.py <bitfile path>`
 
-You can find the MDLA bitfiles in the pico-computing folder:
+You can find the MDLA bitfiles in the pico-computing folder. The default pico-computing installation folder is:
 
-`/usr/src/picocomputing`
+`/usr/src/picocomputing-<version>/samples/InferenceEngine_5/firmware/`
+
+Use the appropriate .tgz file for the system you have.
 
 Loading the FPGA will take at max 5 min.
 Loading the FPGA only fails when there are no FPGA cards available. If you find issues in loading FPGA check out [Troubleshooting](#11-troubleshooting-and-qa).

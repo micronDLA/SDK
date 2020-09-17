@@ -329,7 +329,10 @@ class MDLA:
     # debug: default 'w', which prints only warnings. An empty string will remove those warnings.
     #       'b' will add some basic information.
     def SetFlag(self, name, value):
-        rc = self.ie_setflag(self.handle, bytes(name, 'ascii'), bytes(value, 'ascii'))
+        if name == 'hwversion':
+            rc = self.ie_setflag(self.handle, bytes(name, 'ascii'), value)
+        else:
+            rc = self.ie_setflag(self.handle, bytes(name, 'ascii'), bytes(value, 'ascii'))
         if rc != 0:
             raise Exception(rc)
 

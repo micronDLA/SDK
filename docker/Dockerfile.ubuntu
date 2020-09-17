@@ -20,9 +20,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget
 
 #install Pico Framework
-ARG pico_framework=picocomputing_2020.1.35.1_all.deb
+ARG pico_framework=picocomputing-2020.2.80.run
 COPY $pico_framework .
-RUN dpkg -i $pico_framework && . /etc/profile.d/picocomputing.sh
+ARG pico_mdla=pico-2020.2.80-dla.tgz
+COPY $pico_mdla .
+RUN ./$pico_framework --accept -- --install_all
 
 #install python deps & SDK
 RUN python3 -m pip install numpy pillow==6.1.0 \
