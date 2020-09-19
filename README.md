@@ -412,7 +412,7 @@ sf.Run(input_img, output) # Run
 
 `sf.Compile` will parse the model from model.onnx and save the generated Micron DLA instructions in microndla.bin. Here numfpga=2, so instructions for two FPGAs are created.
 `snwresults` is the output size of the model.onnx for one input image (no batching).
-`sf.Init` will initialize the FPGAs. It will load the bitfile.bit, send the instructions and model parameters to each FPGA's main memory.
+`sf.Init` will initialize the FPGAs. It will send the instructions and model parameters to each FPGA's main memory.
 The expected output size of `sf.Run` is twice `snwresults`, because numfpga=2 and two input images are processed. `input_img` is two images concatenated.
 The diagram below shows this type of execution:
 
