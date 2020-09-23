@@ -20,11 +20,11 @@ found in docs/PythonAPI.md.
 docs/C API.md.
 
 [**Examples**](examples/): Example code and Deep Learning tutorial.
-    * [DCGAN](examples/DCGAN): Example for using MDLA on [DCGAN](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html)
-    * [keras-mtcnn](examples/keras-mtcnn): Example for adding MDLA to [mtcnn](https://github.com/ipazc/mtcnn).
-    * [pytorch-ssd](examples/pytorch-ssd): Example for adding MDLA to [pyotrch-ssd](https://github.com/qfgaohao/pytorch-ssd).
-    * [website](examples/website): Example for making a web application with MDLA and Flask.
-    * [notebook](examples/notebook): MDLA in jupter notebook.
+* [DCGAN](examples/DCGAN): Example for using MDLA on [DCGAN](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html)
+* [keras-mtcnn](examples/keras-mtcnn): Example for adding MDLA to [mtcnn](https://github.com/ipazc/mtcnn).
+* [pytorch-ssd](examples/pytorch-ssd): Example for adding MDLA to [pyotrch-ssd](https://github.com/qfgaohao/pytorch-ssd).
+* [website](examples/website): Example for making a web application with MDLA and Flask.
+* [notebook](examples/notebook): MDLA in jupter notebook.
 
 [**Pytorch-torchscript**](torch_mdla/README.md): Tutorial on how to add Micro DLA into pytorch using torchscript.
 
