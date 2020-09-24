@@ -152,4 +152,6 @@ returned as an int.
 
 **hwbuild**: the DLA hardware build, return as a string.
 
+**outshape**: output the shape of the output tensor in width, height, planes and batch
+
 
