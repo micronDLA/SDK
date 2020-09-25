@@ -54,7 +54,7 @@ to be passed to SetFlag.
 	 activations and outputs. Same as `SetFlag('quantize', 2)`
   * 'i': measure time to load the initial data into DLA
   * 'L': profile each layer separately: run each layer in the model individually
-         (measure execution time of each layer)
+         (measure execution time of each layer). This option only works with Run function
   * 'z': profile each layer separately: run entire model and output each
          layer's output (only to check output of each layer)
   * 't': save input and output of the inference in a file
