@@ -26,8 +26,6 @@ Example: width=224,height=256,channels=3 becomes a string "224x256x3".
 
 **Numclus**: number of clusters to be used.  Optional.  Default value is 1 if not specified.
 
-**Nlayers**: number of layers to run in the model. Use -1 if you want to run the entire model.   Optional.  Default value is 1 if not specified.
-
 ***Return value:*** Number of results to be returned by the network
 
 ******
