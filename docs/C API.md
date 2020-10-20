@@ -19,7 +19,7 @@ Example: width=224, height=256, channels=3 becomes a string "224x256x3".
 
 `const char* outbin`: path to a file where a model in the Inference Engine ready format will be saved.
 
-`unsigned *swoutsize`: returns number of output values that this model will produce for one input image.
+`unsigned *swoutsize`: returns number of output values that this model will produce. Includes the output of all clusters being used.
 
 `int numcard`: number of FPGA cards to use.
 

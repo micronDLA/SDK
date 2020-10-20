@@ -96,43 +96,14 @@ Requirements:
 ## Pico computing
 
 Pico-computing installer package can be requested from this [link](https://picocomputing.zendesk.com/hc/en-us/). To make sure your FPGA system is working properly, install pico-computing tools.
-For an Ubuntu 16.04 system use this command to install the package:
 
-```
-sudo dpkg -i picocomputing_2020.1_all.deb
-```
-
-For a CentOS 7.5 system use this command to install:
-
-```
-sudo rpm -i picocomputing-2020.1.el6.x86_64.rpm
-```
-
-After installation, pico-computing package should be in:
-
-```
-/usr/src/picocomputing-2020.1/
-```
-
-After installation, reboot the machine.
-
-The pico-computing documentation is in `/usr/src/picocomputing-2020.1/doc/PicoUsersGuide.pdf`.
-
-It is highly recommended to read this PicoUsersGuide to learn about your FPGA system as this SDK uses pico-computing tools.
+It is highly recommended to read the [UsersGuide](https://picocomputing.zendesk.com/hc/en-us/) to learn about your FPGA system as this SDK uses pico-computing tools.
 
 If you have a previous version of pico-computing installed then uninstall it. And remove all `picocomputing-2020.1` and `HMC_release` folders before installing a new version of pico-computing.
 
-If you have an [AC511 FPGA board](https://www.micron.com/products/advanced-solutions/advanced-computing-solutions/ac-series-hpc-modules/ac-511), then you need to run a script once after installation. Inside `/usr/src/picocomputing-2020.1/bin` folder there are pico-computing scripts. Run this one:
-
-```
-update_ac511_flash.sh
-```
-
-`update_ac511_flash.sh` will update the boards flash. For more details, check Apendix B in `PicoUserGuide.pdf`.
+After installation, reboot the machine.
 
 To check if pico-computing tools installation was successful, you can run a sample program in `/usr/src/picocomputing-2020.1/samples`.
-
-Check section `1.4.2 Running a Sample Program` in `PicoUsersGuide.pdf` for more details.
 
 If there is an issue going through this section, a quick check is to run the following commands. It should print the following outputs for AC511 system.
 ```
