@@ -13,7 +13,7 @@ except:
 
 libc = CDLL("libc.so.6")
 
-curversion = '2020.2.0'
+curversion = '2020.2.1'
 
 #Allows None to be passed instead of a ndarray
 def wrapped_ndptr(*args, **kwargs):
@@ -63,15 +63,17 @@ class MDLA:
         self.ie_compile.restype = c_void_p
 
         self.ie_init = f.ie_init
-        self_ie_init_argtypes = [c_void_p]
+        self_ie_init_argtypes = [c_void_p, c_char_p, c_char_p, c_void_p, c_void_p, c_void_p]
         self.ie_init.restype = c_void_p
 
         self.ie_free = f.ie_free
         self.ie_free.argtypes = [c_void_p]
 
         self.ie_setflag = f.ie_setflag
+        self.ie_setflag.argtypes = [c_void_p, c_char_p, c_void_p]
 
         self.ie_getinfo = f.ie_getinfo
+        self.ie_getinfo.argtypes = [c_void_p, c_char_p, c_void_p]
 
         self.ie_run = f.ie_run
         self.ie_run.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), POINTER(POINTER(c_float)), POINTER(c_ulonglong)]
@@ -117,7 +119,7 @@ class MDLA:
 
         #Training of linear layer
         self.trainlinear_start = f.ie_trainlinear_start
-        self.trainlinear_start.argtypes = [c_void_p, c_int, c_int, c_int, ndpointer(c_float, flags="C_CONTIGUOUS"), ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int, c_int, c_int, c_float]
+        self.trainlinear_start.argtypes = [c_void_p, c_int, c_int, c_int, ndpointer(c_float, flags="C_CONTIGUOUS"), ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int, c_int, c_int, c_float, c_int]
 
         self.trainlinear_data = f.ie_trainlinear_data
         self.trainlinear_data.argtypes = [c_void_p, FloatNdPtr, FloatNdPtr, c_int]
@@ -144,8 +146,8 @@ class MDLA:
             print('Wrong libmicrondla.so found, expecting', curversion, 'and found', v, 'quitting')
             quit()
 
-    def TrainlinearStart(self, batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate):
-        self.trainlinear_start(self.handle, A.shape[1], A.shape[0], batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate)
+    def TrainlinearStart(self, batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate, nclusters=1):
+        self.trainlinear_start(self.handle, A.shape[1], A.shape[0], batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate, nclusters)
 
     def TrainlinearData(self, X, Y, idx):
         self.trainlinear_data(self.handle, X, Y, idx)
@@ -394,15 +396,28 @@ class MDLA:
             keepalive = np.ascontiguousarray(images.astype(np.float32))
             return byref(keepalive.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(images.size)), keepalive
         elif type(images) == tuple or type(images) == list:
-            cimages = (POINTER(c_float) * len(images))()
-            keepalive = []
-            csizes = (c_ulonglong * len(images))()
-            for i in range(len(images)):
-                cf = np.ascontiguousarray(images[i].astype(np.float32))
-                keepalive.append(cf)
-                cimages[i] = cf.ctypes.data_as(POINTER(c_float))
-                csizes[i] = images[i].size
-            return cimages, csizes, keepalive
+            if type(images[0]) == tuple or type(images[0]) == list:
+                cimages = (POINTER(c_float) * (len(images) * len(images[0])))()
+                keepalive = []
+                csizes = (c_ulonglong * (len(images) * len(images[0])))()
+                for i in range(len(images)):
+                    n = len(images[0])
+                    for j in range(n):
+                        cf = np.ascontiguousarray(images[i][j].astype(np.float32))
+                        keepalive.append(cf)
+                        cimages[i*n + j] = cf.ctypes.data_as(POINTER(c_float))
+                        csizes[i*n + j] = images[i][j].size
+                return cimages, csizes, keepalive
+            else:
+                cimages = (POINTER(c_float) * len(images))()
+                keepalive = []
+                csizes = (c_ulonglong * len(images))()
+                for i in range(len(images)):
+                    cf = np.ascontiguousarray(images[i].astype(np.float32))
+                    keepalive.append(cf)
+                    cimages[i] = cf.ctypes.data_as(POINTER(c_float))
+                    csizes[i] = images[i].size
+                return cimages, csizes, keepalive
         else:
             raise Exception('Input must be ndarray or tuple to ndarrays')
 

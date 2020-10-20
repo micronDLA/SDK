@@ -11,7 +11,7 @@
 #ifndef _IE_API_H_INCLUDED_
 #define _IE_API_H_INCLUDED_
 
-static const char *microndla_version = "2020.2.0";
+static const char *microndla_version = "2020.2.1";
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -186,7 +186,7 @@ args:
     @param output_elements  size allocated for output in number of elements, one per output
     @return -1 (error), 0 (pass)
 */
-int IECOMPILER_API thnets_run_sim(void *cmemo, const float * const *input, const unsigned *input_elements, float **output, unsigned *output_elements);
+int IECOMPILER_API thnets_run_sim(void *cmemo, const float * const *input, const uint64_t *input_elements, float **output, uint64_t *output_elements);
 
 /*!
 Free FPGA instance
@@ -294,7 +294,7 @@ args:
     Ygshift: number of ration bits for gradient when converting to int (used only in external gradient calculation)
     rate: learning rate; if 0, gradient will be calculated externally; if > 0, it will be the learning rate with LMS loss calculated internally
 */
-int IECOMPILER_API ie_trainlinear_start(void *cmemo, int nin, int nout, int batch, const float *A, const float *b, int Ashift, int Xshift, int Yshift, int Ygshift, float rate);
+int IECOMPILER_API ie_trainlinear_start(void *cmemo, int nin, int nout, int batch, const float *A, const float *b, int Ashift, int Xshift, int Yshift, int Ygshift, float rate, int nclusters);
 /*!
 Pass training data
 args:
