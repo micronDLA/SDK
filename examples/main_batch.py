@@ -1,5 +1,5 @@
 """
-Examples to run networks on Micron Deep Learning Accelerator
+Examples to run networks with batched inputs on Micron Deep Learning Accelerator
 """
 
 import cv2
@@ -17,17 +17,17 @@ CP_Y = '\033[33m'
 CP_C = '\033[0m'
 
 # List of models which can be run by this example script
-models = ['resnet18', 'linknet', 'yolov3', 'yolov3_tiny', 'ssd']
+models = ['resnet18', 'linknet', 'yolov3', 'yolov3_tiny', 'ssd', 'superresolution']
 model_names = sorted(name for name in models)
 
 parser = ArgumentParser(description="Micron DLA Examples")
 _ = parser.add_argument
-_('--image', type=str, default='default.png', help='Image path to be used as an input')
 _('--model', type=str, default='linknet', help='Model architecture:' + ' | '.join(model_names) + ' (default: linknet)')
 _('--bitfile', type=str, default='', help='Path to the bitfile')
 _('--model-path', type=str, default='', help='Path to the NN model')
 _('-l','--load', action='store_true', help='Load bitfile')
-
+_('--numfpga', type=int, default=1, help='Number of FPGAs to use')
+_('--numclus', type=int, default=1, help='Number of clusters to use')
 args = parser.parse_args()
 
 
@@ -35,28 +35,14 @@ def main():
     print('{:=<80}'.format(''))
     print('{}Micron{} DLA Examples{}'.format(CP_B, CP_Y, CP_C))
 
-    input_img = cv2.imread(args.image)                                  # Load input image
-
     bitfile = args.bitfile if args.load else ''
 
-    if args.model == 'linknet':
-        from Linknet.linknet import LinknetDLA
-
-        linknet = LinknetDLA(input_img, 20, bitfile, args.model_path)   # Intialize MDLA
-        model_output = linknet(input_img)                               # Model forward pass
-
-        #linknet.visualize(model_output)
-        del linknet                                                     # Free MDLA
-
-    elif args.model == 'superresolution':
+    if args.model == 'superresolution':
         from SuperResolution.superresolution import SuperResolutionDLA
-        from SuperResolution.utils import preprocess, postprocess
 
-        superresolution = SuperResolutionDLA(input_img, bitfile, args.model_path)
-        input_img, img_cr, img_cb = preprocess(input_img)
-        model_output = superresolution(input_img)
-        img = postprocess(model_output, img_cr, img_cb)
-        cv2.imwrite('example_output.jpg', img)
+        input_array = np.random.rand(224, 224, 1, args.numclus)
+        superresolution = SuperResolutionDLA(input_array, bitfile, args.model_path, args.numfpga, args.numclus)
+        model_output = superresolution(input_array)
         
         del superresolution
         
