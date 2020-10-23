@@ -32,6 +32,12 @@ $ python3 main.py --image sample_driving_image.png --model linknet --model-path 
 This option is required only during the first run after every system reboot or if a new bitfile is to be tested.
 Use `--help` option any time to see the details about the available options and to get list of supported models.
 
+To run model with batched input use `main_batch.py`. For example to run in mode 1 with multiple images and clusters:
+
+```
+python3 main_batch.py --model superresolution --model-path micron_model_zoo/super-resolution-10.onnx --numclus 4
+```
+
 ### List of models in the example set
 
 | ID |    Category    |   Model   | Mode |           Notes          |
@@ -40,5 +46,6 @@ Use `--help` option any time to see the details about the available options and 
 | 2  | Localization   | Retinanet |      |                          |
 | 3  | Pose           | Openpose  |      |                          |
 | 4  | Segmentation   | [Linknet](Linknet/linknet.py)   |   0  | Trained on street scenes |
+| 5  | Super resolution   | [Super resolution](SuperResolution/superresolution.py)   |   0,1  | Originally from ONNX model zoo |
 
 TODO: Add visualization and threading
