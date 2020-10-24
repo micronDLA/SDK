@@ -41,11 +41,19 @@ def main():
         from SuperResolution.superresolution import SuperResolutionDLA
 
         input_array = np.random.rand(224, 224, 1, args.numclus)
-        superresolution = SuperResolutionDLA(input_array, bitfile, args.model_path, args.numfpga, args.numclus)
+        superresolution = SuperResolutionDLA(input_array, bitfile, args.model_path,
+                                             args.numfpga, args.numclus)
         model_output = superresolution(input_array)
         
         del superresolution
-        
+
+    elif args.model == 'yolov3':
+        from YOLOv3.yolov3 import YOLOv3
+
+        input_array = np.random.rand(args.numfpga, 3, 416, 416)
+        yolov3 = YOLOv3(input_array, bitfile, args.model_path,
+                        args.numfpga, args.numclus, False)
+        yolov3
     #elif args.model == 'resnet18':
     #    resnet = ResnetDLA(input_img, 20, bitfile, args.model_path)
     #    model_output = resnet(input_img)
