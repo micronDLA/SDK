@@ -13,7 +13,7 @@ except:
 
 libc = CDLL("libc.so.6")
 
-curversion = '2020.2.0'
+curversion = '2020.2.1'
 
 #Allows None to be passed instead of a ndarray
 def wrapped_ndptr(*args, **kwargs):
@@ -63,15 +63,17 @@ class MDLA:
         self.ie_compile.restype = c_void_p
 
         self.ie_init = f.ie_init
-        self_ie_init_argtypes = [c_void_p]
+        self_ie_init_argtypes = [c_void_p, c_char_p, c_char_p, c_void_p, c_void_p, c_void_p]
         self.ie_init.restype = c_void_p
 
         self.ie_free = f.ie_free
         self.ie_free.argtypes = [c_void_p]
 
         self.ie_setflag = f.ie_setflag
+        self.ie_setflag.argtypes = [c_void_p, c_char_p, c_void_p]
 
         self.ie_getinfo = f.ie_getinfo
+        self.ie_getinfo.argtypes = [c_void_p, c_char_p, c_void_p]
 
         self.ie_run = f.ie_run
         self.ie_run.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), POINTER(POINTER(c_float)), POINTER(c_ulonglong)]
@@ -117,7 +119,7 @@ class MDLA:
 
         #Training of linear layer
         self.trainlinear_start = f.ie_trainlinear_start
-        self.trainlinear_start.argtypes = [c_void_p, c_int, c_int, c_int, ndpointer(c_float, flags="C_CONTIGUOUS"), ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int, c_int, c_int, c_float]
+        self.trainlinear_start.argtypes = [c_void_p, c_int, c_int, c_int, ndpointer(c_float, flags="C_CONTIGUOUS"), ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int, c_int, c_int, c_float, c_int]
 
         self.trainlinear_data = f.ie_trainlinear_data
         self.trainlinear_data.argtypes = [c_void_p, FloatNdPtr, FloatNdPtr, c_int]
@@ -144,63 +146,27 @@ class MDLA:
             print('Wrong libmicrondla.so found, expecting', curversion, 'and found', v, 'quitting')
             quit()
 
-    # Setup start training of a linear layer
-    # batch: number of input/output vectors to train in one shot
-    # A: starting weights matrix of nout x nin size
-    #   nin: number of input elements of the linear layer
-    #   nout: number of output elements of the linear layer
-    # b: starting bias vector of nout size
-    # Ashift: number of rational bits for A when converting to int
-    # Xshift: number of rational bits for input when converting to int
-    # Yshift: number of rational bits for output when converting to int
-    # Ygshift: number of ration bits for gradient when converting to int (used only in external gradient calculation)
-    # rate: learning rate; if 0, gradient will be calculated externally; if > 0, it will be the learning rate with LMS loss calculated internally
-    def TrainlinearStart(self, batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate):
-        self.trainlinear_start(self.handle, A.shape[1], A.shape[0], batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate)
+    def TrainlinearStart(self, batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate, nclusters=1):
+        self.trainlinear_start(self.handle, A.shape[1], A.shape[0], batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate, nclusters)
 
-    # Pass training data to main memory so that MDLA can access it
-    # All training data can be stored in memory at different indexes only at the beginning, so it won't be required
-    # to store it at each iteration
-    # In internal gradient calculation mode, both X and Y can be stored at the beginning
-    # In external gradient calculation mode, only X can be stored (Y must be NULL) at the beginning as the gradient
-    # will have to be calculated at each iteration externally; in this case X will be NULL
-    # X: input matrix of nin x batch size
-    # Y: desired matrix of nout x batch size in internal gradient calculation;
-    #    gradient of nout x batch size in external gradient calculation
-    # idx: arbitrary index where to store in memory
     def TrainlinearData(self, X, Y, idx):
         self.trainlinear_data(self.handle, X, Y, idx)
 
-    # Run a training step in HW
-    # idx: index in memory where to get training data
     def TrainlinearStep(self, idx):
         self.trainlinear_step(self.handle, idx)
 
-    # Run a training step in software Run_sw using int16
-    # The results here should be numerically identical to HW mode; this routine is provided for correctness checking
-    # In software mode training data cannot be preloaded, so no idx is provided
-    # Only internal gradient calculation is supported here
     def TrainlinearStepSw(self):
         self.trainlinear_step_sw(self.handle)
 
-    # Run a training step in sw using floats
-    # In software mode training data cannot be preloaded, so no idx is provided
-    # Only internal gradient calculation is supported here
     def TrainlinearStepFloat(self):
         self.trainlinear_step_float(self.handle)
 
-    # Get the learned matrices A and b
-    # A: returns learned weights matrix of nout x nin size
-    # b: returns learned bias vector of nout size
     def TrainlinearGet(self, A, b):
         self.trainlinear_get(self.handle, A, b)
 
-    # Get the inference result for external gradient mode
-    # Y: Inference result of nout x batch size
     def TrainlinearGetY(self, Y):
         self.trainlinear_getY(self.handle, Y)
 
-    # Terminate the training process freeing all the resources used for training (ie_free will have to be called, too)
     def TrainlinearEnd(self):
         self.trainlinear_end(self.handle)
 
@@ -430,15 +396,28 @@ class MDLA:
             keepalive = np.ascontiguousarray(images.astype(np.float32))
             return byref(keepalive.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(images.size)), keepalive
         elif type(images) == tuple or type(images) == list:
-            cimages = (POINTER(c_float) * len(images))()
-            keepalive = []
-            csizes = (c_ulonglong * len(images))()
-            for i in range(len(images)):
-                cf = np.ascontiguousarray(images[i].astype(np.float32))
-                keepalive.append(cf)
-                cimages[i] = cf.ctypes.data_as(POINTER(c_float))
-                csizes[i] = images[i].size
-            return cimages, csizes, keepalive
+            if type(images[0]) == tuple or type(images[0]) == list:
+                cimages = (POINTER(c_float) * (len(images) * len(images[0])))()
+                keepalive = []
+                csizes = (c_ulonglong * (len(images) * len(images[0])))()
+                for i in range(len(images)):
+                    n = len(images[0])
+                    for j in range(n):
+                        cf = np.ascontiguousarray(images[i][j].astype(np.float32))
+                        keepalive.append(cf)
+                        cimages[i*n + j] = cf.ctypes.data_as(POINTER(c_float))
+                        csizes[i*n + j] = images[i][j].size
+                return cimages, csizes, keepalive
+            else:
+                cimages = (POINTER(c_float) * len(images))()
+                keepalive = []
+                csizes = (c_ulonglong * len(images))()
+                for i in range(len(images)):
+                    cf = np.ascontiguousarray(images[i].astype(np.float32))
+                    keepalive.append(cf)
+                    cimages[i] = cf.ctypes.data_as(POINTER(c_float))
+                    csizes[i] = images[i].size
+                return cimages, csizes, keepalive
         else:
             raise Exception('Input must be ndarray or tuple to ndarrays')
 
