@@ -10,7 +10,6 @@ def preprocess(img):
     img_cb = img[:, :, 2]
     img_y = np.expand_dims(img_y, 0)  # add dummy channel dimension 
     img_y = img_y / 255.0 
-    img_y = np.ascontiguousarray(img_y)  # array needs to be contiguous when passed as input to DLA
     return img_y, img_cr, img_cb
 
 

@@ -53,9 +53,9 @@ def main():
         from SuperResolution.utils import preprocess, postprocess
 
         superresolution = SuperResolutionDLA(input_img, bitfile, args.model_path)
-        input_img, img_cr, img_cb = preprocess(input_img)
+        input_img, img_cr, img_cb = preprocess(input_img)  # extract grayscale channel and normalize it
         model_output = superresolution(input_img)
-        img = postprocess(model_output, img_cr, img_cb)
+        img = postprocess(model_output, img_cr, img_cb)  # merge model output with Cr and Cb channels
         cv2.imwrite('example_output.jpg', img)
         
         del superresolution
