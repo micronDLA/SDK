@@ -59,7 +59,21 @@ def main():
         cv2.imwrite('example_output.jpg', img)
         
         del superresolution
-        
+    
+    elif args.model == 'retinanet':
+        from RetinaNet.retinanet import RetinaNetDLA
+
+        # Instantiate model
+        retinanet = RetinaNetDLA(args.model_path, 'RetinaNet/labels.txt', [640, 384, 3], bitfile, numclus=1, threshold=0.5, disp_time=0)
+
+        # Forward pass on one image
+        scores, boxes, lbls, scales = retinanet(input_img)
+
+        # Display output
+        retinanet.display(input_img, boxes, lbls, scores, scales)
+
+        del retinanet
+
     #elif args.model == 'resnet18':
     #    resnet = ResnetDLA(input_img, 20, bitfile, args.model_path)
     #    model_output = resnet(input_img)
