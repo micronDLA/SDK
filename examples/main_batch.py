@@ -40,7 +40,7 @@ def main():
     if args.model == 'superresolution':
         from SuperResolution.superresolution import SuperResolutionDLA
 
-        input_array = np.random.rand(224, 224, 1, args.numclus)
+        input_array = np.random.rand(args.numclus, 1, 224, 224)
         superresolution = SuperResolutionDLA(input_array, bitfile, args.model_path, args.numfpga, args.numclus)
         model_output = superresolution(input_array)
         

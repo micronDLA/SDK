@@ -14,8 +14,7 @@ class SuperResolutionDLA:
     def __init__(self, input_img, bitfile, model_path, numfpga=1, numclus=1, nobatch=False):
         print('Initializing MDLA')
         self.dla = microndla.MDLA()  # initialize MDLA
-        self.height, self.width = input_img.shape[:2]  # get dimensions of the image
-        sz = "{:d}x{:d}x{:d}".format(self.width, self.height, 1)  # for the super resolution model only 1 greyscale channel is used
+        sz = "{:d}x{:d}x{:d}".format(224, 224, 1)  # input size from the ONNX model
         if nobatch:  # check whether running in nobatch mode, ie if splitting 1 image among clusters
             self.dla.SetFlag('nobatch', '1')
         swnresults = self.dla.Compile(sz, model_path, 'save.bin', numfpga, numclus)  # Compile the NN and generate instructions <save.bin> for MDLA
