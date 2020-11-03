@@ -376,20 +376,20 @@ numclus = 1
 # Create Micron DLA API
 sf = microndla.MDLA()
 # Generate instructions
-snwresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
+nresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
 # Init the FPGA cards
 sf.Init('microndla.bin', 'bitfile.tgz')
-in1 = np.random.rand(224,224,3,2)
+in1 = np.random.rand(2, 3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
 # Create a location for the output
-output = np.ndarray(2*snwresults, dtype=np.float32)
+output = np.ndarray(2 * nresults, dtype=np.float32)
 sf.Run(input_img, output) # Run
 ```
 
 `sf.Compile` will parse the model from model.onnx and save the generated Micron DLA instructions in microndla.bin. Here numfpga=2, so instructions for two FPGAs are created.
-`snwresults` is the output size of the model.onnx for one input image (no batching).
+`nresults` is the output size of the model.onnx for one input image (no batching).
 `sf.Init` will initialize the FPGAs. It will send the instructions and model parameters to each FPGA's main memory.
-The expected output size of `sf.Run` is twice `snwresults`, because numfpga=2 and two input images are processed. `input_img` is two images concatenated.
+The expected output size of `sf.Run` is twice `nresults`, because numfpga=2 and two input images are processed. `input_img` is two images concatenated.
 The diagram below shows this type of execution:
 
 <img src="docs/pics/2fpga2img.png" width="900" height="550"/>
@@ -409,21 +409,21 @@ sf1 = microndla.MDLA()
 # Create second Micron DLA API
 sf2 = microndla.MDLA()
 # Generate instructions for model1
-snwresults1 = sf1.Compile('224x224x3', 'resnet50.onnx', 'microndla1.bin', numfpga, numclus)
+nresults1 = sf1.Compile('224x224x3', 'resnet50.onnx', 'microndla1.bin', numfpga, numclus)
 # Generate instructions for model2
-snwresults2 = sf2.Compile('224x224x3', 'resnet18.onnx', 'microndla2.bin', numfpga, numclus)
+nresults2 = sf2.Compile('224x224x3', 'resnet18.onnx', 'microndla2.bin', numfpga, numclus)
 # Init the FPGA 1 with model 1
 sf1.Init('microndla1.bin', 'bitfile.tgz')
 # Init the FPGA 2 with model 2
 sf2.Init('microndla2.bin', '')
-in1 = np.random.rand(224,224,3)
-in2 = np.random.rand(224,224,3)
+in1 = np.random.rand(3, 224, 224).astype(np.float32)
+in2 = np.random.rand(3, 224, 224).astype(np.float32)
 input_img1 = np.ascontiguousarray(in1)
 input_img2 = np.ascontiguousarray(in2)
 # Create a location for the output1
-output1 = np.ndarray(snwresults1, dtype=np.float32)
+output1 = np.ndarray(nresults1, dtype=np.float32)
 # Create a location for the output2
-output2 = np.ndarray(snwresults2, dtype=np.float32)
+output2 = np.ndarray(nresults2, dtype=np.float32)
 sf1.Run(input_img1, output1) # Run
 sf2.Run(input_img2, output2)
 ```
@@ -436,7 +436,8 @@ The diagram below shows this type of execution:
 ## Multiple Clusters with input batching
 For simplicity, now assume you have one FPGA and inside it we have two Micron DLA clusters.
 Each cluster can execute its own set of instructions, so we can also batch the input (just like the two FPGA case before).
-The difference is that both clusters share the same main memory in the FPGA card.
+The difference is that both clusters share the same main memory in the FPGA card. The number of results returned by
+Compile() will be the total number of results, for both clusters, in this case.
 Following a similar strategy as the two FPGA with input batching example, the following code snippet shows you how to use two clusters to process two images:
 
 ```python
@@ -447,13 +448,13 @@ numclus = 2
 # Create Micron DLA API
 sf = microndla.MDLA()
 # Generate instructions
-snwresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
+nresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
 # Init the FPGA cards
-sf.Init('microndla.bin', 'bitfile.tgz')
-in1 = np.random.rand(224,224,3,2)
+sf.Init('microndla.bin', '')
+in1 = np.random.rand(2, 3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
 # Create a location for the output
-output = np.ndarray(2*snwresults, dtype=np.float32)
+output = np.ndarray(nresults, dtype=np.float32)
 sf.Run(input_img, output) # Run
 ```
 
@@ -475,25 +476,72 @@ numclus = 2
 sf = microndla.MDLA()
 sf.SetFlag('nobatch', '1')
 # Generate instructions
-snwresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
+nresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
 # Init the FPGA cards
 sf.Init('microndla.bin', 'bitfile.tgz')
-in1 = np.random.rand(224,224,3)
+in1 = np.random.rand(3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
 # Create a location for the output
-output = np.ndarray(snwresults, dtype=np.float32)
+output = np.ndarray(nresults, dtype=np.float32)
 sf.Run(input_img, output) # Run
 ```
 
 Use `sf.SetFlag('nobatch', '1')` to set the compiler to split the workload among two clusters and generate the instructions.
 You can find more information about the option flags [here](docs/Codes.md).
-Now the output size is not twice of `snwresults` because you expect output for one inference run.
+Now the output size is not twice of `nresults` because you expect output for one inference run.
 The diagram below shows this type of execution:
 
 <img src="docs/pics/2clus1img.png" width="600" height="550"/>
 
+## Multiple Clusters with even bigger batches
 
+It's possible to run batches of more than than the number of clusters or FPGAs. Each cluster will process multiple images.
+This is enabled with the `imgs_per_cluster` flag. In order to process 32 images, 16 by each cluster, this code will do the work:
 
+```python
+import microndla
+import numpy as np
+numfpga = 1
+numclus = 2
+# Create Micron DLA API
+sf = microndla.MDLA()
+sf.SetFlag('imgs_per_cluster', '16')
+# Generate instructions
+nresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
+# Init the FPGA cards
+sf.Init('microndla.bin', 'bitfile.tgz')
+in1 = np.random.rand(32, 3, 224, 224).astype(np.float32)
+input_img = np.ascontiguousarray(in1)
+# Create a location for the output
+output = np.ndarray(nresults, dtype=np.float32)
+sf.Run(input_img, output) # Run
+```
+
+## Batching using MVs
+
+It's possible to use MV-level parallelism. This is generally more efficient than leaving different MV units process the same image.
+In order to enable this, you have to set the `mvbatch` flag. Keep in mind that this can be only done when `imgs_per_cluster` is a
+multiple of 4, since there are 4 MV units available.
+
+```python
+import microndla
+import numpy as np
+numfpga = 1
+numclus = 2
+# Create Micron DLA API
+sf = microndla.MDLA()
+sf.SetFlag('imgs_per_cluster', '16')
+sf.SetFlag('mvbatch', '1')
+# Generate instructions
+nresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
+# Init the FPGA cards
+sf.Init('microndla.bin', 'bitfile.tgz')
+in1 = np.random.rand(32, 3, 224, 224).astype(np.float32)
+input_img = np.ascontiguousarray(in1)
+# Create a location for the output
+output = np.ndarray(nresults, dtype=np.float32)
+sf.Run(input_img, output) # Run
+```
 
 # 6. Tutorial - PutInput and GetResult
 This tutorial teaches you to use PutInput and GetResult API calls.
