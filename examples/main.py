@@ -59,9 +59,9 @@ def main():
         model_output = superresolution(input_img)
         img = postprocess(model_output, img_cr, img_cb)  # merge model output with Cr and Cb channels
         cv2.imwrite('example_output.jpg', img)
-        
+
         del superresolution
-    
+
     elif args.model == 'retinanet':
         from RetinaNet.retinanet import RetinaNetDLA
 
