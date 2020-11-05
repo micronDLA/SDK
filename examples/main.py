@@ -43,9 +43,11 @@ def main():
         from Linknet.linknet import LinknetDLA
 
         linknet = LinknetDLA(input_img, 20, bitfile, args.model_path)   # Intialize MDLA
+        orig_img = input_img.copy()
+        input_img = linknet.preprocess(input_img)                       # Input preprocessing required by LinkNet
         model_output = linknet(input_img)                               # Model forward pass
+        linknet.postprocess(orig_img, model_output)                     # Create overlay based on model prediction
 
-        #linknet.visualize(model_output)
         del linknet                                                     # Free MDLA
 
     elif args.model == 'superresolution':
