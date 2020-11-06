@@ -63,7 +63,7 @@ class MDLA:
         self.ie_compile.restype = c_void_p
 
         self.ie_init = f.ie_init
-        self_ie_init_argtypes = [c_void_p]
+        self.ie_init.argtypes = [c_void_p, c_char_p, c_char_p, c_void_p, c_void_p, c_void_p]
         self.ie_init.restype = c_void_p
 
         self.ie_free = f.ie_free
