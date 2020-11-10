@@ -44,9 +44,11 @@ def main():
         from Linknet.linknet import LinknetDLA
 
         linknet = LinknetDLA(input_img, 20, bitfile, args.model_path, numclus) # Intialize MDLA
+        orig_img = input_img.copy()
+        input_img = linknet.preprocess(input_img)                       # Input preprocessing required by LinkNet
         model_output = linknet(input_img)                               # Model forward pass
+        linknet.postprocess(orig_img, model_output)                     # Create overlay based on model prediction
 
-        #linknet.visualize(model_output)
         del linknet                                                     # Free MDLA
 
     elif args.model == 'superresolution':
@@ -54,9 +56,9 @@ def main():
         from SuperResolution.utils import preprocess, postprocess
 
         superresolution = SuperResolutionDLA(input_img, bitfile, args.model_path)
-        input_img, img_cr, img_cb = preprocess(input_img)
+        input_img, img_cr, img_cb = preprocess(input_img)  # extract grayscale channel and normalize it
         model_output = superresolution(input_img)
-        img = postprocess(model_output, img_cr, img_cb)
+        img = postprocess(model_output, img_cr, img_cb)  # merge model output with Cr and Cb channels
         cv2.imwrite('example_output.jpg', img)
 
         del superresolution
@@ -78,6 +80,20 @@ def main():
         model_output = yolov3(input_img[np.newaxis])
 
         del yolov3
+
+    elif args.model == 'retinanet':
+        from RetinaNet.retinanet import RetinaNetDLA
+
+        # Instantiate model
+        retinanet = RetinaNetDLA(args.model_path, 'RetinaNet/labels.txt', [640, 384, 3], bitfile, numclus=1, threshold=0.5, disp_time=0)
+
+        # Forward pass on one image
+        scores, boxes, lbls, scales = retinanet(input_img)
+
+        # Display output
+        retinanet.display(input_img, boxes, lbls, scores, scales)
+
+        del retinanet
 
     #elif args.model == 'resnet18':
     #    resnet = ResnetDLA(input_img, 20, bitfile, args.model_path)
