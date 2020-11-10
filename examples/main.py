@@ -27,6 +27,7 @@ _('--model', type=str, default='linknet', help='Model architecture:' + ' | '.joi
 _('--bitfile', type=str, default='', help='Path to the bitfile')
 _('--model-path', type=str, default='', help='Path to the NN model')
 _('-l','--load', action='store_true', help='Load bitfile')
+_('--numclus', type=int, default=1, help='Number of clusters to use')
 
 args = parser.parse_args()
 
@@ -42,7 +43,7 @@ def main():
     if args.model == 'linknet':
         from Linknet.linknet import LinknetDLA
 
-        linknet = LinknetDLA(input_img, 20, bitfile, args.model_path)   # Intialize MDLA
+        linknet = LinknetDLA(input_img, 20, bitfile, args.model_path, numclus) # Intialize MDLA
         orig_img = input_img.copy()
         input_img = linknet.preprocess(input_img)                       # Input preprocessing required by LinkNet
         model_output = linknet(input_img)                               # Model forward pass
@@ -61,6 +62,24 @@ def main():
         cv2.imwrite('example_output.jpg', img)
 
         del superresolution
+
+    elif args.model == 'yolov3':
+        from YOLOv3.yolov3 import YOLOv3
+
+        yolov3 = YOLOv3(input_img[np.newaxis], bitfile, args.model_path,
+                        1, args.numclus, True)
+        model_output = yolov3(input_img[np.newaxis])
+
+        del yolov3
+
+    elif args.model =='yolov3_tiny':
+        from YOLOv3.yolov3 import YOLOv3Tiny
+
+        yolov3 = YOLOv3Tiny(input_img[np.newaxis], bitfile, args.model_path,
+                            1, args.numclus, True)
+        model_output = yolov3(input_img[np.newaxis])
+
+        del yolov3
 
     elif args.model == 'retinanet':
         from RetinaNet.retinanet import RetinaNetDLA
