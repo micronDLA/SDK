@@ -8,7 +8,8 @@ import numpy as np
 from argparse import ArgumentParser
 
 # Clear screen
-#print('\033[0;0f\033[0J')
+print('\033[0;0f\033[0J')
+
 # Color Palette
 CP_R = '\033[31m'
 CP_G = '\033[32m'
@@ -17,7 +18,7 @@ CP_Y = '\033[33m'
 CP_C = '\033[0m'
 
 # List of models which can be run by this example script
-models = ['resnet18', 'linknet', 'yolov3', 'yolov3_tiny', 'ssd']
+models = ['resnet18', 'linknet', 'yolov3', 'yolov3_tiny', 'ssd', 'inception', 'resnet34_50']
 model_names = sorted(name for name in models)
 
 parser = ArgumentParser(description="Micron DLA Examples")
@@ -25,8 +26,7 @@ _ = parser.add_argument
 _('--image', type=str, default='default.png', help='Image path to be used as an input')
 _('--model', type=str, default='linknet', help='Model architecture:' + ' | '.join(model_names) + ' (default: linknet)')
 _('--bitfile', type=str, default='', help='Path to the bitfile')
-_('--model-path', type=str, default='', help='Path to the NN model')
-_('-l','--load', action='store_true', help='Load bitfile')
+_('--model-path', type=str, default='', help='Path to the NN model, for multiple models separate the paths with ,')
 _('--numclus', type=int, default=1, help='Number of clusters to use')
 
 args = parser.parse_args()
@@ -38,7 +38,7 @@ def main():
 
     input_img = cv2.imread(args.image)                                  # Load input image
 
-    bitfile = args.bitfile if args.load else ''
+    bitfile = args.bitfile
 
     if args.model == 'linknet':
         from Linknet.linknet import LinknetDLA
@@ -99,6 +99,30 @@ def main():
     #    resnet = ResnetDLA(input_img, 20, bitfile, args.model_path)
     #    model_output = resnet(input_img)
     #    del resnet
+    
+    elif args.model == 'inception':
+        # This is an example of one model (inception_v3) applied to 2 images
+        # on 1 fpga and 2 clusters
+        from Inception.inception import InceptionDLA
+        inception = InceptionDLA(input_img,bitfile, args.model_path)
+        model_output1,model_output2 = inception(input_img,input_img)
+
+        del inception
+    elif args.model == 'resnet34_50':
+        # This is an example of two models (resnet34 and resnet50) applied to 2 images
+        # on 2 fpga and 1 clusters
+        from Resnet.resnet34_50 import Resnet34_50DLA
+        model_path=args.model_path.split(',')
+        resnet = Resnet34_50DLA(input_img, bitfile, model_path[0],model_path[1])
+        model_output1,model_output2 = resnet(input_img,input_img)
+        # The model was applied on 2 images; the resnet returns - one output for each image
+        del resnet
+
+
+
+
+
+
     else:
         print('{}Invalid model selection{}!!!'.format(CP_R, CP_C))
 
