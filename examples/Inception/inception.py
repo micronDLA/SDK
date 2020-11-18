@@ -21,7 +21,7 @@ class InceptionDLA:
     """
     Load MDLA and run segmentation model on it
     """
-    def __init__(self, input_img, bitfile, model_path):
+    def __init__(self, input_img, bitfile, model_path,numclus):
         """
         In this example MDLA will be capable of taking an input image
         and running that image on all clusters
@@ -38,12 +38,17 @@ class InceptionDLA:
             print('{:-<80}'.format(''))
             print('{}{}{}...'.format(CP_Y, 'Loading bitfile...', CP_C))
             self.dla.SetFlag('bitfile', bitfile)
+        self.batch, self.height, self.width, self.channels = input_img.shape
         # Run the network in batch mode (two images, one  on each cluster)
-        self.dla.SetFlag('nobatch', '0')
+        image_per_cluster=self.batch/numclus
+        if image_per_cluster==1:
+            self.dla.SetFlag('nobatch', '0')
+        else:    
+            self.dla.SetFlag('imgs_per_cluster', str(image_per_cluster))
+        
         numfpga = 1 
-        numclus = 2
 
-        self.height, self.width, self.channels = input_img.shape
+        #self.batch, self.channels, self.width,self.height= input_img.shape
         sz = "{:d}x{:d}x{:d}".format(self.width, self.height, self.channels)
         # Compile the NN and generate instructions <save.bin> for MDLA
         swnresults = self.dla.Compile(sz, model_path, 'save.bin',numfpga,numclus)
@@ -57,11 +62,14 @@ class InceptionDLA:
         print('{:-<80}\n'.format(''))
 
         # Allocate space for output if the model
-        self.dla_output = np.ascontiguousarray(np.zeros(numclus*swnresults, dtype=np.float32))
+        #self.dla_output = []
+        #for i in range(swnresults):
+        #    r=np.zeros(i * numclus, dtype=np.float32)
+        #    self.dla_output.append(np.ascontiguousarray(r))
+        self.dla_output= np.ascontiguousarray(np.zeros(numclus*swnresults, dtype=np.float32))
 
-
-    def __call__(self, input_img1,input_img2):
-        return self.forward(input_img1,input_img2)
+    def __call__(self, input_array):
+        return self.forward(input_array)
 
 
     def __del__(self):
@@ -72,24 +80,15 @@ class InceptionDLA:
         img[:,:,2] = (img[:,:,2] - mean[0]) / std[0]
         return img
 
-    def forward(self, input_img1,input_img2):
-        # Normalize and transpose image 1
-        img1 = input_img1.astype(np.float32) / 255.0
-        img1 = self.normalize(img1)
-        img1 = img1.transpose(2, 0, 1) # Change image planes from HWC to CHW
+    def forward(self, input_array):
+        # Normalize and transpose images
+        input=np.zeros((self.batch, self.channels,self.height, self.width))
+        x= input_array.astype(np.float32) / 255.0
+        for i in range(self.batch):
+            x[i]=self.normalize(x[i]) 
+            input[i]=x[i].transpose(2,1,0) #Change image planes from HWC to CHW
 
-        x1 = np.ascontiguousarray(img1)            
-
-        # Normalize and transpose image 2
-        img2 = input_img2.astype(np.float32) / 255.0
-        img2 = self.normalize(img2)
-        img2 = img2.transpose(2, 0, 1) # Change image planes from HWC to CHW
-
-        x2 = np.ascontiguousarray(img2)            
-        
-        x=np.stack([x1,x2],0)
-        self.dla.Run(x, self.dla_output)
-        y1,y2=np.split(self.dla_output,2)
-
-        return y1,y2
+        self.dla.Run(input, self.dla_output)
+        print("Output size",self.dla_output.shape)
+        return self.dla_output
 

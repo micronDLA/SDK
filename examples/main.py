@@ -18,7 +18,7 @@ CP_Y = '\033[33m'
 CP_C = '\033[0m'
 
 # List of models which can be run by this example script
-models = ['resnet18', 'linknet', 'yolov3', 'yolov3_tiny', 'ssd', 'inception', 'resnet34_50']
+models = ['resnet18', 'linknet', 'yolov3', 'yolov3_tiny' ]
 model_names = sorted(name for name in models)
 
 parser = ArgumentParser(description="Micron DLA Examples")
@@ -100,29 +100,6 @@ def main():
     #    model_output = resnet(input_img)
     #    del resnet
     
-    elif args.model == 'inception':
-        # This is an example of one model (inception_v3) applied to 2 images
-        # on 1 fpga and 2 clusters
-        from Inception.inception import InceptionDLA
-        inception = InceptionDLA(input_img,bitfile, args.model_path)
-        model_output1,model_output2 = inception(input_img,input_img)
-
-        del inception
-    elif args.model == 'resnet34_50':
-        # This is an example of two models (resnet34 and resnet50) applied to 2 images
-        # on 2 fpga and 1 clusters
-        from Resnet.resnet34_50 import Resnet34_50DLA
-        model_path=args.model_path.split(',')
-        resnet = Resnet34_50DLA(input_img, bitfile, model_path[0],model_path[1])
-        model_output1,model_output2 = resnet(input_img,input_img)
-        # The model was applied on 2 images; the resnet returns - one output for each image
-        del resnet
-
-
-
-
-
-
     else:
         print('{}Invalid model selection{}!!!'.format(CP_R, CP_C))
 

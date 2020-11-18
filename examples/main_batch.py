@@ -17,7 +17,7 @@ CP_Y = '\033[33m'
 CP_C = '\033[0m'
 
 # List of models which can be run by this example script
-models = ['resnet18', 'linknet', 'yolov3', 'yolov3_tiny', 'ssd', 'superresolution']
+models = ['linknet', 'yolov3', 'yolov3_tiny',  'inception', 'resnet34_50','resnet34_18','superresolution']
 model_names = sorted(name for name in models)
 
 parser = ArgumentParser(description="Micron DLA Examples")
@@ -58,6 +58,38 @@ def main():
     #    resnet = ResnetDLA(input_img, 20, bitfile, args.model_path)
     #    model_output = resnet(input_img)
     #    del resnet
+    elif args.model == 'inception':
+        #Example Mode 1
+        # This is an example of one model (inception_v3) applied to 2 images
+        # on 1 fpga and 2 clusters
+        from Inception.inception import InceptionDLA
+        input_array = np.random.rand(16, 416, 416,3)
+        inception = InceptionDLA(input_array,bitfile, args.model_path,args.numclus)
+        model_output = inception(input_array)
+
+        del inception
+    elif args.model == 'resnet34_50':
+        #Example for Mode 4:
+        # This is an example of two models (resnet34 and resnet50) applied to 2 images
+        # on 2 fpga and 1 clusters
+        from Resnet.resnet34_50 import Resnet34_50DLA
+        input_array = np.random.rand(2,  416, 416,3)
+        model_path=args.model_path.split(',')
+        resnet = Resnet34_50DLA(input_array, bitfile, model_path[0],model_path[1])
+        model_output1,model_output2 = resnet(input_array[0],input_array[1])
+        # The model was applied on 2 images; the resnet returns - one output for each image
+        del resnet
+    elif args.model == 'resnet34_18':
+        #Example for Mode 3:
+        #This is an example of two models (resnet34 and resnet18) applied to 2 images
+        # on 1 fpga and 1 clusters
+        from Resnet.resnet34_18 import Resnet34_18DLA
+        input_array = np.random.rand(2,  416, 416,3)
+        model_path=args.model_path.split(',')
+        resnet = Resnet34_18DLA(input_array, bitfile, model_path[0],model_path[1])
+        model_output1,model_output2 = resnet(input_array[0],input_array[1])
+        # The model was applied on 2 images; the resnet returns - one output for each image
+        del resnet
     else:
         print('{}Invalid model selection{}!!!'.format(CP_R, CP_C))
 

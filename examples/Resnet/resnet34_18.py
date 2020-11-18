@@ -17,55 +17,48 @@ CP_Y = '\033[33m'
 CP_C = '\033[0m'
 
 
-class Resnet34_50DLA:
+class Resnet34_18DLA:
     """
     Load MDLA and run segmentation model on it
     """
     def __init__(self, input_img, bitfile, model_path1,model_path2):
         """
-        In this example MDLA will be capable of taking an input image
-        and running that image on all clusters
+        In this example MDLA will be capable of taking multiple input images
+        and running that images through 2 models on 1 fpga 
         """
 
         print('{:-<80}'.format(''))
         print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_C))
         ################################################################################
-        # Initialize 2 Micron DLA
-        self.dla1 = microndla.MDLA()
-        self.dla2 = microndla.MDLA()
-        
-        # Load bitfile 
-        if bitfile:
-            print('{:-<80}'.format(''))
-            print('{}{}{}...'.format(CP_Y, 'Loading bitfile...', CP_C))
-            self.dla1.SetFlag('bitfile', bitfile)
-            self.dla2.SetFlag('bitfile', '')
+        # Initialize 1 Micron DLA
+        self.dla = microndla.MDLA()
         # Run the network in batch mode (one image on all clusters)
-        self.dla1.SetFlag('nobatch', '0')
-        self.dla2.SetFlag('nobatch', '0')
+       #self.dla.SetFlag('nobatch', '0')
         numfpga = 1 
         numclus = 1
-        self.batch,self.height, self.width, self.channels = input_img.shape
+        self.batch, self.height, self.width, self.channels = input_img.shape
         sz = "{:d}x{:d}x{:d}".format(self.width, self.height, self.channels)
 
         # Compile the NN and generate instructions <save.bin> for MDLA
-        swnresults1 = self.dla1.Compile(sz, model_path1, 'save.bin', numfpga,numclus)
-        swnresults2 = self.dla2.Compile(sz, model_path2, 'save2.bin',numfpga,numclus)
+        swnresults1 = self.dla.Compile(sz, model_path1, 'save.bin', numfpga,numclus)
+        swnresults2 = self.dla.Compile(sz, model_path2, 'save2.bin',numfpga,numclus)
+        self.dla.Loadmulti(('save.bin', 'save2.bin'))
 
         print('\n1. {}{}{}!!!'.format(CP_B, 'Successfully generated binaries for MDLA', CP_C))
+        
         # Send the generated instructions to MDLA
         # Send the bitfile to the FPGA only during the first run
         # Otherwise bitfile is an empty string
-        nresults2 = self.dla2.Init('save2.bin','')
-        nresults1 = self.dla1.Init('save.bin', '')
+        nresults = self.dla.Init('',bitfile)
         
         print('2. {}{}{}!!!'.format(CP_B, 'Finished loading bitfile on FPGA', CP_C))
         print('\n{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_C))
         print('{:-<80}\n'.format(''))
 
         # Allocate space for output if the model
-        self.dla_output1 = np.ascontiguousarray(np.zeros(swnresults1, dtype=np.float32))
-        self.dla_output2 = np.ascontiguousarray(np.zeros(swnresults2, dtype=np.float32))
+        output1 = np.ascontiguousarray(np.zeros(swnresults1, dtype=np.float32))
+        output2 = np.ascontiguousarray(np.zeros(swnresults2, dtype=np.float32))
+        self.dla_output=(output1,output2)
 
 
     def __call__(self, input_img1,input_img2):
@@ -73,8 +66,7 @@ class Resnet34_50DLA:
 
 
     def __del__(self):
-        self.dla1.Free()
-        self.dla2.Free()
+        self.dla.Free()
 
     def normalize(self, img, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]):
         img[:,:,0] = (img[:,:,0] - mean[2]) / std[2]
@@ -97,8 +89,8 @@ class Resnet34_50DLA:
 
         x2 = np.ascontiguousarray(img2)            
         
-        self.dla1.Run(x1, self.dla_output1)
-        y1 = self.dla_output1 # Reshape the output vector into CHW
-        self.dla2.Run(x2, self.dla_output2)
-        y2 = self.dla_output2 # Reshape the output vector into CHW
-        return y1,y2
+        self.dla.Run((x1,x2), self.dla_output)
+        y = self.dla_output # Reshape the output vector into CHW
+
+        return y[0],y[1]
+
