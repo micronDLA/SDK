@@ -64,7 +64,7 @@ def main():
         # on 1 fpga and 2 clusters
         from Inception.inception import InceptionDLA
         input_array = np.random.rand(16, 416, 416,3)
-        inception = InceptionDLA(input_array,bitfile, args.model_path,args.numclus)
+        inception = InceptionDLA(input_array,bitfile, args.model_path,args.numfpga, args.numclus)
         model_output = inception(input_array)
 
         del inception
@@ -75,7 +75,7 @@ def main():
         from Resnet.resnet34_50 import Resnet34_50DLA
         input_array = np.random.rand(2,  416, 416,3)
         model_path=args.model_path.split(',')
-        resnet = Resnet34_50DLA(input_array, bitfile, model_path[0],model_path[1])
+        resnet = Resnet34_50DLA(input_array, bitfile, model_path[0],model_path[1],args.numfpga, args.numclus)
         model_output1,model_output2 = resnet(input_array[0],input_array[1])
         # The model was applied on 2 images; the resnet returns - one output for each image
         del resnet
@@ -86,7 +86,7 @@ def main():
         from Resnet.resnet34_18 import Resnet34_18DLA
         input_array = np.random.rand(2,  416, 416,3)
         model_path=args.model_path.split(',')
-        resnet = Resnet34_18DLA(input_array, bitfile, model_path[0],model_path[1])
+        resnet = Resnet34_18DLA(input_array, bitfile, model_path[0],model_path[1],args.numfpga, args.numclus)
         model_output1,model_output2 = resnet(input_array[0],input_array[1])
         # The model was applied on 2 images; the resnet returns - one output for each image
         del resnet

@@ -21,7 +21,7 @@ class Resnet34_18DLA:
     """
     Load MDLA and run segmentation model on it
     """
-    def __init__(self, input_img, bitfile, model_path1,model_path2):
+    def __init__(self, input_img, bitfile, model_path1,model_path2,numfpga, numclus):
         """
         In this example MDLA will be capable of taking multiple input images
         and running that images through 2 models on 1 fpga 
@@ -33,9 +33,9 @@ class Resnet34_18DLA:
         # Initialize 1 Micron DLA
         self.dla = microndla.MDLA()
         # Run the network in batch mode (one image on all clusters)
-       #self.dla.SetFlag('nobatch', '0')
-        numfpga = 1 
-        numclus = 1
+        self.dla.SetFlag('nobatch', '0')
+    
+        
         self.batch, self.height, self.width, self.channels = input_img.shape
         sz = "{:d}x{:d}x{:d}".format(self.width, self.height, self.channels)
 

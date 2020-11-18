@@ -21,7 +21,7 @@ class InceptionDLA:
     """
     Load MDLA and run segmentation model on it
     """
-    def __init__(self, input_img, bitfile, model_path,numclus):
+    def __init__(self, input_img, bitfile, model_path,numfpga,numclus):
         """
         In this example MDLA will be capable of taking an input image
         and running that image on all clusters
@@ -39,6 +39,7 @@ class InceptionDLA:
             print('{}{}{}...'.format(CP_Y, 'Loading bitfile...', CP_C))
             self.dla.SetFlag('bitfile', bitfile)
         self.batch, self.height, self.width, self.channels = input_img.shape
+        
         # Run the network in batch mode (two images, one  on each cluster)
         image_per_cluster=self.batch/numclus
         if image_per_cluster==1:
@@ -46,9 +47,8 @@ class InceptionDLA:
         else:    
             self.dla.SetFlag('imgs_per_cluster', str(image_per_cluster))
         
-        numfpga = 1 
+        
 
-        #self.batch, self.channels, self.width,self.height= input_img.shape
         sz = "{:d}x{:d}x{:d}".format(self.width, self.height, self.channels)
         # Compile the NN and generate instructions <save.bin> for MDLA
         swnresults = self.dla.Compile(sz, model_path, 'save.bin',numfpga,numclus)
@@ -62,10 +62,6 @@ class InceptionDLA:
         print('{:-<80}\n'.format(''))
 
         # Allocate space for output if the model
-        #self.dla_output = []
-        #for i in range(swnresults):
-        #    r=np.zeros(i * numclus, dtype=np.float32)
-        #    self.dla_output.append(np.ascontiguousarray(r))
         self.dla_output= np.ascontiguousarray(np.zeros(numclus*swnresults, dtype=np.float32))
 
     def __call__(self, input_array):
@@ -89,6 +85,5 @@ class InceptionDLA:
             input[i]=x[i].transpose(2,1,0) #Change image planes from HWC to CHW
 
         self.dla.Run(input, self.dla_output)
-        print("Output size",self.dla_output.shape)
         return self.dla_output
 

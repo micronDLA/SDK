@@ -21,7 +21,7 @@ class Resnet34_50DLA:
     """
     Load MDLA and run segmentation model on it
     """
-    def __init__(self, input_img, bitfile, model_path1,model_path2):
+    def __init__(self, input_img, bitfile, model_path1,model_path2,numfpga,numclus):
         """
         In this example MDLA will be capable of taking an input image
         and running that image on all clusters
@@ -43,14 +43,13 @@ class Resnet34_50DLA:
         # Run the network in batch mode (one image on all clusters)
         self.dla1.SetFlag('nobatch', '0')
         self.dla2.SetFlag('nobatch', '0')
-        numfpga = 1 
-        numclus = 1
+        
         self.batch,self.height, self.width, self.channels = input_img.shape
         sz = "{:d}x{:d}x{:d}".format(self.width, self.height, self.channels)
 
         # Compile the NN and generate instructions <save.bin> for MDLA
-        swnresults1 = self.dla1.Compile(sz, model_path1, 'save.bin', numfpga,numclus)
-        swnresults2 = self.dla2.Compile(sz, model_path2, 'save2.bin',numfpga,numclus)
+        swnresults1 = self.dla1.Compile(sz, model_path1, 'save.bin', 1,numclus)
+        swnresults2 = self.dla2.Compile(sz, model_path2, 'save2.bin',1,numclus)
 
         print('\n1. {}{}{}!!!'.format(CP_B, 'Successfully generated binaries for MDLA', CP_C))
         # Send the generated instructions to MDLA
