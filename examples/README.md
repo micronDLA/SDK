@@ -46,7 +46,7 @@ python3 main_batch.py --model resnet34_18 --model-path micron_model_zoo/resnet34
 For example to run in mode 4 with two images, two models (the model-path contains the path to the two models separated by comma) each on a separate FPGA:
 
 ```
-python3 main_batch.py --model resnet34_50 --model-path micron_model_zoo/resnet34.onnx,micron_model_zoo/resnet50.onnx
+python3 main_batch.py --model resnet34_50 --model-path micron_model_zoo/resnet34.onnx,micron_model_zoo/resnet50.onnx --numfpga 2
 ```
 For example to run in mode 1 with multiple (16) images and multiple clusters (2):
 
