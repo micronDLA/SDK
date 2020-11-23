@@ -70,7 +70,7 @@ python3 main_batch.py --model resnet34_50 --model-path micron_model_zoo/resnet34
 | ID |    Category    |   Model   | Mode |           Notes          |
 |----|----------------|-----------|:----:|--------------------------|
 | 1  | Categorization | resnet34_18    |3      |Two models - resnet34 and resnet18 applied to two images on a single FPGA. The two models are from the  ONNX model zoo.                          |
-| 2  | Localization   | Retinanet |      |                          |
+| 2  | Localization   | [RetinaNet](RetinaNet/retinanet.py) |  0    |RetinaNet object detection model from ONNX model zoo                          |
 | 3  | Pose           | Openpose  |      |                          |
 | 4  | Segmentation   | [Linknet](Linknet/linknet.py)   |   0  | Trained on street scenes |
 | 5  | Super resolution   | [Super resolution](SuperResolution/superresolution.py)   |   0,1  | Originally from ONNX model zoo |
