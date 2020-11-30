@@ -48,7 +48,7 @@ class LinknetDLA:
     """
     Load MDLA and run segmentation model on it
     """
-    def __init__(self, input_img, n_classes, bitfile, model_path, numclus=1):
+    def __init__(self, input_img, n_classes, bitfile, model_path):
         """
         In this example MDLA will be capable of taking an input image
         and running that image on all clusters
@@ -65,7 +65,7 @@ class LinknetDLA:
         self.height, self.width, self.channels = input_img.shape
         sz = "{:d}x{:d}x{:d}".format(self.width, self.height, self.channels)
         # Compile the NN and generate instructions <save.bin> for MDLA
-        swnresults = self.dla.Compile(sz, model_path, 'save.bin', 1, numclus)
+        swnresults = self.dla.Compile(sz, model_path, 'save.bin', 1)
         print('\n1. {}{}{}'.format(CP_B, 'Successfully generated binaries for MDLA', CP_C))
         # Send the generated instructions to MDLA
         # Send the bitfile to the FPGA only during the first run

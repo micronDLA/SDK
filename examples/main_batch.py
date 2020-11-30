@@ -52,8 +52,21 @@ def main():
 
         input_array = np.random.rand(args.numfpga, 3, 416, 416)
         yolov3 = YOLOv3(input_array, bitfile, args.model_path,
-                        args.numfpga, args.numclus, False)
-        yolov3
+                        args.numfpga, False)
+        model_output = yolov3(input_array)
+        del yolov3
+
+    elif args.model == 'yolov3_tiny':
+
+        from YOLOv3.yolov3 import YOLOv3Tiny
+
+        input_array = np.random.rand(args.numfpga, 3, 416, 416)
+        yolov3 = YOLOv3Tiny(input_array, bitfile, args.model_path,
+                            args.numfpga, False)
+        model_output = yolov3(input_array)
+
+        del yolov3
+
     #elif args.model == 'resnet18':
     #    resnet = ResnetDLA(input_img, 20, bitfile, args.model_path)
     #    model_output = resnet(input_img)
