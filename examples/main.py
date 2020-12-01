@@ -18,7 +18,7 @@ CP_Y = '\033[33m'
 CP_C = '\033[0m'
 
 # List of models which can be run by this example script
-models = ['resnet18', 'linknet', 'yolov3', 'yolov3_tiny' ]
+models = ['resnet18', 'linknet', 'yolov3', 'yolov3_tiny', 'superresolution']
 model_names = sorted(name for name in models)
 
 parser = ArgumentParser(description="Micron DLA Examples")
