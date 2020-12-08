@@ -33,26 +33,36 @@ This option is required only during the first run after every system reboot or i
 Use `--help` option any time to see the details about the available options and to get list of supported models.
 
 To run model with batched input use `main_batch.py`. 
+
 For example to run in mode 1 with multiple images and clusters:
 
 ```
 python3 main_batch.py --model superresolution --model-path micron_model_zoo/super-resolution-10.onnx --numclus 4
 ```
-For example to run in mode 3 with two images and  two models  on a single FPGA:
 
-```
-python3 main_batch.py --model resnet34_18 --model-path micron_model_zoo/resnet34.onnx,micron_model_zoo/resnet18.onnx
-```
-For example to run in mode 4 with two images, two models (the model-path contains the path to the two models separated by comma) each on a separate FPGA:
-
-```
-python3 main_batch.py --model resnet34_50 --model-path micron_model_zoo/resnet34.onnx,micron_model_zoo/resnet50.onnx --numfpga 2
-```
 For example to run in mode 1 with multiple (16) images and multiple clusters (2):
 
 ```
 python3 main_batch.py --model inception --model-path micron_model_zoo/inception_v3.onnx --numclus 2
 ```
+
+For example to run in mode 2 with multiple images (one per fpga):
+```
+python3 main_batch.py --model yolov3 --model-path micron_model_zoo/yolov3.onnx --numfpga N
+```
+
+For example to run in mode 3 with two images and  two models  on a single FPGA:
+
+```
+python3 main_batch.py --model resnet34_18 --model-path micron_model_zoo/resnet34.onnx,micron_model_zoo/resnet18.onnx
+```
+
+For example to run in mode 4 with two images, two models (the model-path contains the path to the two models separated by comma) each on a separate FPGA:
+
+```
+python3 main_batch.py --model resnet34_50 --model-path micron_model_zoo/resnet34.onnx,micron_model_zoo/resnet50.onnx --numfpga 2
+```
+
 
 
 ### List of models in the example set
@@ -60,7 +70,7 @@ python3 main_batch.py --model inception --model-path micron_model_zoo/inception_
 | ID |    Category    |   Model   | Mode |           Notes          |
 |----|----------------|-----------|:----:|--------------------------|
 | 1  | Categorization | resnet34_18    |3      |Two models - resnet34 and resnet18 applied to two images on a single FPGA. The two models are from the  ONNX model zoo.                          |
-| 2  | Localization   | Retinanet |      |                          |
+| 2  | Localization   | [RetinaNet](RetinaNet/retinanet.py) |  0    |RetinaNet object detection model from ONNX model zoo                          |
 | 3  | Pose           | Openpose  |      |                          |
 | 4  | Segmentation   | [Linknet](Linknet/linknet.py)   |   0  | Trained on street scenes |
 | 5  | Super resolution   | [Super resolution](SuperResolution/superresolution.py)   |   0,1  | Originally from ONNX model zoo |

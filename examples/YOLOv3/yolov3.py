@@ -9,7 +9,7 @@ import numpy as np
 class YOLOv3:
 
     def __init__(self, input_img, bitfile, model_path,
-                 numfpga=1, numclus=1, nobatch=False):
+                 numfpga=1, nobatch=False):
 
         self.dla = microndla.MDLA()
 
@@ -20,8 +20,7 @@ class YOLOv3:
             self.dla.SetFlag('nobatch', '1')
             assert b == 1, "Input batch should be equal to 1 for nobatch mode"
 
-        snwresults = self.dla.Compile(sz, model_path, 'save.bin',
-                                      numfpga, numclus)
+        snwresults = self.dla.Compile(sz, model_path, 'save.bin', numfpga)
         self.dla.Init('save.bin', bitfile)
 
         self.dla_output = []
@@ -87,12 +86,12 @@ class YOLOv3:
 class YOLOv3Tiny(YOLOv3):
 
     def __init__(self, input_img, bitfile, model_path,
-                 numfpga=1, numclus=1, nobatch=False):
+                 numfpga=1, nobatch=False):
 
-        super().__init__(input_img, bitfile, model_path, numfpga, numclus, nobatch)
+        super().__init__(input_img, bitfile, model_path, numfpga, nobatch)
 
         b, h, w, c = input_img.shape
-        
+
         self.cfg   = yolov3_tiny_cfg
         self.grids = []
         self.n = []
