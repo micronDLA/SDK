@@ -8,7 +8,7 @@ import os, sys
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
 from ieproc import ieprocess # process with Inference Engine
-# from thnetsproc import thprocess # process with thnets (PCU, GPU)
+# from thnetsproc import thprocess # process with thnets (CPU, GPU)
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])

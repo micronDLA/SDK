@@ -13,7 +13,7 @@ except:
 
 libc = CDLL("libc.so.6")
 
-curversion = '2020.2.1'
+curversion = '2020.2.3'
 
 #Allows None to be passed instead of a ndarray
 def wrapped_ndptr(*args, **kwargs):
@@ -52,18 +52,15 @@ class MDLA:
         self.ie_loadmulti.argtypes = [c_void_p, POINTER(c_char_p), c_int]
         self.ie_loadmulti.restype = c_void_p
 
-        self.ie_go = f.ie_go
-        self.ie_go.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, c_int, c_int, POINTER(POINTER(c_float)), POINTER(POINTER(c_float))]
-
-        self.ie_quantize = f.ie_quantize
-        self.ie_quantize.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_ulonglong), POINTER(c_int), c_int, c_int, POINTER(POINTER(c_float)), c_int]
+        self.ie_compile_vfp = f.ie_compile_vfp
+        self.ie_compile_vfp.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_uint), POINTER(POINTER(c_uint)), POINTER(POINTER(POINTER(c_ulonglong))), POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint]
 
         self.ie_compile = f.ie_compile
-        self.ie_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_ulonglong), POINTER(c_int), c_int, c_int]
+        self.ie_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_uint), POINTER(POINTER(c_uint)), POINTER(POINTER(POINTER(c_ulonglong)))]
         self.ie_compile.restype = c_void_p
 
         self.ie_init = f.ie_init
-        self_ie_init_argtypes = [c_void_p, c_char_p, c_char_p, c_void_p, c_void_p, c_void_p]
+        self.ie_init.argtypes = [c_void_p, c_char_p, POINTER(c_uint), POINTER(POINTER(c_uint)), POINTER(POINTER(POINTER(c_ulonglong))), c_void_p]
         self.ie_init.restype = c_void_p
 
         self.ie_free = f.ie_free
@@ -73,16 +70,16 @@ class MDLA:
         self.ie_setflag.argtypes = [c_void_p, c_char_p, c_void_p]
 
         self.ie_getinfo = f.ie_getinfo
-        self.ie_getinfo.argtypes = [c_void_p, c_char_p, c_void_p]
+        self.ie_getinfo.argtypes = [c_void_p, c_char_p, c_void_p, c_size_t]
 
         self.ie_run = f.ie_run
-        self.ie_run.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), POINTER(POINTER(c_float)), POINTER(c_ulonglong)]
+        self.ie_run.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint]
 
         self.ie_putinput = f.ie_putinput
-        self.ie_putinput.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_long]
+        self.ie_putinput.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint, c_void_p]
 
         self.ie_getresult = f.ie_getresult
-        self.ie_getresult.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_void_p]
+        self.ie_getresult.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint, POINTER(c_void_p)]
 
         self.ie_read_data = f.ie_read_data
         self.ie_read_data.argtypes = [c_void_p, c_ulonglong, c_void_p, c_ulonglong, c_int]
@@ -112,14 +109,14 @@ class MDLA:
         self.ie_hwrun.argtypes = [c_void_p, c_ulonglong, POINTER(c_double), POINTER(c_double), c_int]
 
         self.ie_run_sim = f.ie_run_sim
-        self.ie_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), POINTER(POINTER(c_float)), POINTER(c_ulonglong)]
+        self.ie_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint]
 
         self.thnets_run_sim = f.thnets_run_sim
-        self.thnets_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_bool]
+        self.thnets_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint]
 
         #Training of linear layer
         self.trainlinear_start = f.ie_trainlinear_start
-        self.trainlinear_start.argtypes = [c_void_p, c_int, c_int, c_int, ndpointer(c_float, flags="C_CONTIGUOUS"), ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int, c_int, c_int, c_float, c_int]
+        self.trainlinear_start.argtypes = [c_void_p, c_int, c_int, c_int, ndpointer(c_float, flags="C_CONTIGUOUS"), ndpointer(c_float, flags="C_CONTIGUOUS"), c_int, c_int, c_int, c_int, c_float]
 
         self.trainlinear_data = f.ie_trainlinear_data
         self.trainlinear_data.argtypes = [c_void_p, FloatNdPtr, FloatNdPtr, c_int]
@@ -146,27 +143,63 @@ class MDLA:
             print('Wrong libmicrondla.so found, expecting', curversion, 'and found', v, 'quitting')
             quit()
 
+    # Setup start training of a linear layer
+    # batch: number of input/output vectors to train in one shot
+    # A: starting weights matrix of nout x nin size
+    #   nin: number of input elements of the linear layer
+    #   nout: number of output elements of the linear layer
+    # b: starting bias vector of nout size
+    # Ashift: number of rational bits for A when converting to int
+    # Xshift: number of rational bits for input when converting to int
+    # Yshift: number of rational bits for output when converting to int
+    # Ygshift: number of ration bits for gradient when converting to int (used only in external gradient calculation)
+    # rate: learning rate; if 0, gradient will be calculated externally; if > 0, it will be the learning rate with LMS loss calculated internally
     def TrainlinearStart(self, batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate, nclusters=1):
         self.trainlinear_start(self.handle, A.shape[1], A.shape[0], batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate, nclusters)
 
+    # Pass training data to main memory so that MDLA can access it
+    # All training data can be stored in memory at different indexes only at the beginning, so it won't be required
+    # to store it at each iteration
+    # In internal gradient calculation mode, both X and Y can be stored at the beginning
+    # In external gradient calculation mode, only X can be stored (Y must be NULL) at the beginning as the gradient
+    # will have to be calculated at each iteration externally; in this case X will be NULL
+    # X: input matrix of nin x batch size
+    # Y: desired matrix of nout x batch size in internal gradient calculation;
+    #    gradient of nout x batch size in external gradient calculation
+    # idx: arbitrary index where to store in memory
     def TrainlinearData(self, X, Y, idx):
         self.trainlinear_data(self.handle, X, Y, idx)
 
+    # Run a training step in HW
+    # idx: index in memory where to get training data
     def TrainlinearStep(self, idx):
         self.trainlinear_step(self.handle, idx)
 
+    # Run a training step in software Run_sw using int16
+    # The results here should be numerically identical to HW mode; this routine is provided for correctness checking
+    # In software mode training data cannot be preloaded, so no idx is provided
+    # Only internal gradient calculation is supported here
     def TrainlinearStepSw(self):
         self.trainlinear_step_sw(self.handle)
 
+    # Run a training step in sw using floats
+    # In software mode training data cannot be preloaded, so no idx is provided
+    # Only internal gradient calculation is supported here
     def TrainlinearStepFloat(self):
         self.trainlinear_step_float(self.handle)
 
+    # Get the learned matrices A and b
+    # A: returns learned weights matrix of nout x nin size
+    # b: returns learned bias vector of nout size
     def TrainlinearGet(self, A, b):
         self.trainlinear_get(self.handle, A, b)
 
+    # Get the inference result for external gradient mode
+    # Y: Inference result of nout x batch size
     def TrainlinearGetY(self, Y):
         self.trainlinear_getY(self.handle, Y)
 
+    # Terminate the training process freeing all the resources used for training (ie_free will have to be called, too)
     def TrainlinearEnd(self):
         self.trainlinear_end(self.handle)
 
@@ -200,86 +233,47 @@ class MDLA:
                 b[i] = bytes(bins[i], 'utf-8')
         self.ie_loadmulti(self.handle, b, len(bins))
 
-    #All-in-one: Compile a network, Init FPGA and Run accelerator
-    # image: it is a string with the image path or the image dimensions.
-    #        If it is a image path then the size of the image will be used to set up Micron DLA hardware's code.
-    #        If it is not an image path then it needs to specify the size in one of the following formats:
-    #        Width x Height x Planes
-    #        Width x Height x Planes x Batchsize
-    #        Width x Height x Depth x Planes x Batchsize
-    #        Multiple inputs can be specified by separating them with a semi-colon
-    #        Example: Two inputs with width=640, height=480, planes=3 becomes a string "640x480x3;640x480x3".
-    # modelpath: path to a model file in ONNX format.
-    # bitfile: FPGA bitfile to be loaded
-    # numcard: number of FPGA cards to use.
-    # numclus: number of clusters to be used.
-    # image: input to the model as a numpy array of type float32
-    #Returns:
-    # result: model's output tensor as a preallocated numpy array of type float32
-    def GO(self, image, modelpath, bitfile, images, result, numcard = 1, numclus = 1):
-        imgs, sizes, keepalive = self.inparams(images)
-        r, rs = self.outparams(result)
-        rc = self.ie_go(self.handle, bytes(image, 'ascii'), bytes(self.GetONNX(modelpath), 'ascii'), bytes(bitfile, 'ascii'), \
-            numcard, numclus, imgs, r)
-        if rc != 0:
-            raise Exception(rc)
-
-    #compile and quantize a network over a calibration dataset. Produce .bin file with everything that is needed to execute
-    # image: it is a string with the image path or the image dimensions.
-    #        If it is a image path then the size of the image will be used to set up Micron DLA hardware's code.
-    #        If it is not an image path then it needs to specify the size in one of the following formats:
-    #        Width x Height x Planes
-    #        Width x Height x Planes x Batchsize
-    #        Width x Height x Depth x Planes x Batchsize
-    #        Multiple inputs can be specified by separating them with a semi-colon
-    #        Example: Two inputs with width=640, height=480, planes=3 becomes a string "640x480x3;640x480x3".
-    # modelpath: path to a model file in ONNX format.
-    # outfile: path to a file where a model in Micron DLA ready format will be saved.
-    # images: a list of inputs (calibration dataset) to the model as a numpy array of type float32
-    # nimg: number of images in calibration dataset
-    # numcard: number of FPGA cards to use.
-    # numclus: number of clusters to be used.
-    # Return:
-    #   Number of results to be returned by the network
-    def Quantize(self, image, modelpath, outfile, images, numcard = 1, numclus = 1):
-        swoutsize = (c_ulonglong * 16)()
-        noutputs = c_int()
-        nim = int(len(images))
-        if nim <= 0:
-            raise Exception('No images')
-        imgs, sizes, keepalive = self.inparams(images)
-        self.handle = self.ie_quantize(self.handle, bytes(image, 'ascii'), bytes(self.GetONNX(modelpath), 'ascii'), \
-            bytes(outfile, 'ascii'), swoutsize, byref(noutputs), numcard, numclus, imgs, nim)
-        if self.handle == None:
-            raise Exception('Init failed')
-        self.out_size = self._format_outsize(swoutsize, noutputs)
-        return self.out_size
-
+    def CreateResults(self, noutputs, noutdims, outshapes):
+        self.results = []
+        for i in range(noutputs.value):
+            if noutdims[i] == 1:
+                r = np.ndarray((outshapes[i][0]), dtype=np.float32)
+            elif noutdims[i] == 2:
+                r = np.ndarray((outshapes[i][0], outshapes[i][1]), dtype=np.float32)
+            elif noutdims[i] == 3:
+                r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2]), dtype=np.float32)
+            elif noutdims[i] == 4:
+                r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2], outshapes[i][3]), dtype=np.float32)
+            elif noutdims[i] == 5:
+                r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2], outshapes[i][3], outshapes[i][4]), dtype=np.float32)
+            self.results.append(r)
+        if noutputs.value == 1:
+            self.results = self.results[0]
 
     #compile a network and produce .bin file with everything that is needed to execute
-    # image: it is a string with the image path or the image dimensions.
-    #        If it is a image path then the size of the image will be used to set up Micron DLA hardware's code.
-    #        If it is not an image path then it needs to specify the size in one of the following formats:
-    #        Width x Height x Planes
-    #        Width x Height x Planes x Batchsize
-    #        Width x Height x Depth x Planes x Batchsize
-    #        Multiple inputs can be specified by separating them with a semi-colon
-    #        Example: Two inputs with width=640, height=480, planes=3 becomes a string "640x480x3;640x480x3".
     # modelpath: path to a model file in ONNX format.
     # outfile: path to a file where a model in Micron DLA ready format will be saved.
-    # numcard: number of FPGA cards to use.
-    # numclus: number of clusters to be used.
-    # Return:
-    #   Number of results to be returned by the network
-    def Compile(self, image, modelpath, outfile, numcard = 1, numclus = 1):
-        swoutsize = (c_ulonglong * 16)()
-        noutputs = c_int()
-        self.handle = self.ie_compile(self.handle, bytes(image, 'ascii'), bytes(self.GetONNX(modelpath), 'ascii'), \
-            bytes(outfile, 'ascii'), swoutsize, byref(noutputs), numcard, numclus)
+    # inshapes: it is an optional string with shape information in the form of size0xsize1x...sizeN
+    #        In case of multiple inputs, shapes are semi-colon separated
+    #        This parameter is normally inferred from the model file, it can be overridden in case we
+    #        want to change some input dimension
+    # samples: a list of images in numpy float32 format used to choose the proper quantization for variable-fixed-point
+    def Compile(self, modelpath, outfile, inshapes = None, samples = None):
+        noutputs = c_uint()
+        noutdims = pointer(c_uint())
+        outshapes = pointer(pointer(c_ulonglong()))
+        if samples is None:
+            self.handle = self.ie_compile(self.handle, bytes(self.GetONNX(modelpath), 'ascii'), bytes(outfile, 'ascii'), \
+                bytes(inshapes, 'ascii') if inshapes is not None else None, byref(noutputs), byref(noutdims), byref(outshapes))
+        else:
+            imgs, sizes, nimgs, keepalive = self.inparams(samples)
+            self.handle = self.ie_compile_vfp(self.handle, bytes(self.GetONNX(modelpath), 'ascii'), bytes(outfile, 'ascii'), \
+                bytes(inshapes, 'ascii') if inshapes is not None else None, byref(noutputs), byref(noutdims), byref(outshapes),
+                imgs, sizes, nimgs)
         if self.handle == None:
             raise Exception('Init failed')
-        self.out_size = self._format_outsize(swoutsize, noutputs)
-        return self.out_size
+        self.CreateResults(noutputs, noutdims, outshapes)
+        return self.GetInfo('outnames').split(';')
 
     #format output size from c_ulong_Array_16 to list
     # outsize: c_ulong_Array_16
@@ -297,15 +291,15 @@ class MDLA:
         return self.handle
     #initialization routines for Micron DLA hardware
     # infile: model binary file path
-    # bitfile: FPGA bitfile to be loaded
-    def Init(self, infile, bitfile, cmem = None):
-        swoutsize = (c_ulonglong * 16)()
-        noutputs = c_int()
-        self.handle = self.ie_init(self.handle, bytes(bitfile, 'ascii'), bytes(infile, 'ascii'), byref(swoutsize), byref(noutputs), cmem)
+    # cmem: another MDLA obj to be combined with this MDLA run
+    def Init(self, infile, cmem = None):
+        noutputs = c_uint()
+        noutdims = pointer(c_uint())
+        outshapes = pointer(pointer(c_ulonglong()))
+        self.handle = self.ie_init(self.handle, bytes(infile, 'ascii'), byref(noutputs), byref(noutdims), byref(outshapes), cmem)
         if self.handle == None:
             raise Exception('Init failed')
-        self.out_size = self._format_outsize(swoutsize, noutputs)
-        return self.out_size
+        self.CreateResults(noutputs, noutdims, outshapes)
 
     #Free FPGA instance
     def Free(self):
@@ -315,60 +309,34 @@ class MDLA:
     #Set flags for the compiler
     # name: string with the flag name
     # value: to be assigned to the flag
-    #Currently available flags are:
-    # nobatch: can be 0 or 1, default is 0. 1 will spread the input to multiple clusters. Example: if nobatch is 1
-    #       and numclus is 2, one image is processed using 2 clusters. If nobatch is 0 and numclus is 2, then it will
-    #       process 2 images. Do not set nobatch to 1 when using one cluster (numclus=1).
-    # hwlinear: can be 0 or 1, default is 0. 1 will enable the linear layer in hardware.
-    #       This will increase performance, but reduce precision.
-    # convalgo: can be 0, 1 or 2, default is 0. 1 and 2 will run loop optimization on the model.
-    # paddingalgo: can be 0 or 1, default is 0. 1 will run padding optimization on the convolution layers.
-    # blockingmode: default is 1. 1 ie_getresult will wait for hardware to finish.
-    #       0 will return immediately if hardware did not finish.
-    # max_instr: set a bound for the maximum number of Micron DLA hardware instructions to be generated.
-    #       If this option is set, then instructions will be placed before data. Note: If the amount of data
-    #       (input, output and weights) stored in memory exceeds 4GB, then this option must be set.
-    # debug: default 'w', which prints only warnings. An empty string will remove those warnings.
-    #       'b' will add some basic information.
+    # currently available options are listed in Codes.md
     def SetFlag(self, name, value):
         if name == 'hwversion':
             rc = self.ie_setflag(self.handle, bytes(name, 'ascii'), value)
         else:
-            rc = self.ie_setflag(self.handle, bytes(name, 'ascii'), bytes(value, 'ascii'))
+            rc = self.ie_setflag(self.handle, bytes(name, 'ascii'), bytes(str(value), 'ascii'))
         if rc != 0:
             raise Exception(rc)
 
     #Get various info about the hardware
     # name: string with the info name that is going to be returned
-    #Currently available values are:
-    # hwtime: float value of the processing time in Micron DLA hardware only
-    # numcluster: int value of the number of clusters to be used
-    # numfpga: int value of the number of FPGAs to be used
-    # numbatch: int value of the number of batch to be processed
-    # freq: int value of the Micron DLA hardware's frequency
-    # maxcluster: int value of the maximum number of clusters in Micron DLA hardware
-    # maxfpga: int value of the maximum number of FPGAs available
+    # currently available options are listed in Codes.md
     def GetInfo(self, name):
-        if name == 'hwtime':
-            return_val = c_float()
-        elif name == 'temperature':
-            return_val = c_int()
-            rc = self.ie_getinfo(self.handle, bytes("numfpga", 'ascii'), byref(return_val))
-            if rc != 0:
-                raise Exception(rc)
-            return_val = (c_float * return_val.value)()
-        elif name == 'version' or name == 'build' or name == 'hwversion' or name == 'hwbuild':
-            return_val = create_string_buffer(20)
-        else:
-            return_val = c_int()
-        rc = self.ie_getinfo(self.handle, bytes(name, 'ascii'), byref(return_val))
-        if rc != 0:
-            raise Exception(rc)
-        if name == 'temperature':
-            return return_val[:]
-        elif name == 'version' or name == 'build' or name == 'hwversion' or name == 'hwbuild':
+        return_val = create_string_buffer(200)
+        rc = self.ie_getinfo(self.handle, bytes(name, 'ascii'), byref(return_val), 200)
+        if rc == 0:
+            return
+        if rc == 1:
             return str(return_val.value, 'ascii')
-        return return_val.value
+        if rc == 2:
+            return cast(return_val, POINTER(c_bool))[0]
+        if rc == 3:
+            return cast(return_val, POINTER(c_int))[0]
+        if rc == 4:
+            return cast(return_val, POINTER(c_ulonglong))[0]
+        if rc == 5:
+            return cast(return_val, POINTER(c_float))[0]
+        raise Exception(rc)
 
     def outparams(self, results):
         if type(results) == np.ndarray:
@@ -376,7 +344,7 @@ class MDLA:
                 raise Exception('Output must be float32')
             if not results.flags['C_CONTIGUOUS']:
                 raise Exception('Output must be a contiguous array')
-            return byref(results.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(results.size))
+            return byref(results.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(results.size)), 1
         elif type(results) == tuple or type(results) == list:
             cresults = (POINTER(c_float) * len(results))()
             csizes = (c_ulonglong * len(results))()
@@ -387,14 +355,14 @@ class MDLA:
                     raise Exception('Output must be a contiguous array')
                 cresults[i] = results[i].ctypes.data_as(POINTER(c_float))
                 csizes[i] = results[i].size
-            return cresults, csizes
+            return cresults, csizes, len(results)
         else:
             raise Exception('Output must be ndarray or tuple to ndarrays')
 
     def inparams(self, images):
         if type(images) == np.ndarray:
             keepalive = np.ascontiguousarray(images.astype(np.float32))
-            return byref(keepalive.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(images.size)), keepalive
+            return byref(keepalive.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(images.size)), 1, keepalive
         elif type(images) == tuple or type(images) == list:
             if type(images[0]) == tuple or type(images[0]) == list:
                 cimages = (POINTER(c_float) * (len(images) * len(images[0])))()
@@ -407,7 +375,7 @@ class MDLA:
                         keepalive.append(cf)
                         cimages[i*n + j] = cf.ctypes.data_as(POINTER(c_float))
                         csizes[i*n + j] = images[i][j].size
-                return cimages, csizes, keepalive
+                return cimages, csizes, len(images) * len(images[0]), keepalive
             else:
                 cimages = (POINTER(c_float) * len(images))()
                 keepalive = []
@@ -417,7 +385,7 @@ class MDLA:
                     keepalive.append(cf)
                     cimages[i] = cf.ctypes.data_as(POINTER(c_float))
                     csizes[i] = images[i].size
-                return cimages, csizes, keepalive
+                return cimages, csizes, len(images), keepalive
         else:
             raise Exception('Input must be ndarray or tuple to ndarrays')
 
@@ -425,13 +393,14 @@ class MDLA:
     #Run hardware. It does the steps sequentially. putInput, compute, getResult
     # image: input to the model as a numpy array of type float32
     #Returns:
-    # result: model's output tensor as a preallocated numpy array of type float32
-    def Run(self, images, result):
-        imgs, sizes, keepalive = self.inparams(images)
-        r, rs = self.outparams(result)
-        rc = self.ie_run(self.handle, imgs, sizes, r, rs)
+    # result: model's output tensor
+    def Run(self, images):
+        imgs, sizes, nimgs, keepalive = self.inparams(images)
+        r, rs, nresults = self.outparams(self.results)
+        rc = self.ie_run(self.handle, imgs, sizes, nimgs, r, rs, nresults)
         if rc != 0:
             raise Exception(rc)
+        return self.results
 
     #Put an input into shared memory and start Micron DLA hardware
     # image: input to the model as a numpy array of type float32
@@ -440,13 +409,13 @@ class MDLA:
     # Error or no error.
     def PutInput(self, images, userobj):
         userobj = py_object(userobj)
-        key = c_long(addressof(userobj))
+        key = c_void_p(addressof(userobj))
         self.userobjs[key.value] = userobj
         if images is None:
-            imgs, sizes = None, None
+            imgs, sizes, nimgs = None, None, 0
         else:
-            imgs, sizes, keepalive = self.inparams(images)
-        rc = self.ie_putinput(self.handle, imgs, sizes, key)
+            imgs, sizes, nimgs, keepalive = self.inparams(images)
+        rc = self.ie_putinput(self.handle, imgs, sizes, nimgs, key)
         if rc == -99:
             return False
         if rc != 0:
@@ -455,40 +424,42 @@ class MDLA:
 
     #Get an output from shared memory. If the blockingmode flag was set then it will wait Micron DLA hardware
     #Return:
-    # result: model's output tensor as a preallocated numpy array of type float32
-    def GetResult(self, result):
-        userobj = c_long()
-        r, rs = self.outparams(result)
-        rc = self.ie_getresult(self.handle, r, rs, byref(userobj))
+    # result: model's output tensor
+    def GetResult(self):
+        userobj = c_void_p()
+        r, rs, nresults = self.outparams(self.results)
+        rc = self.ie_getresult(self.handle, r, rs, nresults, byref(userobj))
         if rc == -99:
             return None
         if rc != 0:
             raise Exception(rc)
         retuserobj = self.userobjs[userobj.value]
         del self.userobjs[userobj.value]
-        return retuserobj.value
+        return self.results, retuserobj.value
 
     #Run software Micron DLA emulator
     # image: input to the model as a numpy array of type float32
     #Return:
-    # result: models output tensor as a preallocated numpy array of type float32
-    def Run_sw(self, images, result):
-        imgs, sizes, keepalive = self.inparams(images)
-        r, rs = self.outparams(result)
-        rc = self.ie_run_sim(self.handle, imgs, sizes, r, rs)
+    # result: models output tensor
+    def Run_sw(self, images):
+        imgs, sizes, nimgs, keepalive = self.inparams(images)
+        r, rs, nresults = self.outparams(self.results)
+        rc = self.ie_run_sim(self.handle, imgs, sizes, nimgs, r, rs, nresults)
         if rc != 0:
             raise Exception(rc)
+        return self.results
 
     #Run model with thnets
     # image: input to the model as a numpy array of type float32
     #Return:
     # result: models output tensor as a preallocated numpy array of type float32
-    def Run_th(self, image, result):
-        imgs, sizes, keepalive = self.inparams(images)
-        r, rs = self.outparams(result)
-        rc = self.thnets_run_sim(self.handle, imgs, sizes, r, rs)
+    def Run_th(self, images):
+        imgs, sizes, nimgs, keepalive = self.inparams(images)
+        r, rs, nresults = self.outparams(self.results)
+        rc = self.thnets_run_sim(self.handle, imgs, sizes, nimgs, r, rs, nresults)
         if rc != 0:
             raise Exception(rc)
+        return self.results
 
     #Read data from an address in shared memory
     # addr: address in shared memory where to read data from

@@ -80,7 +80,7 @@ keyword or code.
 
 **bitfile**: immediately upload the given bitfile
 
-**nobatch**: can be 0 or 1, default is 0. 1 will spread the input to multiple
+**clustersbatchmode**: can be 0 or 1, default is 0. 1 will spread the input to multiple
 clusters.  
 Example: if nobatch is 1 and numclus is 2, one image is processed using 2
 clusters.   If nobatch is 0 and numclus is 2, then each cluster will process

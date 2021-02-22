@@ -54,16 +54,10 @@ ie = microndla.MDLA()
 ie.SetFlag('debug','bw')
 
 #Compile to a file
-istr = "{:d}x{:d}x{:d}x{:d};".format(1, seqlen, ni, 1)
-istr += "{:d}x{:d}x{:d}x{:d};".format(1, 1, nh, 1)
-istr += "{:d}x{:d}x{:d}x{:d};".format(1, 1, nh, 1)
-istr += "{:d}x{:d}x{:d}x{:d};".format(1, 1, nh, 1)
-istr += "{:d}x{:d}x{:d}x{:d}".format(1, 1, nh, 1)
-print(istr)
-swnresults = ie.Compile(istr, 'model.onnx', 'model.bin')
+ie.Compile('model.onnx', 'model.bin')
 
 #Init fpga
-nresults = ie.Init('model.bin', '')
+ie.Init('model.bin')
 
 np.random.seed(1)
 img = inputs.numpy().transpose(1, 0, 2)
@@ -77,11 +71,10 @@ ihid = np.ascontiguousarray(np.concatenate(hid))
 ihid2 = np.ascontiguousarray(np.concatenate(hid2))
 
 #Create the storage for the result and run one inference
-result = np.ndarray(swnresults[0], dtype=np.float32)
-rhid = np.ndarray(swnresults[1], dtype=np.float32)
-rcid = np.ndarray(swnresults[2], dtype=np.float32)
-ie.Run([iimg, ihid[0], ihid[1], ihid2[0], ihid2[1]], [result, rhid, rcid])
+result = ie.Run([iimg, ihid[0], ihid[1], ihid2[0], ihid2[1]])
+res = np.squeeze(result[0])
 
-print_err(result, result_pyt)
+print("LSTM")
+print_err(res, result_pyt)
 
 print('done')

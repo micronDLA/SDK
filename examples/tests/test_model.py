@@ -15,7 +15,6 @@ from argparse import ArgumentParser
 parser = ArgumentParser(description="Run a ONNX model")
 _ = parser.add_argument
 _('-p','--profile', type=int, default=0, help='Profile mode: 0: compare accuracy (default) 1: entire model 2: each layer in model')
-_('-l','--load', type=str, default='', help='Load bitfile')
 _('model', type=str, default='', help='model')
 _('input_shape', type=str, default='', help='input shape WxHxC')
 
@@ -31,15 +30,11 @@ if args.profile >= 1:
         sf.SetFlag('options', 'Ls')#profile all layer in the model
 
 # Compile and Run on MDLA
-snwresults = sf.Compile(
-        args.input_shape,#input shape WxHxCxB
-        args.model,#onnx model path
-        'save.bin', 1, 1)
+sf.Compile(args.model, 'save.bin')
 
-sf.Init("./save.bin", args.load)
+sf.Init("./save.bin")
 in_1 = np.ascontiguousarray(image)
-result = np.ascontiguousarray(np.ndarray((1, snwresults), dtype=np.float32))
-sf.Run(in_1, result)
+result = sf.Run(in_1)
 
 if args.profile == 0:
     #Run using ONNX runtime
@@ -48,8 +43,7 @@ if args.profile == 0:
     result_pyt = sess.run(None, {input_name:in_1})
 
     if type(result_pyt) is list:
-        result_pyt = result_pyt[0].flatten() #This is currently required only for the satellite network
-        result_pyt = result_pyt.reshape(-1)
+        result_pyt = result_pyt[0].reshape(-1)
 
     error_mean=(np.absolute(result-result_pyt).mean()/np.absolute(result_pyt).max())*100.0
     error_max=(np.absolute(result-result_pyt).max()/np.absolute(result_pyt).max())*100.0

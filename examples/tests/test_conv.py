@@ -14,7 +14,6 @@ from argparse import ArgumentParser
 parser = ArgumentParser(description="CONV example")
 _ = parser.add_argument
 _('-v','--verbose', action='store_true', help='verbose mode')
-_('-l','--load', type=str, default='', help='Load bitfile')
 _('-k', type=int, default=3, help='kernel size')
 _('-s', type=int, default=1, help='stride')
 _('-p', type=int, default=0, help='padding')
@@ -48,18 +47,14 @@ if args.verbose:
     sf.SetFlag('debug', 'b')#debug options
 
 # Compile to generate binary
-snwresults = sf.Compile(
-        '{:d}x{:d}x{:d}'.format(w, w, i),
-        'net_conv.onnx', 'net_conv.bin', 1, 1)
+sf.Compile('net_conv.onnx', 'net_conv.bin')
 
-sf.Init("./net_conv.bin", args.load)
+sf.Init("./net_conv.bin")
 in_1 = np.ascontiguousarray(inVec1)
-result = np.ascontiguousarray(np.ndarray((1, 1, snwresults), dtype=np.float32))
-sf.Run(in_1, result)
+result = sf.Run(in_1)
 
 outhw = modelConv(inVec1)
-result_pyt = outhw.view(-1)
-result_pyt = result_pyt.detach().numpy()
+result_pyt = outhw.detach().numpy()
 if args.verbose:
     print("pytorch : {}".format(result_pyt))
     print("hw : {}".format(result))
