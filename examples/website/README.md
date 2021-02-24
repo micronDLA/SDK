@@ -14,6 +14,8 @@ Copy to this directory:
 - this [file](https://github.com/FWDNXT/SDK/blob/master/microndla.py)
 - [category file](https://github.com/FWDNXT/SDK/blob/master/test-files/categories.txt)
 
+Create a directory called uploads in this directory
+
 
 ### Run:
 

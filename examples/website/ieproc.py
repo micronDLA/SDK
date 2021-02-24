@@ -37,7 +37,7 @@ def ieprocess(image_file, network_file):
 	ie.Init('save.bin')
 
 	#Create the storage for the result and run one inference
-	result = ie.Run(img, result)
+	result = ie.Run(img)
 	result = np.squeeze(result, axis=0)
 
 	#Convert to numpy and print top-5
