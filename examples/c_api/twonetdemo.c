@@ -10,9 +10,7 @@ Run 2 different models on Micron DLA
 
 static void print_help()
 {
-    printf("Syntax: twonetdemo <bin1> <bin2> <image1> <image2>\n");
-    printf("\t-c <categories file>\n\t-b <bitfile>\n");
-    printf("\t-f <number of FPGAs to use>\n\t-C <number of clusters>\n");
+    printf("Syntax: twonetdemo <bin1> <bin2> <image1> <image2> [-c <categories file>]\n");
 }
 
 #define BYTE2FLOAT 0.003921568f // 1/255
@@ -48,8 +46,6 @@ int main(int argc, char **argv)
     const char *categ = "./categories.txt";//categories list
     const char *f_bitfile = "";//FGPA bitfile with Micron DLA
     const char *binfile[2];
-    int nfpga = 1;
-    int nclus = 1;
     int i, n = 0;
 
     //program arguments ------------------------
@@ -65,14 +61,6 @@ int main(int argc, char **argv)
         }
         switch(argv[i][1])
         {
-        case 'f':// number of fpgas
-            if(i+1 < argc)
-                nfpga = atoi(argv[++i]);
-            break;
-        case 'C':// number clusters
-            if(i+1 < argc)
-                nclus = atoi(argv[++i]);
-            break;
         case 'c':// categories
             if(i+1 < argc)
                 categ = argv[++i];
@@ -88,13 +76,25 @@ int main(int argc, char **argv)
         return -1;
     }
 // initialize FPGA: load hardware and load instructions into memory
-    printf("Initialize FPGA\n");
+    printf("Initializing FPGA\n");
     uint64_t outsize[2];//number of output values produced
     void *sf_handle = ie_loadmulti(0, binfile, 2);
     int noutputs;
     unsigned *noutdims;
     uint64_t **outshapes;
     ie_init(sf_handle, 0, &noutputs, &noutdims, &outshapes, 0);
+    if(noutputs != 2)
+    {
+        fprintf(stderr, "This example can manage only 2 outputs\n");
+        return -1;
+    }
+    for(int n = 0; n < 2; n++)
+    {
+        outsize[n] = 1;
+        for(unsigned i = 0; i < noutdims[n]; i++)
+            outsize[n] *= outshapes[n][i];
+    }
+
     float *input[2] = {NULL, NULL};
     uint64_t input_elements[2] = {0,0};
     int ninputs = 2;
@@ -112,22 +112,19 @@ int main(int argc, char **argv)
         }
         input[n] = (float *)malloc(sizeof(float) * cp * width * height * 2);
         rgb2float_cmajor(input[n], bitmap, width, height, cp, width * cp, mean, std);
-        input_elements[n] = width * height * cp * nfpga * nclus;
+        input_elements[n] = width * height * cp;
         free(bitmap);
     }
-    uint64_t output_elements[2] = {outsize[0] * nfpga * nclus, outsize[1] * nfpga * nclus};
+    uint64_t output_elements[2] = {outsize[0], outsize[1]};
     float *output[2];
     output[0] = (float*) malloc(output_elements[0]*sizeof(float));//allocate memory to hold output
     output[1] = (float*) malloc(output_elements[1]*sizeof(float));//allocate memory to hold output
     int err = 0;
 // run inference
-    printf("Run Micron DLA\n");
+    printf("Running Micron DLA\n");
     err = ie_run(sf_handle, (const float * const *)input, input_elements, ninputs, output, output_elements, noutputs);
     if(err==-1)
-    {
-        fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
         return -1;
-    }
     if(input[0])
         free(input[0]);
     if(input[1])

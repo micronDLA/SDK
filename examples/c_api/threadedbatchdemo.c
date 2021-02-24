@@ -15,10 +15,7 @@ Use multiple thread and batch of inputs
 
 static void print_help()
 {
-    printf("Syntax: simpledemo\n");
-    printf("\t-i <directory with image files>\n");
-    printf("\t-c <categories file>\t-b <bitfile>\t-s <microndla.bin file>\n");
-    printf("\t-f <number of FPGAs to use>\n\t-C <number of clusters>\n");
+    printf("Syntax: threadedbatchdemo -i <directory with image files> [-c <categories file>] [-s <microndla.bin file>] [-r <inW>x<inH>]\n");
 }
 
 #define BYTE2FLOAT 0.003921568f // 1/255
@@ -37,9 +34,9 @@ void rgb2float_cmajor(float *dst, const unsigned char *src, int width, int heigh
 
 float *sortdata;
 uint64_t outsize = 0;
+int batchsize;
 void *sf_handle;
 const char *categ = "./categories.txt";
-int nclus = 1, nfpga = 1;
 
 struct info
 {
@@ -61,8 +58,7 @@ void *getresults_thread(void *dummy);
 
 int main(int argc, char **argv)
 {
-    const char *imagesdir = "images";
-    const char *f_bitfile = "";
+    const char *imagesdir = 0;
     const char *outbin = "save.bin";
     int i, netwidth = 224, netheight = 224;
     pthread_t tid;
@@ -74,28 +70,12 @@ int main(int argc, char **argv)
     // start argc ------------------------
     for(i = 1; i < argc; i++) {
         if(argv[i][0] != '-')
-            continue;
-        switch(argv[i][1])
+            imagesdir = argv[i];
+        else switch(argv[i][1])
         {
-        case 'b': // bitfile
-            if(i+1 < argc)
-                f_bitfile = argv[++i];
-            break;
-        case 'f':// number of fpgas
-            if(i+1 < argc)
-                nfpga = atoi(argv[++i]);
-            break;
-        case 'i':// imagesdir
-            if(i+1 < argc)
-                imagesdir = argv[++i];
-            break;
         case 'r':// resolution WxH
             if(i+1 < argc)
                 sscanf(argv[++i], "%dx%d", &netwidth, &netheight);
-            break;
-        case 'C':// number clusters
-            if(i+1 < argc)
-                nclus = atoi(argv[++i]);
             break;
         case 'c':// categories
             if(i+1 < argc)
@@ -110,7 +90,7 @@ int main(int argc, char **argv)
             return -1;
         }
     }
-    if(argc==1)
+    if(!imagesdir)
     {
         print_help();
         return -1;
@@ -121,6 +101,16 @@ int main(int argc, char **argv)
     unsigned *noutdims;
     uint64_t **outshapes;
     sf_handle = ie_init(NULL, outbin, &noutputs, &noutdims, &outshapes, 0);
+    if(noutputs != 1)
+    {
+        fprintf(stderr, "This example can manage only one output\n");
+        return -1;
+    }
+    batchsize = outshapes[0][0];
+    printf("batchsize is %d\n", batchsize);
+    outsize = 1;
+    for(unsigned i = 1; i < noutdims[0]; i++) // Skip first dimension, batchsize has been considered separately
+        outsize *= outshapes[0][i];
     pthread_create(&tid, 0, getresults_thread, 0);
     dir = opendir(imagesdir);
     if (!dir)
@@ -149,34 +139,28 @@ int main(int argc, char **argv)
         if(!batchidx)
         {
             info = (struct info *)calloc(1, sizeof(struct info));
-            info->input = (float *)calloc(1, sizeof(float) * 3 * netwidth * netheight * nclus * nfpga);
+            info->input = (float *)calloc(1, sizeof(float) * 3 * netwidth * netheight * batchsize);
         }
         rgb2float_cmajor(info->input + 3 * netwidth * netheight * batchidx, resized, netwidth, netheight, 3, netwidth * 3, mean, std);
         info->filename[batchidx] = strdup(de->d_name);
         free(resized);
         batchidx++;
-        if(batchidx == nclus * nfpga)
+        if(batchidx == batchsize)
         {
-            uint64_t inputsize = netwidth * netheight * 3 * nclus * nfpga;
+            uint64_t inputsize = netwidth * netheight * 3 * batchsize;
             int err = ie_putinput(sf_handle, (const float * const *)&info->input, &inputsize, ninputs, info);
             if(err==-1)
-            {
-                fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
                 return -1;
-            }
             batchidx = 0;
         }
     }
     if(batchidx)
     {
         // Process what left
-        uint64_t inputsize = netwidth * netheight * 3 * nclus * nfpga;
+        uint64_t inputsize = netwidth * netheight * 3 * batchsize;
         int err = ie_putinput(sf_handle, (const float * const *)&info->input, &inputsize, ninputs, info);
         if(err==-1)
-        {
-            fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
             return -1;
-        }
     }
     // Notify we finished
     ie_putinput(sf_handle, 0, 0, ninputs, 0);
@@ -206,22 +190,19 @@ void *getresults_thread(void *dummy)
         }
         fclose(fp);
     }
-    float *output = (float*) malloc(outsize * sizeof(float) * nclus * nfpga);
+    float *output = (float*) malloc(outsize * sizeof(float) * batchsize);
     for (;;)
     {
         struct info *info;
-        uint64_t totoutsize = outsize * nclus * nfpga;
+        uint64_t totoutsize = outsize * batchsize;
         unsigned noutputs = 1;
         int err = ie_getresult(sf_handle, &output, &totoutsize, noutputs, (void **)&info);
         if(err==-1)
-        {
-            fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
             exit(-1);
-        }
         if (!info) // We sent no info to notify that we finished
             break;
         int batchidx;
-        for(batchidx = 0; batchidx < nclus * nfpga && info->filename[batchidx]; batchidx++)
+        for(batchidx = 0; batchidx < batchsize && info->filename[batchidx]; batchidx++)
         {
             printf("-------------- %s --------------\n", info->filename[batchidx]);
             int* idxs = (int *)malloc(sizeof(int) * outsize);

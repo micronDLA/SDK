@@ -10,10 +10,7 @@ Run simple object classification on Micron DLA
 
 static void print_help()
 {
-    printf("Syntax: simpledemo\n");
-    printf("\t-i <image file>\n");
-    printf("\t-c <categories file>\n\t-b <bitfile>\n\t-s <microndla.bin file>\n");
-    printf("\t-f <number of FPGAs to use>\n\t-C <number of clusters>\n");
+    printf("Syntax: simpledemo <image file>[-c <categories file>] [-s <microndla.bin file>]\n");
 }
 
 #define BYTE2FLOAT 0.003921568f // 1/255
@@ -47,10 +44,7 @@ int main(int argc, char **argv)
 {
     const char *image = "./dog224.jpg";//input image
     const char *categ = "./categories.txt";//categories list
-    const char *f_bitfile = "";//FGPA bitfile with Micron DLA inference engine
     const char *outbin = "save.bin";//file with microndla inference engine instructions
-    int nfpga = 1;
-    int nclus = 1;
     int i;
 
     unsigned *noutdims;
@@ -58,25 +52,9 @@ int main(int argc, char **argv)
     //program arguments ------------------------
     for(i = 1; i < argc; i++) {
         if(argv[i][0] != '-')
-            continue;
-        switch(argv[i][1])
+            image = argv[i];
+        else switch(argv[i][1])
         {
-        case 'b': // bitfile
-            if(i+1 < argc)
-                f_bitfile = argv[++i];
-            break;
-        case 'f':// number of fpgas
-            if(i+1 < argc)
-                nfpga = atoi(argv[++i]);
-            break;
-        case 'i':// image
-            if(i+1 < argc)
-                image = argv[++i];
-            break;
-        case 'C':// number clusters
-            if(i+1 < argc)
-                nclus = atoi(argv[++i]);
-            break;
         case 'c':// categories
             if(i+1 < argc)
                 categ = argv[++i];
@@ -96,7 +74,7 @@ int main(int argc, char **argv)
         return -1;
     }
 // initialize FPGA: load hardware and load instructions into memory
-    printf("Initialize Micron DLA inference engine FPGA\n");
+    printf("Initializing Micron DLA inference engine\n");
     int noutputs;
     void* sf_handle = ie_init(NULL, outbin, &noutputs, &noutdims, &outshapes, 0);
     unsigned ninputs = 1;
@@ -123,7 +101,6 @@ int main(int argc, char **argv)
         fprintf(stderr, "Image is NULL\n");
         exit(1);
     }
-    input_elements *= nfpga*nclus;
     uint64_t output_elements;
     float *output;
     uint64_t outsz = 1;
@@ -134,13 +111,10 @@ int main(int argc, char **argv)
     output = (float*) malloc(output_elements*sizeof(float));
     int err = 0;
 // run inference
-    printf("Run Micron DLA inference engine\n");
+    printf("Running Micron DLA inference engine\n");
     err = ie_run(sf_handle, (const float * const *)&input, &input_elements, ninputs, &output, &output_elements, noutputs);
     if(err==-1)
-    {
-        fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
         return -1;
-    }
     if(input)
         free(input);
 //read categories list

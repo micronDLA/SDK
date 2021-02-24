@@ -18,7 +18,6 @@ _('modelpath', type=str, default='', help='Path to the model file')
 _('imagesdir', type=str, default='', help='A directory name with input files')
 _('-r', '--res', type=int, default=[3, 224, 224], nargs='+', help='expected image size (planes, height, width)')
 _('-c', '--categories', type=str, default='', help='Categories file')
-_('-l','--load', type=str, default='', help='Load bitfile')
 
 
 def GetResult():

@@ -14,9 +14,7 @@ Example to run Micron DLA using put and get_result
 
 static void print_help()
 {
-    printf("Syntax: simpledemo\n");
-    printf("\t-i <directory with image files>\n");
-    printf("\t-c <categories file>\t-b <bitfile>\t-s <microndla.bin file>\n");
+    printf("Syntax: interleavingdemo -i <directory with image files> [-c <categories file>] [-s <microndla.bin file>] [-r <inW>x<inH>]\n");
 }
 
 #define BYTE2FLOAT 0.003921568f // 1/255
@@ -60,25 +58,16 @@ int sortcmp(const void *a, const void *b)
 
 int main(int argc, char **argv)
 {
-    const char *imagesdir = "images";
-    const char *f_bitfile = "";
+    const char *imagesdir = 0;
     const char *outbin = "save.bin";
     int i, netwidth = 224, netheight = 224, nimages = 0;
 
     // start argc ------------------------
     for(i = 1; i < argc; i++) {
         if(argv[i][0] != '-')
-            continue;
-        switch(argv[i][1])
+            imagesdir = argv[i];
+        else switch(argv[i][1])
         {
-        case 'b': // bitfile
-            if(i+1 < argc)
-                f_bitfile = argv[++i];
-            break;
-        case 'i':// imagesdir
-            if(i+1 < argc)
-                imagesdir = argv[++i];
-            break;
         case 'r':// resolution WxH
             if(i+1 < argc)
                 sscanf(argv[++i], "%dx%d", &netwidth, &netheight);
@@ -96,7 +85,7 @@ int main(int argc, char **argv)
             return -1;
         }
     }
-    if(argc==1)
+    if(!imagesdir)
     {
         print_help();
         return -1;
@@ -106,6 +95,14 @@ int main(int argc, char **argv)
     unsigned *noutdims;
     uint64_t **outshapes;
     sf_handle = ie_init(NULL, outbin, &noutputs, &noutdims, &outshapes, 0);
+    if(noutputs != 1)
+    {
+        fprintf(stderr, "This example can manage only one output\n");
+        return -1;
+    }
+    outsize = 1;
+    for(unsigned i = 0; i < noutdims[0]; i++)
+        outsize *= outshapes[0][i];
 
     categories = (char **)calloc(outsize, sizeof(char *));
     FILE *fp = fopen(categ, "r");
@@ -159,10 +156,7 @@ int main(int argc, char **argv)
         info->filename = strdup(de->d_name);
         int err = ie_putinput(sf_handle, (const float * const *)&input, &input_elements, ninputs, info);
         if(err==-1)
-        {
-            fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
             return -1;
-        }
         nimages++;
         if(nimages > 1)
             getresult();
@@ -188,10 +182,7 @@ void getresult()
     unsigned noutputs = 1;
     int err = ie_getresult(sf_handle, &output, &outsize, noutputs, (void **)&info);
     if(err==-1)
-    {
-        fprintf(stderr,"Sorry an error occured, please contact Micron for help. We will try to solve it asap\n");
         exit(-1);
-    }
     printf("-------------- %s --------------\n", info->filename);
     int* idxs = (int *)malloc(sizeof(int) * outsize);
     for(i = 0; i < outsize; i++)

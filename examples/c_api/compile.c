@@ -7,44 +7,29 @@ Compile a model onnx file and generate instructions
 #include <string.h>
 #include "../../api.h"
 
-static void print_help(){
-    printf("Syntax: compile\n");
-    printf("\t-m <model file>\n\t-i <input image sizes>\n\t-o <output file>\n");
-    printf("\t-f <number of FPGAs to use>\n\t-C <number of clusters to use>\n");
+static void print_help()
+{
+    printf("Syntax: compile <model file> [-i <input image sizes>] [-o <output file> (default save.bin)] [-f <number of FPGAs] [-C <number of clusters>]\n");
 }
 
 int main(int argc, char **argv)
 {
-    const char *modelpath = "./alexnet.onnx";
-    const char *image = "224x224x3";//Width x Height x Channels
+    const char *modelpath = 0;
+    const char *inshapes = 0;
     const char *outbin = "save.bin";
-    int nfpga = 1;
-    int nclus = 1;
+    char s[300];
+    int nclus = 1, nfpgas = 1;
     int i;
     // arguments of this program ------------------------
-    for(i = 1; i < argc; i++) {
+    for(i = 1; i < argc; i++)
+    {
         if(argv[i][0] != '-')
-            continue;
-        switch(argv[i][1])
+            modelpath = argv[i];
+        else switch(argv[i][1])
         {
-        case 'f':// number of fpgas
+        case 'i':// input shapes
             if(i+1 < argc){
-                nfpga = atoi(argv[++i]);
-            }
-            break;
-        case 'm':// modelpath
-            if(i+1 < argc){
-                modelpath = argv[++i];
-            }
-            break;
-        case 'i':// modelpath
-            if(i+1 < argc){
-                image = argv[++i];
-            }
-            break;
-        case 'C':// number clusters
-            if(i+1 < argc){
-                nclus = atoi(argv[++i]);
+                inshapes = argv[++i];
             }
             break;
         case 'o':// output file
@@ -52,13 +37,22 @@ int main(int argc, char **argv)
                 outbin = argv[++i];
             }
             break;
+        case 'C':// number clusters
+            if(i+1 < argc)
+                nclus = atoi(argv[++i]);
+            break;
+        case 'f':// categories
+            if(i+1 < argc)
+                nfpgas = atoi(argv[++i]);
+            break;
         default:
             print_help();
             return -1;
             break;
         }
     }
-    if(argc==1){
+    if(!modelpath)
+    {
         print_help();
         return -1;
     }
@@ -67,9 +61,13 @@ int main(int argc, char **argv)
     uint64_t **outshapes;
     
     void* sf_handle = ie_safecreate();
-    ie_compile(sf_handle, modelpath, outbin, 0, &noutputs, &noutdims, &outshapes);
+    sprintf(s, "%d", nclus);
+    ie_setflag(sf_handle, "nclusters", s);
+    sprintf(s, "%d", nfpgas);
+    ie_setflag(sf_handle, "nfpgas", s);
+    ie_compile(sf_handle, modelpath, outbin, inshapes, &noutputs, &noutdims, &outshapes);
     ie_free(sf_handle);
-    printf("\ndone\n");
+    printf("done\n");
     return 0;
 }
 
