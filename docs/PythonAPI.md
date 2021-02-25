@@ -17,7 +17,7 @@ Compiles a network and produce .bin file with everything that is needed to execu
 
 **samples**: a list of images in numpy float32 format used to choose the proper quantization for variable-fixed-point
 
-***Return value:*** Number of results to be returned by the network
+***Return value:*** List of the output nodes names returned by the network
 
 ******
 ## Init
@@ -68,11 +68,7 @@ None
 
 Get an output from a buffer. If the blocking flag was set then it will wait for Micron DLA hardware.
 
-***Parameters:***
-
-**Result** output tensor of the model as a preallocated numpy array of type float32
-
-***Return value:***:  The `userobj` that was associated with this
+***Return value:***:  Output tensor or list of output tensors and the `userobj` that was associated with this
 buffer in the PutInput function call.
 
 
@@ -94,7 +90,7 @@ Put an input into a buffer and start Micron DLA hardware.
 
 ***Parameters:***
 
-**Image** input data as a numpy array of type float32
+**Image** input data as a [list of] numpy array of type float32
 
 **userobj** user defined object to keep track of the given input
 
@@ -108,9 +104,9 @@ Runs a single inference on Micron DLA hardware.
 
 ***Parameters:***
 
-**Image** input data as a numpy array of type float32
+**Image** input data as a [list of] numpy array of type float32
 
-***Return Result*** output tensor of the model
+***Return Result*** output tensor or list of output tensors of the model
 
 ******
 ## Run\_sw
@@ -119,9 +115,9 @@ Runs a single inference on the Micron DLA hardware simulator.
 
 ***Parameters:***
 
-**Image** input data as a numpy array of type float32
+**Image** input data as a [list of] numpy array of type float32
 
-***Return Result*** output tensor of the model
+***Return Result*** output tensor or list of output tensors of the model
 
 ******
 ## Run\_th
@@ -130,9 +126,9 @@ Runs a single inference using thnets.
 
 ***Parameters:***
 
-**Image** input data as a numpy array of type float32
+**Image** input data as a [list of] numpy array of type float32
 
-***Return Result*** output tensor of the model
+***Return Result*** output tensor or list of output tensors of the model
 
 
 

@@ -14,165 +14,153 @@ These options are the same for both the C API and the Python API.
 ## SetFlag
 
 *****
-The 'debug' and 'options' flags require both the keyword and the option code
-to be passed to SetFlag.
 
-- '**debug**': configures debug options of the SDK
+**debug**: set what outputs the API will print during its execution, a string containing zero or more of the
+following characters:
   * 'b': print basic messages
   * 'w': print warnings
   * 'c': print memory allocation addresses in external memory
+  * 'C': print workload distribution accross clusters
   * 'n': print list of layers
   * 's': print partitioning strategy
+  * 'S': print info about DLA instructions run by the simulator (only with fpgaid 'sim')
   * 'p': print list of operations
-  * 'd': print accelerator's debug registers
-  * 'r': print wrong results only. This needs to be used with
-         `SetFlag('options', 's')`.
-  * 'R': print all results returned by the accelerator. This needs to be used
-         with `SetFlag('options', 's')`.
-  * 'i': print accelerator instructions into a txt file
-  * 'I': print code generation instructions
+  * 'd': print accelerator debug registers
+  * 'a': print memory access pattern. All load/store lengths and addresses
+  * 'r': print wrong results only. This needs to be used with SetFlag('options', 's')`.
+  * 'R': print all results returned by the accelerator. This needs to be used with `SetFlag('options', 's')`.
+  * 'i': dump accelerator instructions into instr<card>_<clus>_<programidx>.txt
+  * 'I': print intermediate code instructions
   * 't': print dynamic instruction trace
   * 'T': print verbose dynamic instruction trace
   * 'o': print thnets debuging
+  * 'Q': print variable fixpoint selected of each layer
+  * 'J': dump the partitioning information into partition.json 
 
-- '**options**': configures compile options of the SDK
-  * 'v': compile for varfp hardware, if hardware is not present and thus not auto-detected
-  * 'V': enable variable fix-point precision. Default precision is Q8.8
-  * 'H': run linear on DLA. Same as `SetFlag('hwlinear', '1')`
-  * 'M': enable multi-MM vertical padding optimization
-  * 'C': no batch mode for multiple clusters. Same as `SetFlag('nobatch', '1')`
-  * 'p': pipeline execution mode across multiple clusters
-  * 'B': sandbox mode. Reads DLA instruction from a text file.
-  * 'k': try kernel_stationary optimization if possible. [[Paper reference]](https://www.emc2-workshop.com/assets/docs/asplos-18/paper5.pdf).
-         Same as `SetFlag('convalgo', '1')`
-  * 'r': try kernel_stationary option if possible.  maxpool will reshape output
-  * 'K': try kernel_stationary option if possible, with yPxp ordering.
-         maxpool will reshape output
-  * 'f': force one of kernel stationary modes above
-  * 'd': run tests with deterministic input and weights instead of random
-  * 'P': progressive load instead of DLA banks switching
-  * 'w': wait one second for hardware to finish instead of polling the DLA
-  * 's': run the software version for comparing the accelerator's output
-  * 'S': do not run DLA. Only run software version
+**options**: configures compile options of the SDK, a string containing zero or more of the following characters:
+  * 'v': compile for varfp hardware, if hardware is not present and thus not auto-detected, same as has_varfp=1
+  * 'V': enable variable fix-point precision. Default precision is Q8.8, same as varfp=1
+  * 'M': enable multi-MM vertical padding optimization, same as multicu_vpadding=1
+  * 'C': no batch mode for multiple clusters, same as clusterbatchmode=1
+  * 'B': sandbox mode. Reads DLA instruction from a text file, same as sandbox=1
+  * 'k': try kernel_stationary optimization if possible, same as convalgo=1 [[Paper reference]](https://www.emc2-workshop.com/assets/docs/asplos-18/paper5.pdf)
+  * 'r': try kernel_stationary option if possible, maxpool will reshape output, same as convalgo=2
+  * 'K': try kernel_stationary option if possible, with yPxp ordering (instead of Pyxp), maxpool will reshape output, same as convalgo=3
+  * 'f': force one of kernel stationary modes above, same as force_algo=1
+  * 'd': run tests with deterministic input and weights instead of random, same as rand=0
+  * 'P': progressive load instead of DLA banks switching, same as progload=1
+  * 'w': wait one second for hardware to finish instead of polling the DLA, same as hwwait=1
+  * 's': run the software version for comparing the accelerator output, same as comparesw=1
+  * 'S': do not run DLA. Only run software version, same as runsw=1
   * 'Q': do not run DLA. Only run software version using float precision and
          save quantization metrics: variable fix-point for inputs, intermediate
-	 activations and outputs. Same as `SetFlag('quantize', '2')`
-  * 'i': measure time to load the initial data into DLA
+         activations and outputs, same as runsw=2
+  * 'i': measure time to load the initial data into DLA, same as initmeasure=1
   * 'L': profile each layer separately: run each layer in the model individually
-         (measure execution time of each layer). This option only works with Run function
+         (measure execution time of each layer). This option only works with the Run function, same as breaklayer=2
   * 'z': profile each layer separately: run entire model and output each
-         layer's output (only to check output of each layer)
-  * 't': save input and output of the inference in a file
-  * 'T': create two programs, one for each bank instead of modifying addresses
-         during execution. This is used when data transfer to external memory
-         is a bottleneck. Same as `SetFlag('two_programs', '1')`
-  * 'o': buffers are switched through offset given to program as a parameter, same as SetFlag('parametric_offset', '1')
+         layer's output (only to check output of each layer), same as breaklayer=1
+  * 't': save input and output of the inference in a file, same as temporary_save=1
+  * 'm': MV level batch (batchsize must be a multiple of 4), same as mvbatch=1
   * 'a': compile, run and check which option works better. loop{ compile, run,
-         save_best_choice }. Same as `SetFlag('profile', '1')`
-  * 'm': MV level batch (batchsize must be a multiple of 4), same as SetFlag('mvbatch', '1')
-  * 'x': enable prune outplanes if they are zero
-  * 'n': disable computes optimizations (useful for debugging)
-  * 'l': merge computes creating loops
+         save_best_choice }, same as compile_profile=1
+  * 'x': enable prune outplanes if they are zero, same as prune=1
+  * 'n': disable computes optimizations (useful for debugging), same as optimize_computes=0
+  * 'l': merge computes creating loops, same as gen_loops=1
 
-*****
-The following are flags that can be set with `SetFlag` without the need of a
-keyword or code.
+
+**reset**: reset flags to the default values
 
 **bitfile**: immediately upload the given bitfile
 
-**clustersbatchmode**: can be 0 or 1, default is 0. 1 will spread the input to multiple
-clusters.  
-Example: if nobatch is 1 and numclus is 2, one image is processed using 2
-clusters.   If nobatch is 0 and numclus is 2, then each cluster will process
-one image, so two images will be processed in parallel.
-Do not set nobatch to 1 when using one cluster (numclus=1).
+**fpgaid**: FPGA to use, 510, 511, 852 or sim, default is -1, which will use the first FPGA found
 
-**hwlinear**: can be 0 or 1, default is 1. 1 will enable the linear layer in
-hardware. This will increase performance, but reduce precision.
+**firstcluster**: First cluster to use
 
-**convalgo**: can be 0, 1 or 2, default is 0. 1 and 2 set different computation
-orders for performing operations, which could lead to better performance.
+**nclusters**: Number of clusters to use
 
-**paddingalgo**: can be 0 or 1, default is 0. 1 will run padding optimization
-on the convolution layers.
+**nfpgas**: Number of FPGAs to use
 
-**depthconvalgo**: depth convolution algorithm: 0 add reshaping layer, 1 pixel-by-pixel reshaping,
-2 row-by-row reshaping inside compute, 3 create reshaping object before store object (default).
+**imgs_per_cluster**: Per-cluster batch size (number of inputs processed by each cluster)
 
-**blockingmode**: default is 1.
-If set to 1, ie_getresult or GetResult will wait for hardware to finish.
-If set to 0, ie_getresult or GetResult will return immediately with an error if
-hardware has not finished yet.
+**clustersbatchmode**: If 1, multiple clusters process different parts of the same input (no clusters-level batching)
 
-**max_instr**: set a bound for the maximum number of Micron DLA hardware
-instructions generated. If this option is set, then instructions will be
-placed before data. Note: If the amount of data (input, output and weights)
-stored in memory exceeds 4GB, then this option must be set.
+**bufsmode**: 0=one program for each of the two buffers, 1=parametric offset, 2=program patching at each run
 
-**remove**: remove a number of layers in the beginning of the model.
+**comparesw**: Compare DLA output to reference software output
 
-**two_programs**: create a separate DLA program for each bank instead of modifying
-addresses during execution, will increase memory consumption in the DLA, but increase speed
+**progload**: Progressive loading of maps instead of banks switching
 
-**parametric_offset**: use a parameter to the DLA program with an offset for output and input,
-will increase speed without increasing memory consumption
+**convalgo**: Convolution algorithm: 0 non-kernel stationary (default), 1 Pyxp, 2 Pyxp maxpool-reshapes, 3 yPxp maxpool-reshapes
 
-**no_rearrange**: skip output rearrangement of data
+**force_algo**: Force convolution kernel stationary mode instead of leaving it to automatic choice
 
-**comparesw**: compare the output of the DLA with an internal software reference implementation
+**compile_profile**: True: loop{compile, run, save_best_choice} False: compile (only)
 
-**imgs_per_cluster**: images processed by each cluster (batch size for one
-cluster).
+**depthconvalgo**: Depth-convolution algorithm: 0 add reshaping layer, 1 pixel-by-pixel reshaping, 2 row-by-row reshaping inside compute, 3 create reshaping object before store object
 
-**addr_off**: set address offset for the memory map.
+**gen_loops**: Generate hardware loops to group similar operations, when possible
 
-**mvbatch**: MV level batch (batchsize must be a multiple of 4), i.e. MV units will be used to generate one image each
+**multicu_vpadding**: Vertical padding optimization for convolutions
 
-**profile**: compile, run and check which option works better. loop{ compile,
-run, save_best_choice }
+**optimize_computes**: Optimize compute objects by applying double buffering, removing double loads, etc... useful to disable for simpler debugging, default 1
 
-**quantize**: do not run DLA. Only run software version using float precision
-and save quantization metrics: variable fix-point for inputs, intermediate
-activations and outputs.
+**prune**: Prune output planes
 
-**fpgaid**: Select which FPGA to use: 510, 511, 852, or sim. default -1 use first
-fpga found.
+**blockingmode**: Blocking mode API operation, putinput/getresult will wait instead of failing when the device is busy
 
-**seed**: seed used by srand to give control of rand calls and allow for reproducibility.
+**mvbatch**: Distribute inputs among MVs, imgs_per_cluster must be a multiple of 4
 
-**nlayers**: run only this number of layers in the model.
+**int8mode**: Select int8 mode: 0=no, 1=int8 hw, 2=auto, 3=16->8, 4=8->16
 
-**remove**: remove this number of layers at the beginning of the model.
+**hwlinear**: Run linear layers in hardware (default True)
 
-**ignore_transpose**: if 1 (default), Transose layers at the beginning and end of the model will be ignored,
-thus always accepting and generating plane-major image data
+**addroff**: Set starting address on DLA
 
-**help**: print the available SetFlag options, if the given value is 'print_opt', it will print the currently set flags
+**runsw**: 0: Standard operation, 1: Run reference software instead of DLA, 2: Run reference software in floating-point mode
+
+**seed**: Set seed for random values to get deterministic results at each run using random values
+
+**rand**: Use random values for input, weights and bias for random tests, default True
+
+**nlayers**: Number of layers to parse (-1=all, default)
+
+**lremove**: Remove first N layers
+
+**dumpdir**: Dump all writes to DLA memory to this directory
+
+**has_varfp**: Compile for variable-fixed-point hardware
+
+**varfp**: Use variable fixed-point weights if 1
+
+**sandbox**: Read code from instr<card>_<clus>.txt
+
+**breaklayer**: 0 (normal operation), 1 run entire model, but output all intermediate results, 2 run each layer individually
+
+**initmeasure**: Measure the initial loading time
+
+**hwwait**: Wait 1 second after inference start instead of polling the hardware to detect the end of inference
+
+**max_instruction_size**: Max instructions memory size
+
+**temporary_save**: Cache testing data on disk
+
+**no_rearrange**: Skip output rearrangement
 
 
 *****
 ## GetInfo
 
-Gets information regarding some SDK options.
-
-There is no keyword or code for GetInfo. It only needs one of the following
-flag names.
+Gets information from the DLA or return flags that have been set with SetFlag; additionally to the flags
+specified above, these names can be passed:
 
 **hwtime**: returns the number of milliseconds taken by the Micron DLA hardware
 for the processing only, returned as a float.
 
-**numcluster**: the number of clusters to be used, returned as an int.
-
-**numfpga**: the number of FPGAs to be used, returned as an int.
-
-**numbatch**: the number of batches to be processed, returned as an int.
-
-**addr_off**: get the last address of the memory map, returned as an int.
+**addroff**: get the last address of the memory map, returned as an int64.
 Used to attach a new memory map using this addr_off.
 
-**busy_comp**: returns if DLA is busy processing an input buffer.
-
-**freq**: the Micron DLA hardware's frequency, returned as an int.
+**freq**: the Micron DLA hardware frequency, returned as an int.
 
 **maxcluster**: the maximum number of clusters in Micron DLA hardware,
 returned as an int.
@@ -187,8 +175,20 @@ returned as an int.
 
 **hwbuild**: the DLA hardware build, return as a string.
 
-**outshape**: output the shape of the output tensor in width, height, planes and batch
+**hwdebug**: print the DLA registers.
 
-**help**: print the available GetInfo options
+**temperature**: print the DLA temperature in Celsius, returned as a float.
 
+**busy_comp**: returns if DLA is busy processing an input buffer, returned as an int.
 
+**inshapes**: semi-colon separated input shapes in the format size0xsize1...sizeN
+
+**outshapes**: semi-colon separated output shapes in the format size0xsize1...sizeN
+
+**innames**: semi-colon separated inputs names
+
+**outnames**: semi-colon separated outputs names
+
+**print_flags**: print the currently set flags
+
+**help**: print the available SetFlag and GetInfo options
