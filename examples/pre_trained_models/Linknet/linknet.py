@@ -52,7 +52,6 @@ class LinknetDLA:
         and running that image on all clusters
         """
 
-        print('{:-<80}'.format(''))
         print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_C))
         ################################################################################
         # Initialize Micron DLA
@@ -113,14 +112,15 @@ class LinknetDLA:
         # Calculate prediction and colorized segemented output
         # Overlay the output on the input image and save it as an image
 
+        x = x[0]            # Predict output of only the first image of the batch
         prediction = np.argmax(x, axis=0)
 
         pred_map = np.zeros((x.shape[1], x.shape[2], 3), dtype=np.uint8)
-        for k in range(x.shape[0]):                            # Colorize detected classes based on network prediction
+        for k in range(x.shape[0]):                                 # Colorize detected classes based on network prediction
             pred_map[prediction == k] = color_map[k]
 
         pred_map_BGR = cv2.cvtColor(pred_map, cv2.COLOR_RGB2BGR)    # Convert RGB to BGR for OpenCV
         overlay = cv2.addWeighted(input_img, 0.5, pred_map_BGR, 0.5, 0)
         cv2.imwrite('linknet_output.png', overlay)
         print('{}{}{} linknet_output.png !!!'.format(CP_G, 'Colorized prediction overlayed on input image and saved as:', CP_C))
-        print('{:-<80}\n'.format(''))
+        print('{:-<80}'.format(''))

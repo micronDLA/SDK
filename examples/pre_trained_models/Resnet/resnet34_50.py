@@ -27,7 +27,6 @@ class Resnet34_50DLA:
         and running that image on all clusters
         """
 
-        print('{:-<80}'.format(''))
         print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_C))
         ################################################################################
         # Initialize 2 Micron DLA
@@ -37,7 +36,7 @@ class Resnet34_50DLA:
         # Run the network in batch mode (one image on all clusters)
         self.dla1.SetFlag('clustersbatchmode', '0')
         self.dla2.SetFlag('clustersbatchmode', '0')
-        
+
         self.batch,self.height, self.width, self.channels = input_img.shape
         self.dla.SetFlag('nfpgas', str(numfpga))
         self.dla2.SetFlag('nclusters', str(numclus))
@@ -51,10 +50,10 @@ class Resnet34_50DLA:
         # Otherwise bitfile is an empty string
         self.dla2.Init('save2.bin')
         self.dla1.Init('save.bin')
-        
+
         print('2. {}{}{}!!!'.format(CP_B, 'Finished loading bitfile on FPGA', CP_C))
         print('\n{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_C))
-        print('{:-<80}\n'.format(''))
+        print('{:-<80}'.format(''))
 
     def __call__(self, input_img1,input_img2):
         return self.forward(input_img1,input_img2)
@@ -75,15 +74,15 @@ class Resnet34_50DLA:
         img1 = self.normalize(img1)
         img1 = img1.transpose(2, 0, 1) # Change image planes from HWC to CHW
 
-        x1 = np.ascontiguousarray(img1)            
+        x1 = np.ascontiguousarray(img1)
 
         # Normalize and transpose image 2
         img2 = input_img2.astype(np.float32) / 255.0
         img2 = self.normalize(img2)
         img2 = img2.transpose(2, 0, 1) # Change image planes from HWC to CHW
 
-        x2 = np.ascontiguousarray(img2)            
-        
+        x2 = np.ascontiguousarray(img2)
+
         dla_output1 = self.dla1.Run(x1)
         y1 = dla_output1
         dla_output2 = self.dla2.Run(x2)

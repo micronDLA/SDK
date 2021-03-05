@@ -34,6 +34,7 @@ args = parser.parse_args()
 def main():
     print('{:=<80}'.format(''))
     print('{}Micron{} DLA Examples{}'.format(CP_B, CP_Y, CP_C))
+    print('{:-<80}'.format(''))
 
     input_img = cv2.imread(args.image)                                  # Load input image
 
@@ -42,7 +43,7 @@ def main():
     if args.model == 'linknet':
         from Linknet.linknet import LinknetDLA
 
-        linknet = LinknetDLA(input_img, 20, args.model_path) # Intialize MDLA
+        linknet = LinknetDLA(input_img, 20, args.model_path)            # Intialize MDLA
         orig_img = input_img.copy()
         input_img = linknet.preprocess(input_img)                       # Input preprocessing required by LinkNet
         model_output = linknet(input_img)                               # Model forward pass
@@ -55,10 +56,9 @@ def main():
         from SuperResolution.utils import preprocess, postprocess
 
         superresolution = SuperResolutionDLA(input_img, args.model_path)
-        input_img, img_cr, img_cb = preprocess(input_img)  # extract grayscale channel and normalize it
+        input_img, img_cr, img_cb = preprocess(input_img)               # extract grayscale channel and normalize it
         model_output = superresolution(input_img)
-        img = postprocess(model_output, img_cr, img_cb)  # merge model output with Cr and Cb channels
-        cv2.imwrite('example_output.jpg', img)
+        img = postprocess(model_output, img_cr, img_cb)                 # merge model output with Cr and Cb channels
 
         del superresolution
 
@@ -91,9 +91,12 @@ def main():
         retinanet.display(input_img, boxes, lbls, scores, scales)
 
         del retinanet
-    
+
     else:
         print('{}Invalid model selection{}!!!'.format(CP_R, CP_C))
+
+    print('{}Example run successful{}.'.format(CP_G, CP_C))
+    print('{:=<80}\n'.format(''))
 
 
 if __name__ == "__main__":

@@ -24,10 +24,9 @@ class Resnet34_18DLA:
     def __init__(self, input_img, model_path1, model_path2, numfpga, numclus):
         """
         In this example MDLA will be capable of taking multiple input images
-        and running that images through 2 models on 1 fpga 
+        and running that images through 2 models on 1 fpga
         """
 
-        print('{:-<80}'.format(''))
         print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_C))
 
         # Initialize 1 Micron DLA
@@ -46,7 +45,7 @@ class Resnet34_18DLA:
         self.dla.Loadmulti(('save.bin', 'save2.bin'))
 
         print('\n1. {}{}{}!!!'.format(CP_B, 'Successfully generated binaries for MDLA', CP_C))
-        
+
         # Send the generated instructions to MDLA
         # Send the bitfile to the FPGA only during the first run
         # Otherwise bitfile is an empty string
@@ -54,10 +53,10 @@ class Resnet34_18DLA:
         
         print('2. {}{}{}!!!'.format(CP_B, 'Finished loading bitfile on FPGA', CP_C))
         print('\n{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_C))
-        print('{:-<80}\n'.format(''))
+        print('{:-<80}'.format(''))
 
-    def __call__(self, input_img1,input_img2):
-        return self.forward(input_img1,input_img2)
+    def __call__(self, input_img1, input_img2):
+        return self.forward(input_img1, input_img2)
 
     def __del__(self):
         self.dla.Free()
@@ -74,17 +73,16 @@ class Resnet34_18DLA:
         img1 = self.normalize(img1)
         img1 = img1.transpose(2, 0, 1) # Change image planes from HWC to CHW
 
-        x1 = np.ascontiguousarray(img1)            
+        x1 = np.ascontiguousarray(img1)
 
         # Normalize and transpose image 2
         img2 = input_img2.astype(np.float32) / 255.0
         img2 = self.normalize(img2)
         img2 = img2.transpose(2, 0, 1) # Change image planes from HWC to CHW
 
-        x2 = np.ascontiguousarray(img2)            
-        
+        x2 = np.ascontiguousarray(img2)
+
         dla_output = self.dla.Run((x1, x2))
         y = dla_output
 
         return y[0], y[1]
-

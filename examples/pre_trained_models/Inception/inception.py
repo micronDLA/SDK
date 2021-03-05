@@ -1,6 +1,6 @@
 '''
 Example script to run network on MDLA
-Model: Inception 
+Model: Inception
 '''
 import sys
 sys.path.append("../..")
@@ -25,22 +25,21 @@ class InceptionDLA:
         and running that image on all clusters
         """
 
-        print('{:-<80}'.format(''))
         print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_C))
         # Initialize Micron DLA
         self.dla = microndla.MDLA()
         self.batch, self.height, self.width, self.channels = input_img.shape
-        
+
         # Run the network in batch mode (two images, one  on each cluster)
         image_per_cluster=self.batch/numclus
         if image_per_cluster==1:
             self.dla.SetFlag('clustersbatchmode', '0')
-        else:    
+        else:
             self.dla.SetFlag('imgs_per_cluster', str(image_per_cluster))
 
         self.dla.SetFlag('nfpgas', str(numfpga))
         self.dla.SetFlag('nclusters', str(numclus))
-        self.dla.SetFlag('debug', 'b')
+        #self.dla.SetFlag('debug', 'b')                     # Uncomment it to see detailed output from compiler
         # Compile the NN and generate instructions <save.bin> for MDLA
         self.dla.Compile(model_path, 'save.bin')
         print('\n1. {}{}{}!!!'.format(CP_B, 'Successfully generated binaries for MDLA', CP_C))
@@ -50,7 +49,7 @@ class InceptionDLA:
         self.dla.Init('save.bin')
         print('2. {}{}{}!!!'.format(CP_B, 'Finished loading bitfile on FPGA', CP_C))
         print('\n{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_C))
-        print('{:-<80}\n'.format(''))
+        print('{:-<80}'.format(''))
 
     def __call__(self, input_array):
         return self.forward(input_array)

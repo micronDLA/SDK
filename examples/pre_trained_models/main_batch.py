@@ -32,6 +32,7 @@ args = parser.parse_args()
 def main():
     print('{:=<80}'.format(''))
     print('{}Micron{} DLA Examples{}'.format(CP_B, CP_Y, CP_C))
+    print('{:-<80}'.format(''))
 
     if args.model == 'superresolution':
         from SuperResolution.superresolution import SuperResolutionDLA
@@ -90,6 +91,9 @@ def main():
 
     else:
         print('{}Invalid model selection{}!!!'.format(CP_R, CP_C))
+
+    print('{}Example run successful{}.'.format(CP_G, CP_C))
+    print('{:=<80}\n'.format(''))
 
 
 if __name__ == "__main__":
