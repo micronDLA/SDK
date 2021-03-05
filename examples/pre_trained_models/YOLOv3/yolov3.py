@@ -16,7 +16,7 @@ class YOLOv3:
         sz = "{:d}x{:d}x{:d}".format(w, h, c)
 
         if nobatch:
-            self.dla.SetFlag('nobatch', '1')
+            self.dla.SetFlag('clustersbatchmode', '1')
             assert b == 1, "Input batch should be equal to 1 for nobatch mode"
 
         self.dla.Compile(model_path, 'save.bin', numfpga)

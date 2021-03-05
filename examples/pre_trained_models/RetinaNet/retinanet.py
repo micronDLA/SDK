@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../..')
+
 import microndla
 import numpy as np
 import cv2
@@ -50,10 +53,9 @@ class RetinaNetDLA:
         self.dla.SetFlag('clustersbatchmode', '1')
 
         # Compile the NN and generate instructions <save.bin> for MDLA
-        self.dla.SetFlag('nfpgas', str(numfpga))
         self.dla.SetFlag('nclusters', str(numclus))
         self.dla.Compile(model_path, 'save.bin')
-        
+
         # Init fpga with compiled machine code
         self.dla.Init('save.bin')
 
@@ -70,7 +72,7 @@ class RetinaNetDLA:
             (1, 36,  int(h/64 +.5), int(w/64  +.5)),
             (1, 36,  int(h/128+.5), int(w/128 +.5)),
         ]
-         
+
     def __call__(self, input_img):
         return self.forward(input_img)
 
@@ -135,11 +137,11 @@ class RetinaNetDLA:
 
         # Forward pass
         dla_output = self.dla.Run(img)
-        
+
         # Post processing
         scores, boxes, lbls = detection_postprocess_np(img, dla_output[0:5], dla_output[5:10], thr=self.thr)
- 
-        return scores, boxes, lbls, scales 
+
+        return scores, boxes, lbls, scales
 
 
 

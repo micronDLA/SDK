@@ -59,10 +59,11 @@ class LinknetDLA:
         # Run the network in batch mode (one image on all clusters)
         self.dla.SetFlag('clustersbatchmode', '1')
 
-        self.dla.SetFlag('debug', 'b')
+        # TODO Uncomment this line to see detailed compiler output
+        #self.dla.SetFlag('debug', 'b')
         self.height, self.width, self.channels = input_img.shape
         # Compile the NN and generate instructions <save.bin> for MDLA
-        self.dla.Compile(model_path, 'save.bin')
+        self.dla.Compile(model_path, 'save.bin', "1x{:d}x{:d}x{:d}".format(self.channels, self.height, self.width))
         print('\n1. {}{}{}'.format(CP_B, 'Successfully generated binaries for MDLA', CP_C))
         # Send the generated instructions to MDLA
         # Send the bitfile to the FPGA only during the first run
@@ -83,7 +84,7 @@ class LinknetDLA:
 
     def forward(self, input_img):
         x = np.ascontiguousarray(input_img)            # Get contiguous array
-        # Input is expected in CHW format
+        # Input is expected in NCHW format
         dla_output = self.dla.Run(x)
         return dla_output
 

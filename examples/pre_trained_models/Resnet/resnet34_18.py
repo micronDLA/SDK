@@ -39,7 +39,7 @@ class Resnet34_18DLA:
         # Compile the NN and generate instructions <save.bin> for MDLA
         self.dla.SetFlag('nfpgas', str(numfpga))
         self.dla.SetFlag('nclusters', str(numclus))
-        self.dla.SetFlag('debug', 'b')
+        #self.dla.SetFlag('debug', 'b')             # Comment it out to see detailed output from compiler
         swnresults1 = self.dla.Compile(model_path1, 'save.bin')
         swnresults2 = self.dla.Compile(model_path2, 'save2.bin')
         self.dla.Loadmulti(('save.bin', 'save2.bin'))
@@ -49,8 +49,7 @@ class Resnet34_18DLA:
         # Send the generated instructions to MDLA
         # Send the bitfile to the FPGA only during the first run
         # Otherwise bitfile is an empty string
-        nresults = self.dla.Init('',bitfile)
-        
+
         print('2. {}{}{}!!!'.format(CP_B, 'Finished loading bitfile on FPGA', CP_C))
         print('\n{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_C))
         print('{:-<80}'.format(''))

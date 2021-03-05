@@ -11,7 +11,7 @@ class SuperResolutionDLA:
     """
     Load MDLA and run super resolution model on it
     """
-    def __init__(self, input_img, model_path, numfpga=1, numclus=1, nobatch=False):
+    def __init__(self, input_img, model_path, numclus=1, nobatch=False):
         print('Initializing MDLA')
         self.dla = microndla.MDLA()     # initialize MDLA
         if numclus == 1:                # Check if you need to run one image on whole fpga or not

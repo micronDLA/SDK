@@ -21,7 +21,7 @@ class Resnet34_50DLA:
     """
     Load MDLA and run segmentation model on it
     """
-    def __init__(self, input_img, model_path1, model_path2, numclus):
+    def __init__(self, input_img, model_path1, model_path2, numfpga, numclus):
         """
         In this example MDLA will be capable of taking an input image
         and running that image on all clusters

@@ -37,7 +37,7 @@ def main():
     if args.model == 'superresolution':
         from SuperResolution.superresolution import SuperResolutionDLA
         input_array = np.random.rand(args.numclus, 1, 224, 224)
-        superresolution = SuperResolutionDLA(input_array, args.model_path, args.numfpga, args.numclus)
+        superresolution = SuperResolutionDLA(input_array, args.model_path, args.numclus)
         model_output = superresolution(input_array)
         del superresolution
 
@@ -70,9 +70,9 @@ def main():
         # This is an example of two models (resnet34 and resnet50) applied to 2 images
         # on 2 fpga and 1 clusters
         from Resnet.resnet34_50 import Resnet34_50DLA
-        input_array = np.random.rand(1, 224, 224, 3)
+        input_array = np.random.rand(2, 224, 224, 3)
         model_path=args.model_path.split(',')
-        resnet = Resnet34_50DLA(input_array, model_path[0],model_path[1], args.numfpga, args.numclus)
+        resnet = Resnet34_50DLA(input_array, model_path[0], model_path[1], args.numfpga, args.numclus)
         model_output1, model_output2 = resnet(input_array[0], input_array[1])
         # The model was applied on 2 images; the resnet returns - one output for each image
         del resnet
@@ -82,10 +82,10 @@ def main():
         #This is an example of two models (resnet34 and resnet18) applied to 2 images
         # on 1 fpga and 1 clusters
         from Resnet.resnet34_18 import Resnet34_18DLA
-        input_array = np.random.rand(1, 224, 224, 3)
+        input_array = np.random.rand(2, 224, 224, 3)
         model_path=args.model_path.split(',')
-        resnet = Resnet34_18DLA(input_array, model_path[0],model_path[1], args.numclus)
-        model_output1,model_output2 = resnet(input_array[0],input_array[1])
+        resnet = Resnet34_18DLA(input_array, model_path[0], model_path[1], 1, args.numclus)
+        model_output1, model_output2 = resnet(input_array[0], input_array[1])
         # The model was applied on 2 images; the resnet returns - one output for each image
         del resnet
 

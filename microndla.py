@@ -7,7 +7,7 @@ import numpy as np
 from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
 try:
-    f = CDLL("./libmicrondla.so")
+    f = CDLL("../../libmicrondla.so")
 except:
     f = CDLL("libmicrondla.so")
 
