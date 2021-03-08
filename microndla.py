@@ -7,13 +7,13 @@ import numpy as np
 from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
 try:
-    f = CDLL("../../libmicrondla.so")
+    f = CDLL("./libmicrondla.so")
 except:
     f = CDLL("libmicrondla.so")
 
 libc = CDLL("libc.so.6")
 
-curversion = '2020.2.3'
+curversion = '2021.1.0'
 
 #Allows None to be passed instead of a ndarray
 def wrapped_ndptr(*args, **kwargs):
@@ -108,11 +108,11 @@ class MDLA:
         self.ie_hwrun = f.ie_hwrun
         self.ie_hwrun.argtypes = [c_void_p, c_ulonglong, POINTER(c_double), POINTER(c_double), c_int]
 
-        self.ie_run_sim = f.ie_run_sim
-        self.ie_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint]
+        self.ie_run_sw = f.ie_run_sw
+        self.ie_run_sw.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint]
 
-        self.thnets_run_sim = f.thnets_run_sim
-        self.thnets_run_sim.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint]
+        self.ie_run_thnets = f.ie_run_thnets
+        self.ie_run_thnets.argtypes = [c_void_p, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint, POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint]
 
         #Training of linear layer
         self.trainlinear_start = f.ie_trainlinear_start
@@ -444,7 +444,7 @@ class MDLA:
     def Run_sw(self, images):
         imgs, sizes, nimgs, keepalive = self.inparams(images)
         r, rs, nresults = self.outparams(self.results)
-        rc = self.ie_run_sim(self.handle, imgs, sizes, nimgs, r, rs, nresults)
+        rc = self.ie_run_sw(self.handle, imgs, sizes, nimgs, r, rs, nresults)
         if rc != 0:
             raise Exception(rc)
         return self.results
@@ -456,7 +456,7 @@ class MDLA:
     def Run_th(self, images):
         imgs, sizes, nimgs, keepalive = self.inparams(images)
         r, rs, nresults = self.outparams(self.results)
-        rc = self.thnets_run_sim(self.handle, imgs, sizes, nimgs, r, rs, nresults)
+        rc = self.ie_run_thnets(self.handle, imgs, sizes, nimgs, r, rs, nresults)
         if rc != 0:
             raise Exception(rc)
         return self.results
