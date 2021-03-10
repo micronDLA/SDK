@@ -22,8 +22,10 @@ def preprocess(img):
 def postprocess(img_y, img_cr, img_cb):
     target_size = (672, 672)                        # output size after super resolution
 
+    # The DLA compiler is currently unable to properly run the last part of the model (reshape/transpose/reshape)
+    img_y = np.reshape(img_y, (224, 224, 3, 3))
+    img_y = np.transpose(img_y, (2, 3, 0, 1))
     # rearrange the resulting pixels; refer to paper for more details
-    img_y = np.reshape(img_y, (3, 3, 224, 224))
     img_y = np.transpose(img_y, (2, 0, 3, 1))
     img_y = np.reshape(img_y, target_size)
 

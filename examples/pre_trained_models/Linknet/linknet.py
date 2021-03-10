@@ -14,9 +14,9 @@ import numpy as np
 # Color Palette
 CP_R = '\033[31m'
 CP_G = '\033[32m'
-CP_B = '\033[34m'
 CP_Y = '\033[33m'
-CP_C = '\033[0m'
+CP_C = '\033[36m'
+CP_0 = '\033[0m'
 
 # Define color scheme
 color_map = np.array([
@@ -46,17 +46,20 @@ class LinknetDLA:
     """
     Load MDLA and run segmentation model on it
     """
-    def __init__(self, input_img, n_classes, model_path):
+    def __init__(self, input_img, n_classes, bitfile, model_path):
         """
         In this example MDLA will be capable of taking an input image
         and running that image on all clusters
         """
 
-        print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_C))
+        print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_0))
         ################################################################################
         # Initialize Micron DLA
         self.dla = microndla.MDLA()
-        # Run the network in batch mode (one image on all clusters)
+        if bitfile and bitfile != '':
+            self.dla.SetFlag('bitfile', bitfile)
+            print('{}{}{}'.format(CP_C, 'Finished loading bitfile on FPGA', CP_0))
+        # Run the network in no-batch mode (one image on all clusters)
         self.dla.SetFlag('clustersbatchmode', '1')
 
         # TODO Uncomment this line to see detailed compiler output
@@ -64,13 +67,12 @@ class LinknetDLA:
         self.height, self.width, self.channels = input_img.shape
         # Compile the NN and generate instructions <save.bin> for MDLA
         self.dla.Compile(model_path, 'save.bin', "1x{:d}x{:d}x{:d}".format(self.channels, self.height, self.width))
-        print('\n1. {}{}{}'.format(CP_B, 'Successfully generated binaries for MDLA', CP_C))
+        print('{}{}{}'.format(CP_C, 'Successfully generated binaries for MDLA', CP_0))
         # Send the generated instructions to MDLA
         # Send the bitfile to the FPGA only during the first run
         # Otherwise bitfile is an empty string
         self.dla.Init('save.bin')
-        print('2. {}{}{}'.format(CP_B, 'Finished loading bitfile on FPGA', CP_C))
-        print('\n{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_C))
+        print('\n{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_0))
         print('{:-<80}'.format(''))
 
         # Allocate space for output if the model
@@ -83,9 +85,7 @@ class LinknetDLA:
         self.dla.Free()
 
     def forward(self, input_img):
-        x = np.ascontiguousarray(input_img)            # Get contiguous array
-        # Input is expected in NCHW format
-        dla_output = self.dla.Run(x)
+        dla_output = self.dla.Run(input_img)
         return dla_output
 
     def preprocess(self, x):
@@ -105,7 +105,7 @@ class LinknetDLA:
         for i in range(len(norm)):
             input_img[i] = (input_img[i] - norm[i])/std[i]
 
-        print('{}{}{}'.format(CP_G, 'Preprocessing of input image complete', CP_C))
+        print('{}{}{}'.format(CP_G, 'Preprocessing of input image complete', CP_0))
 
         return input_img
 
@@ -123,5 +123,5 @@ class LinknetDLA:
         pred_map_BGR = cv2.cvtColor(pred_map, cv2.COLOR_RGB2BGR)    # Convert RGB to BGR for OpenCV
         overlay = cv2.addWeighted(input_img, 0.5, pred_map_BGR, 0.5, 0)
         cv2.imwrite('linknet_output.png', overlay)
-        print('{}{}{} linknet_output.png !!!'.format(CP_G, 'Colorized prediction overlayed on input image and saved as:', CP_C))
+        print('{}{}{} linknet_output.png !!!'.format(CP_G, 'Colorized prediction overlayed on input image and saved as:', CP_0))
         print('{:-<80}'.format(''))

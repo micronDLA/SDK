@@ -12,22 +12,22 @@ import numpy as np
 # Color Palette
 CP_R = '\033[31m'
 CP_G = '\033[32m'
-CP_B = '\033[34m'
 CP_Y = '\033[33m'
-CP_C = '\033[0m'
+CP_C = '\033[36m'
+CP_0 = '\033[0m'
 
 
 class Resnet34_50DLA:
     """
     Load MDLA and run segmentation model on it
     """
-    def __init__(self, input_img, model_path1, model_path2, numfpga, numclus):
+    def __init__(self, input_img, bitfile, model_path1, model_path2, numfpga, numclus):
         """
         In this example MDLA will be capable of taking an input image
         and running that image on all clusters
         """
 
-        print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_C))
+        print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_0))
         ################################################################################
         # Initialize 2 Micron DLA
         self.dla1 = microndla.MDLA()
@@ -38,21 +38,23 @@ class Resnet34_50DLA:
         self.dla2.SetFlag('clustersbatchmode', '0')
 
         self.batch,self.height, self.width, self.channels = input_img.shape
-        self.dla.SetFlag('nfpgas', str(numfpga))
+        self.dla1.SetFlag('nclusters', str(numclus))
         self.dla2.SetFlag('nclusters', str(numclus))
         # Compile the NN and generate instructions <save.bin> for MDLA
+        if bitfile and bitfile != '':
+            self.dla.SetFlag('bitfile', bitfile)
+            print('{}{}{}!!!'.format(CP_C, 'Finished loading bitfile on FPGA', CP_0))
         self.dla1.Compile(model_path1, 'save.bin')
         self.dla2.Compile(model_path2, 'save2.bin')
 
-        print('\n1. {}{}{}!!!'.format(CP_B, 'Successfully generated binaries for MDLA', CP_C))
+        print('{}{}{}!!!'.format(CP_C, 'Successfully generated binaries for MDLA', CP_0))
         # Send the generated instructions to MDLA
         # Send the bitfile to the FPGA only during the first run
         # Otherwise bitfile is an empty string
         self.dla2.Init('save2.bin')
         self.dla1.Init('save.bin')
 
-        print('2. {}{}{}!!!'.format(CP_B, 'Finished loading bitfile on FPGA', CP_C))
-        print('\n{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_C))
+        print('{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_0))
         print('{:-<80}'.format(''))
 
     def __call__(self, input_img1,input_img2):

@@ -32,7 +32,7 @@ def detection_postprocess_np(image, cls_heads, box_heads, thr=0.5):
 
 
 class RetinaNetDLA:
-    def __init__(self, model_path, class_names, res, numclus=4, threshold=0.5, disp_time=1):
+    def __init__(self, model_path, class_names, res, bitfile, numclus=4, threshold=0.5, disp_time=1):
         self.thr = threshold
         self.times = deque(maxlen=25)
         self.disp_time = disp_time
@@ -53,8 +53,11 @@ class RetinaNetDLA:
         self.dla.SetFlag('clustersbatchmode', '1')
 
         # Compile the NN and generate instructions <save.bin> for MDLA
+        if bitfile and bitfile != '':
+            self.dla.SetFlag('bitfile', bitfile)
         self.dla.SetFlag('nclusters', str(numclus))
-        self.dla.Compile(model_path, 'save.bin')
+        sz = '{:1}x{:d}x{:d}x{:d}'.format(1, c, h, w)
+        self.dla.Compile(model_path, 'save.bin', sz)
 
         # Init fpga with compiled machine code
         self.dla.Init('save.bin')

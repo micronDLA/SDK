@@ -11,27 +11,27 @@ import numpy as np
 # Color Palette
 CP_R = '\033[31m'
 CP_G = '\033[32m'
-CP_B = '\033[34m'
 CP_Y = '\033[33m'
-CP_C = '\033[0m'
+CP_C = '\033[36m'
+CP_0 = '\033[0m'
 
 class InceptionDLA:
     """
     Load MDLA and run model on it
     """
-    def __init__(self, input_img, model_path, numfpga, numclus):
+    def __init__(self, input_img, bitfile, model_path, numfpga, numclus):
         """
         In this example MDLA will be capable of taking an input image
         and running that image on all clusters
         """
 
-        print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_C))
+        print('{}{}{}...'.format(CP_Y, 'Initializing MDLA', CP_0))
         # Initialize Micron DLA
         self.dla = microndla.MDLA()
         self.batch, self.height, self.width, self.channels = input_img.shape
 
         # Run the network in batch mode (two images, one  on each cluster)
-        image_per_cluster=self.batch/numclus
+        image_per_cluster=self.batch/numclus/numfpga
         if image_per_cluster==1:
             self.dla.SetFlag('clustersbatchmode', '0')
         else:
@@ -39,16 +39,19 @@ class InceptionDLA:
 
         self.dla.SetFlag('nfpgas', str(numfpga))
         self.dla.SetFlag('nclusters', str(numclus))
+        if bitfile and bitfile != '':
+            self.dla.SetFlag('bitfile', bitfile)
+            print('{}{}{}'.format(CP_C, 'Finished loading bitfile on FPGA', CP_0))
         #self.dla.SetFlag('debug', 'b')                     # Uncomment it to see detailed output from compiler
         # Compile the NN and generate instructions <save.bin> for MDLA
-        self.dla.Compile(model_path, 'save.bin')
-        print('\n1. {}{}{}!!!'.format(CP_B, 'Successfully generated binaries for MDLA', CP_C))
+        sz = "{:d}x{:d}x{:d}x{:d}".format(self.batch, self.channels, self.height, self.width)
+        self.dla.Compile(model_path, 'save.bin', sz)
+        print('{}{}{}!!!'.format(CP_C, 'Successfully generated binaries for MDLA', CP_0))
         # Send the generated instructions to MDLA
         # Send the bitfile to the FPGA only during the first run
         # Otherwise bitfile is an empty string
         self.dla.Init('save.bin')
-        print('2. {}{}{}!!!'.format(CP_B, 'Finished loading bitfile on FPGA', CP_C))
-        print('\n{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_C))
+        print('{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_0))
         print('{:-<80}'.format(''))
 
     def __call__(self, input_array):
@@ -65,11 +68,11 @@ class InceptionDLA:
 
     def forward(self, input_array):
         # Normalize and transpose images
-        input = np.zeros((self.batch, self.channels,self.height, self.width))
+        input = np.zeros((self.batch, self.channels, self.height, self.width))
         x = input_array.astype(np.float32) / 255.0
         for i in range(self.batch):
             x[i] = self.normalize(x[i])
-            input[i] = x[i].transpose(2,1,0) #Change image planes from HWC to CHW
+            input[i] = x[i].transpose(2,0,1) #Change image planes from HWC to CHW
 
         dla_output = self.dla.Run(input)
         return dla_output
