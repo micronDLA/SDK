@@ -65,10 +65,10 @@ python3 main_batch.py --model resnet34_50 --model-path micron_model_zoo/resnet34
 
 | ID |    Category    |   Model   | Mode |           Notes          |
 |----|----------------|-----------|:----:|--------------------------|
-| 1  | Categorization   | inception   |   1  |The Inception models applied to multiple images on multiple clusters and 1 FPGA. The most number of clusters is 4. The model is from the ONNX model zoo.|
+| 1  | Categorization   | inception   |   1, 2  |The Inception models applied to multiple images on multiple clusters and 1 FPGA. The most number of clusters is 4. The model is from the ONNX model zoo.|
 | 2  | Categorization | resnet34_18    |  3  |Two models - resnet34 and resnet18 applied to two images on a single FPGA. The two models are from the  ONNX model zoo.                          |
 | 3  | Categorization   | resnet34_50   |   4  |Two models - resnet34 and resnet50 applied to two images on 2 FPGAs. The two models are from the ONNX model zoo.|
 | 4  | Localization   | [RetinaNet](RetinaNet/retinanet.py) |  0  |RetinaNet object detection model from ONNX model zoo                          |
 | 5  | Localization   | [YOLO v3](YOLOv3/README.md) |  0, 2  |RetinaNet object detection model from ONNX model zoo                          |
 | 6  | Segmentation   | [Linknet](Linknet/linknet.py)   |   0  | Trained on street scenes |
-| 7  | Super resolution   | [Super resolution](SuperResolution/superresolution.py)   |   0, 1  | Originally from ONNX model zoo |
+| 7  | Super resolution   | [Super resolution](SuperResolution/superresolution.py)   |   0, 1, 2  | Originally from ONNX model zoo |
