@@ -54,6 +54,7 @@ class MDLA:
 
         self.ie_compile_vfp = f.ie_compile_vfp
         self.ie_compile_vfp.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_uint), POINTER(POINTER(c_uint)), POINTER(POINTER(POINTER(c_ulonglong))), POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint]
+        self.ie_compile_vfp.restype = c_void_p
 
         self.ie_compile = f.ie_compile
         self.ie_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_uint), POINTER(POINTER(c_uint)), POINTER(POINTER(POINTER(c_ulonglong)))]
