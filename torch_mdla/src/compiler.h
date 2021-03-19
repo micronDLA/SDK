@@ -1,5 +1,5 @@
-#include <torch/csrc/jit/ir.h>
-#include <torch/csrc/jit/argument_spec.h>
+#include <torch/csrc/jit/ir/ir.h>
+#include <torch/csrc/jit/runtime/argument_spec.h>
 #include <ATen/ATen.h>
 #include "fusion_pass.h"
 #include "api.h"
@@ -44,7 +44,7 @@ class MDLACompiler {
     //subgraph is the custom function that the fusion_pass created "mdla::CompilationGroup"
     //implementation of the custom subgraph
     //Stack is the tensor inputs of the subgraph. The output is added to the Stack
-        void run(torch::jit::Stack& stack);
+        void run(torch::jit::Stack* stack);
         int count_output_used(const char *name);
         int g_size;//graph size
     private:

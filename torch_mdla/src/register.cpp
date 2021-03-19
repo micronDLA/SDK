@@ -6,8 +6,8 @@ The process is:
 4- define how to run this new labeled subgraph
 */
 #include <pybind11/pybind11.h>
-#include <torch/csrc/jit/custom_operator.h>
-#include <torch/csrc/jit/pass_manager.h>
+#include <torch/csrc/jit/runtime/custom_operator.h>
+#include <torch/csrc/jit/passes/pass_manager.h>
 #include <torch/csrc/jit/passes/graph_fuser.h>
 #include <torch/csrc/jit/passes/fuse_linear.h>
 #include "compiler.h"
@@ -33,21 +33,14 @@ void registerMDLAOp(){
     });
 
     // We are only dealing with pure operations (no aliasing or in place mutation), so our subgraph will always be pure
-    auto options = c10::OperatorOptions();
-    options.setAliasAnalysis(AliasAnalysisKind::PURE_FUNCTION);
-
     // Register a custom compiler/implementation for our subgraph
     torch::jit::RegisterOperators op({
             torch::jit::Operator(
                     getMDLASymbol(),
-                    [](const torch::jit::Node* node) -> torch::jit::Operation {
+                    [](const torch::jit::Node* node) -> torch::jit::Operation{
                     auto compiler = std::make_shared<MDLACompiler>(node, debug, opts, clusters);
-                    return [compiler](Stack& stack) {
-                    compiler->run(stack);
-                    return 0;
-                    };
-                    },
-                    options)});
+                    return [compiler](Stack* stack) {compiler->run(stack);return 0;};},
+                    AliasAnalysisKind::PURE_FUNCTION)});
 
 }
 

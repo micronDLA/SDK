@@ -1,9 +1,9 @@
 #include "compiler.h"
 #include <stack>
 #include <c10/util/C++17.h>
-namespace thnets {
+
 #include "thnets.h"
-}
+
 using namespace torch::jit;
 
 
@@ -108,7 +108,7 @@ int MDLACompiler::count_output_used(const char *name)
 void* fcmem = 0;//first cmem has the pico objs
 uint64_t laddr_off = 0;//address to combine models in memory
 
-void MDLACompiler::run(torch::jit::Stack& stack) {
+void MDLACompiler::run(torch::jit::Stack* stack) {
     // Get the number of expected inputs to the graph we are compiling
     const at::ArrayRef<Value*>& graph_inputs = subgraph_->inputs();
     const auto num_inputs = graph_inputs.size();
@@ -125,6 +125,7 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
     Compiled_info* cinfo = NULL;
     at::Tensor in_data;
     bool first = false;
+    unsigned ninputs = 1;
     //compile if we haven't compiled for the shape/device of these inputs before
     if (cache_.find(spec) == cache_.end()) {
         cmem = ie_create();
@@ -142,9 +143,8 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
         net = (thnets::THNETWORK *) calloc(1, sizeof(*net));
         net->std[0] = net->std[1] = net->std[2] = 1;
         net->mean[0] = net->mean[1] = net->mean[2] = 0;
-        thnets::network* tnet = (thnets::network *)malloc(sizeof(*tnet));
+        thnets::network* tnet = new thnets::network(thnets::ENGINE_CPU, g_size * 2);
         // Overallocate modules by a factor of 2, because of split and multiple inputs
-        tnet->modules = (thnets::module *)calloc(g_size * 2, sizeof(*tnet->modules));
         tnet->nelem = 0;
         ninputnames = 0;
         int n = 0;
@@ -208,10 +208,10 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
                         int tt = inp;//swap inp and outp
                         inp = outp;
                         outp = tt;
-                        thnets::thload_TransposedConv2d(tnet->modules + n, weight, bias, inp, outp, kW, kH, pW, pH, dW, dH, opW, opH, group);
+                        thload_TransposedConv2d(tnet->modules + n, weight, bias, inp, outp, kW, kH, pW, pH, dW, dH, opW, opH, group);
                     }
                     else
-                        thnets::thload_Conv2d(tnet->modules + n, weight, bias, inp, outp, kW, kH, pW, pH, dW, dH, dlW, dlH, group);
+                        thload_Conv2d(tnet->modules + n, weight, bias, inp, outp, kW, kH, pW, pH, dW, dH, dlW, dlH, group);
                 }
                 else if(node->kind() == aten::linear){
                     assert(value_to_ivalue.find(node->input(1)) != value_to_ivalue.end());
@@ -225,7 +225,7 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
                         at::Tensor bb = get_tensor(&value_to_ivalue[node->input(2)]);
                         bias = (float*) bb.data_ptr();
                     }
-                    thnets::thload_Linear(tnet->modules + n, weight, bias, i, o);
+                    thload_Linear(tnet->modules + n, weight, bias, i, o);
                 }
                 else if(node->kind() == aten::cat){
                     //c10::List<at::Tensor> lten = get_listtensor(&value_to_ivalue[node->input(0)]);
@@ -239,25 +239,25 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
                 else if(node->kind() == aten::upsample_nearest2d){
                     //int h_scale = get_const_intlist(node->input(1))[0];
                     //int w_scale = get_const_intlist(node->input(1))[1];
-                    thnets::thload_Upsample(tnet->modules + n, 2, 2);
+                    thload_Upsample(tnet->modules + n, 2, 2);
                 }
                 else if(node->kind() == aten::add){
                     num_input = 2;
                     tnet->modules[n].inputs[tnet->modules[n].ninputs++] = get_node_inputnames(node, tnet, 0);
                     tnet->modules[n].inputs[tnet->modules[n].ninputs++] = get_node_inputnames(node, tnet, 1);
-                    thnets::thload_Add(tnet->modules + n);
+                    thload_Add(tnet->modules + n);
                 }
                 else if(node->kind() == aten::sub){
                     num_input = 2;
                     tnet->modules[n].inputs[tnet->modules[n].ninputs++] = get_node_inputnames(node, tnet, 0);
                     tnet->modules[n].inputs[tnet->modules[n].ninputs++] = get_node_inputnames(node, tnet, 1);
-                    thnets::thload_Sub(tnet->modules + n);
+                    thload_Sub(tnet->modules + n);
                 }
                 else if(node->kind() == aten::mul){
                     num_input = 2;
                     tnet->modules[n].inputs[tnet->modules[n].ninputs++] = get_node_inputnames(node, tnet, 0);
                     tnet->modules[n].inputs[tnet->modules[n].ninputs++] = get_node_inputnames(node, tnet, 1);
-                    thnets::thload_BatchNorm(tnet->modules + n, NULL, NULL, NULL, NULL, 0, 1);
+                    thload_BatchNorm(tnet->modules + n, NULL, NULL, NULL, NULL, 0, 1);
                 }
                 else if(node->kind() == aten::batch_norm){
                 //aten::batch_norm(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps, bool cudnn_enabled)
@@ -291,16 +291,16 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
                         run_var = (float*) bb.data_ptr();
                     }
                     int eps = get_const_double(node->input(7));
-                    thnets::thload_BatchNorm(tnet->modules + n, weight, bias, run_mean, run_var, eps, s);
+                    thload_BatchNorm(tnet->modules + n, weight, bias, run_mean, run_var, eps, s);
                 }
                 else if(node->kind() == aten::relu)
-                    thnets::thload_Threshold(tnet->modules + n);
+                    thload_Threshold(tnet->modules + n);
                 else if(node->kind() == aten::tanh)
-                    thnets::thload_Tanh(tnet->modules + n);
+                    thload_Tanh(tnet->modules + n);
                 else if(node->kind() == aten::sigmoid)
-                    thnets::thload_Sigmoid(tnet->modules + n);
+                    thload_Sigmoid(tnet->modules + n);
                 else if(node->kind() == aten::view)
-                    thnets::thload_View(tnet->modules + n);
+                    thload_View(tnet->modules + n);
                 else if(node->kind() == aten::max_pool2d || node->kind() == aten::avg_pool2d){
                 //aten::max_pool2d(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False)
                 //aten::avg_pool2d(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None)
@@ -321,19 +321,19 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
                         dlW = get_const_intlist(node->input(4))[0];
                         dlH = get_const_intlist(node->input(4))[1];
                         ceil = get_const_bool(node->input(5));
-                        thnets::thload_Maxpool2d(tnet->modules + n, kW, kH, pW, pH, dW, dH, dlW, dlH, ceil);
+                        thload_Maxpool2d(tnet->modules + n, kW, kH, pW, pH, dW, dH, dlW, dlH, ceil);
                     }
                     else{
                         ceil = get_const_bool(node->input(4));
-                        thnets::thload_Avgpool2d(tnet->modules + n, kW, kH, pW, pH, dW, dH, ceil);
+                        thload_Avgpool2d(tnet->modules + n, kW, kH, pW, pH, dW, dH, ceil);
                     }
                 }
 
                 //connect layers with input output ids
                 if(num_input == 1)//one input layers
                     tnet->modules[n].inputs[tnet->modules[n].ninputs++] = get_node_inputnames(node, tnet, 0);
-                tnet->modules[n].output = thnets::THNTensor_new();
-                tnet->modules[n].outputname = strdup(std::to_string(node->output(0)->unique()).c_str());
+                tnet->modules[n].output = thnets::THNTensor_new(thnets::DT_FLOAT);
+                tnet->modules[n].outputname[0] = strdup(std::to_string(node->output(0)->unique()).c_str());
                 tnet->modules[n].net = tnet;
                 tnet->nelem = ++n;
 
@@ -346,7 +346,7 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
                         prevm->type == thnets::MT_SpatialFullConvolution ||
                         prevm->type == thnets::MT_Linear)
                     {
-                        if(count_output_used(prevm->outputname) == 1) {
+                        if(count_output_used(prevm->outputname[0]) == 1) {
                             absorb_bn(tnet, tnet->nelem-1, prevm);
                             n--;
                         }
@@ -387,49 +387,32 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
             ie_setflag(cmem, "debug", debug_.c_str());
         if(!options_.empty())
             ie_setflag(cmem, "options", options_.c_str());
-        uint64_t outsize[MAX_INPUTS];
         uint64_t swoutsize[MAX_INPUTS];
-        int noutputs = 0;
+        unsigned *noutdims;
+        unsigned noutputs = 0;
+        uint64_t **outshapes;
         //pass THNETWORK to thnets2lst to create lst
-        ext_thnets2lst(cmem, net, image, -1);
+        ext_thnets2lst(cmem, net, image, -1, 1);
         //ie_compile: skip onnx parser if already lst exist and modelpath="$keeplst"
-        cmem = ie_compile(cmem, image, "$keeplst", "save.bin", swoutsize, &noutputs, 1, clusters_);
-        char value[300];
-        ie_getinfo(cmem, "outshape", value);//WxHxZxPxB
-        char* pstr;
+        if(clusters_ != 1){
+            char s[300];
+            sprintf(s, "%d", clusters_);
+            ie_setflag(cmem, "nclusters", s);
+        }
+        cmem = ie_compile(cmem, "$keeplst", "save.bin", image, &noutputs, &noutdims, &outshapes);
+
         std::vector< std::vector<int64_t> > osizes;
         std::vector<int64_t> tsizes;// batch, plane, Z, H, W
-        pstr = strtok(value, "x");
-        while (pstr != NULL) {
-            tsizes.push_back(atol(pstr));//W
-            if(in_data.sizes().size() == 4) {//WxHxPxB
-                pstr = strtok (NULL, "x");
-                tsizes.push_back(atol(pstr));//H
-                pstr = strtok (NULL, "x");//skip Z
+        for(unsigned i = 0; i < noutputs; i++){
+            for(unsigned j = 0; j < noutdims[i]; j++){
+                tsizes.push_back(outshapes[i][j]);
             }
-            else if(in_data.sizes().size() == 5) {//WxHxZxPxB
-                for(int a = 0; a < 2; a++){
-                    pstr = strtok (NULL, "x");
-                    tsizes.push_back(atol(pstr));//HxZ
-                }
-            }
-            else{
-                pstr = strtok (NULL, "x");//skip H
-                pstr = strtok (NULL, "x");//skip Z
-            }
-            for(int a = 0; a < 2; a++){
-                pstr = strtok (NULL, "x");
-                tsizes.push_back(atol(pstr));//PxB
-            }
-            std::reverse(tsizes.begin(),tsizes.end());//BxPxZxHxW
             osizes.push_back(tsizes);
             tsizes.clear();
-            pstr = strtok (NULL, "x");
         }
-
-        cmem = ie_init(cmem, "", "save.bin", outsize, &noutputs, first ? 0 : fcmem);
+        cmem = ie_init(cmem, "save.bin", &noutputs, &noutdims, &outshapes, first ? 0 : fcmem);
         fcmem = cmem;
-        ie_getinfo(cmem, "addr_off", &laddr_off);
+        ie_getinfo(cmem, "addr_off", &laddr_off, sizeof(laddr_off));
 
         cinfo = new Compiled_info(cmem);
         cinfo->osizes = osizes;
@@ -453,7 +436,7 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
     float* data = (float*) in_data.data_ptr();
     int err = 0;
 
-    err = ie_run(cinfo->cmem, &data, cinfo->input_elements, &out, cinfo->output_elements);
+    err = ie_run(cinfo->cmem, &data, cinfo->input_elements, ninputs, &out, cinfo->output_elements, cinfo->osizes.size());
     if (err)
         fprintf(stderr,"ie_run ERROR %d\n", err);
 
@@ -463,7 +446,7 @@ void MDLACompiler::run(torch::jit::Stack& stack) {
         //add output tensors to Stack for following subgraphs or nodes in the model
         auto tensor = at::from_blob(out, cinfo->osizes[oidx++]);
         auto var = torch::autograd::make_variable(tensor);
-        stack.push_back(IValue(var));
+        stack->push_back(IValue(var));
     }
 }
 

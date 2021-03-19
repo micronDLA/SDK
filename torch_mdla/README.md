@@ -21,7 +21,7 @@ Download pybind11 from [here](https://github.com/pybind/pybind11/tree/97784dad3e
 
 Install pytorch from [source](https://github.com/pytorch/pytorch)
 
-Use the release tag v1.4.0
+Use the release tag v1.8.0
 
 Build and install it using develop option as mentioned [here](https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md)
 
