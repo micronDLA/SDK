@@ -11,22 +11,23 @@ Micron DLA Software Developement Kit - SDK
 
 This document provides tutorials and general information about the Micron DLA SDK.
 
-There are more documents in this SDK folder:
+This SDK folder contains:
+[**Docker**](docker/): Docker files to create a docker image.
 
-[**Python API**](docs/PythonAPI.md): Documentation of the python API can be
-found in docs/PythonAPI.md.
+[**Docs**](docs/): Documentation.
+* [Python API](docs/PythonAPI.md): Documentation of the python API can be found in docs/PythonAPI.md.
+* [C API](docs/C%20API.md): Documentation of the C/C++ API can be found in docs/C API.md.
 
-[**C API**](docs/C%20API.md): Documentation of the C/C++ API can be found in
-docs/C API.md.
-
-[**Examples**](examples/): Example code and Deep Learning tutorial.
-* [DCGAN](examples/DCGAN): Example for using MDLA on [DCGAN](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html)
-* [keras-mtcnn](examples/keras-mtcnn): Example for adding MDLA to [mtcnn](https://github.com/ipazc/mtcnn).
-* [pytorch-ssd](examples/pytorch-ssd): Example for adding MDLA to [pyotrch-ssd](https://github.com/qfgaohao/pytorch-ssd).
-* [website](examples/website): Example for making a web application with MDLA and Flask.
-* [notebook](examples/notebook): MDLA in jupter notebook.
+[**Examples**](examples/): Example code and tests.
+* [c_api](examples/c_api): Example how to use the C API
+* [pre_trained_models](examples/pre_trained_models): Examples using pre-trained models
+* [python_api](examples/python_api): Example how to use the python API
+* [tests](examples/tests): Samples to test neural network layers
+* [website](examples/website): Example for making a web application with MDLA and Flask
 
 [**Pytorch-torchscript**](torch_mdla/README.md): Tutorial on how to add Micro DLA into pytorch using torchscript.
+
+[**Test-files**](test-files/): Files used for the examples and tutorials.
 
 ## Table of Contents:
 
@@ -80,7 +81,7 @@ This SDK supposes that you are working on a desktop computer with Micron FPGA bo
 Check out this [link](https://www.micron.com/products/advanced-solutions/advanced-computing-solutions) to see what Micron FPGA system you have.
 
 Tested on:
-- Ubuntu 16.04 LTS Release, Kernel 4.13.0
+- Ubuntu 18.04 LTS Release, Kernel 4.15.0-39-generic
 - CentOS 7.5
 
 Requirements:
@@ -98,6 +99,8 @@ Requirements:
 Pico-computing installer package can be requested from this [link](https://picocomputing.zendesk.com/hc/en-us/). To make sure your FPGA system is working properly, install pico-computing tools.
 
 It is highly recommended to read the [UsersGuide](https://picocomputing.zendesk.com/hc/en-us/) to learn about your FPGA system as this SDK uses pico-computing tools.
+
+Pico computing installer will install the SDK together with pico-computing. And `libmicrondla.so` library should be present in `/usr/local/lib/`.
 
 If you have a previous version of pico-computing installed then uninstall it. And remove all `picocomputing-2020.1` and `HMC_release` folders before installing a new version of pico-computing.
 
@@ -120,9 +123,9 @@ To start a docker with the Micron DLA SDK you can either download prebuilt image
 ### Load prebuilt Image.
 Download the docker image for your OS after requesting it [here](https://picocomputing.zendesk.com/hc/en-us/).
 
-For Ubuntu 16.04:
+For Ubuntu 18.04:
 ```
-$ docker load < mdla_ubuntu16.04.tgz
+$ docker load < mdla_ubuntu18.04.tgz
 ```
 
 For CentOS 7.5:
@@ -132,12 +135,12 @@ $ docker load < mdla_centos7.5.tgz
 ### Build Image with Dockerfile
 Copy the OS specific picocomputing package to your docker build folder. Then build and tag the image (we add the latest tag for user convenience when running containers):
 
-For Ubuntu 16.04:
+For Ubuntu 18.04:
 ```
 $ mkdir docker_build
 $ cp /path/to/picocomputing_2020.1_all.deb docker_build
 $ cd docker_build
-$ docker build -f ../docker/Dockerfile.ubuntu -t micron/mdla:2020.1-ubuntu16.04 -t micron/mdla:latest .
+$ docker build -f ../docker/Dockerfile.ubuntu -t micron/mdla:2020.1-ubuntu18.04 -t micron/mdla:latest .
 ```
 
 For CentOS 7.5:
@@ -172,31 +175,6 @@ root@d80174ce2995:/home/mdla#
 
 Run the example code provided. Check sections [3](#3-getting-started-inference-on-micron-dla-hardware) and [4](#4-getting-started-inference-on-micron-dla-hardware-with-c).
 
-
-## Manual Installation
-
-**Installation**
-
-Installation of the SDK can be run with:
-
-`sudo ./install.sh`
-
-Make sure the `microndla.py` can locate the libmicrondla.so library in `/usr/local/lib/`.
-
-**Install pytorch (optional)**
-
-Install this if you want to convert models from PyTorch to ONNX on your own.
-
-Choose your system configuration at pytorch.org and install the corresponding package.
-
-You can also install torch using pip package.
-
-```
-pip install torch
-```
-
-Check torch version with: `pip show torch`
-
 # 2. Getting started with Deep Learning
 
 ## Introduction
@@ -230,7 +208,7 @@ Please make sure that all inputs of the neural network are 32-bit float and are 
 
 ## After training a neural network
 
-After training a neural network with PyTorch, your model is ready for use in Micron DLA SDK. Please refer to the SDK manual for use with FWNDXT products.
+After training a neural network with PyTorch, your model is ready for use in Micron DLA SDK. Please refer to the SDK manual for use with MDLA products.
 
 
 # 3. Getting started Inference on Micron DLA hardware
@@ -243,7 +221,7 @@ In this tutorial you will need:
 * One of the [pre-trained models](http://fwdnxt.com/models/)
 * [Input image](./test-files): located in /test-files/
 * [Categories file](./test-files/categories.txt): located in /test-files/
-* [simpledemo.py](./examples/python/simpledemo.py): located in /examples/python/
+* [simpledemo.py](./examples/python_api/simpledemo.py): located in /examples/python_api/
 
 
 **Pytorch and torchvision pretrained model on ImageNet**
@@ -252,7 +230,7 @@ In the SDK folder, there is `genonnx.py`. This script will create an ONNX file f
 This utility requires the latest pytorch and it can create an ONNX file from most networks present in the
 torchvision package and also from networks in the pth format.
 
-`python3 genonnx.py alexnet`
+`python3 genonnx.py resnet18`
 
 This command will download a pre-trained alexnet network and create a file called alexnet.onnx
 
@@ -260,7 +238,7 @@ For more information about onnx please visit [https://onnx.ai/](https://onnx.ai/
 
 To convert tensorflow models into ONNX files please reference the section [6. Using with Tensorflow](#6-using-with-tensorflow)
 
-**Loading hardware into FPGA**
+**Loading the FPGA with MDLA**
 
 When you turn on the system, it will have the FPGA programmed with a default hardware definition. You need to load the MDLA bitfile only once after turning on the system.
 
@@ -291,7 +269,7 @@ Its main parts are:
 
 The user may modify steps 1 and 5 according to users needs.
 Check out other possible application programs using Micron DLA hardware [here](http://fwdnxt.com/).
-The example program is located in examples/python/
+The example program is located in examples/python_api/
 
 You can run the network on hardware with this command, which will find the FPGA card that was loaded with Micron DLA hardware:
 
@@ -320,7 +298,7 @@ In this tutorial you will need:
 * One of the [pre-trained models](http://fwdnxt.com/models/)
 * [Input image](./test-files): located in /test-files/
 * [Categories file](./test-files/categories.txt): located in /test-files/
-* [Source code](./examples/C): located in /examples/C/
+* [Source code](./examples/c_api): located in /examples/c_api/
 
 
 **Running inference on the DLA for one image**
@@ -339,7 +317,7 @@ Make sure the MDLA bitfile was loaded into the FPGA before running it.
 To run the demo, first run the following commands:
 
 ```
-cd <sdk folder>/examples/C
+cd <sdk folder>/examples/c_api
 make
 ./compile -m <model.onnx> -i 224x224x3 -o instructions.bin
 ```
@@ -376,14 +354,15 @@ numclus = 1
 # Create Micron DLA API
 sf = microndla.MDLA()
 # Generate instructions
-nresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
+sf.SetFlag('nfpgas', str(numfpga))
+sf.SetFlag('nclusters', str(numclus))
+sf.Compile('resnet18.onnx', 'microndla.bin')
 # Init the FPGA cards
-sf.Init('microndla.bin', 'bitfile.tgz')
+sf.Init('microndla.bin')
 in1 = np.random.rand(2, 3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
 # Create a location for the output
-output = np.ndarray(2 * nresults, dtype=np.float32)
-sf.Run(input_img, output) # Run
+output = sf.Run(input_img)
 ```
 
 `sf.Compile` will parse the model from model.onnx and save the generated Micron DLA instructions in microndla.bin. Here numfpga=2, so instructions for two FPGAs are created.
@@ -402,30 +381,24 @@ The following code snippet shows you how to do this:
 ```python
 import microndla
 import numpy as np
-numfpga = 1
-numclus = 1
 # Create Micron DLA API
 sf1 = microndla.MDLA()
 # Create second Micron DLA API
 sf2 = microndla.MDLA()
 # Generate instructions for model1
-nresults1 = sf1.Compile('224x224x3', 'resnet50.onnx', 'microndla1.bin', numfpga, numclus)
+sf1.Compile('resnet50.onnx', 'microndla1.bin')
 # Generate instructions for model2
-nresults2 = sf2.Compile('224x224x3', 'resnet18.onnx', 'microndla2.bin', numfpga, numclus)
+sf2.Compile('resnet18.onnx', 'microndla2.bin')
 # Init the FPGA 1 with model 1
-sf1.Init('microndla1.bin', 'bitfile.tgz')
+sf1.Init('microndla1.bin')
 # Init the FPGA 2 with model 2
-sf2.Init('microndla2.bin', '')
+sf2.Init('microndla2.bin')
 in1 = np.random.rand(3, 224, 224).astype(np.float32)
 in2 = np.random.rand(3, 224, 224).astype(np.float32)
 input_img1 = np.ascontiguousarray(in1)
 input_img2 = np.ascontiguousarray(in2)
-# Create a location for the output1
-output1 = np.ndarray(nresults1, dtype=np.float32)
-# Create a location for the output2
-output2 = np.ndarray(nresults2, dtype=np.float32)
-sf1.Run(input_img1, output1) # Run
-sf2.Run(input_img2, output2)
+output1 = sf1.Run(input_img1)
+output2 = sf2.Run(input_img2)
 ```
 
 The code is similar to the previous section. Each instance will compile, init and execute a different model on different FPGA.
@@ -448,14 +421,13 @@ numclus = 2
 # Create Micron DLA API
 sf = microndla.MDLA()
 # Generate instructions
-nresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
+sf.SetFlag('nclusters', str(numclus))
+sf.Compile('resnet18.onnx', 'microndla.bin')
 # Init the FPGA cards
-sf.Init('microndla.bin', '')
+sf.Init('microndla.bin')
 in1 = np.random.rand(2, 3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
-# Create a location for the output
-output = np.ndarray(nresults, dtype=np.float32)
-sf.Run(input_img, output) # Run
+output = sf.Run(input_img)
 ```
 
 The only difference is that nclus=2 and nfpga=1.
@@ -474,16 +446,15 @@ numfpga = 1
 numclus = 2
 # Create Micron DLA API
 sf = microndla.MDLA()
-sf.SetFlag('nobatch', '1')
+sf.SetFlag('nclusters', str(numclus))
+self.dla.SetFlag('clustersbatchmode', '1')
 # Generate instructions
-nresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
+sf.Compile('resnet18.onnx', 'microndla.bin')
 # Init the FPGA cards
-sf.Init('microndla.bin', 'bitfile.tgz')
+sf.Init('microndla.bin')
 in1 = np.random.rand(3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
-# Create a location for the output
-output = np.ndarray(nresults, dtype=np.float32)
-sf.Run(input_img, output) # Run
+output = sf.Run(input_img)
 ```
 
 Use `sf.SetFlag('nobatch', '1')` to set the compiler to split the workload among two clusters and generate the instructions.
@@ -505,23 +476,23 @@ numfpga = 1
 numclus = 2
 # Create Micron DLA API
 sf = microndla.MDLA()
+sf.SetFlag('nclusters', str(numclus))
 sf.SetFlag('imgs_per_cluster', '16')
 # Generate instructions
-nresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
+sf.Compile('resnet18.onnx', 'microndla.bin')
 # Init the FPGA cards
-sf.Init('microndla.bin', 'bitfile.tgz')
+sf.Init('microndla.bin')
 in1 = np.random.rand(32, 3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
-# Create a location for the output
-output = np.ndarray(nresults, dtype=np.float32)
-sf.Run(input_img, output) # Run
+output = sf.Run(input_img) # Run
 ```
 
 ## Batching using MVs
 
-It's possible to use MV-level parallelism. This is generally more efficient than leaving different MV units process the same image.
+It's possible to use MV-level parallelism. MV is a computation unit present inside of a cluster and they can be configured to run different images.
+This is generally more efficient than leaving different MV units process the same image.
 In order to enable this, you have to set the `mvbatch` flag. Keep in mind that this can be only done when `imgs_per_cluster` is a
-multiple of 4, since there are 4 MV units available.
+multiple of 4, since there are 4 MV units available inside of a cluster.
 
 ```python
 import microndla
@@ -530,17 +501,16 @@ numfpga = 1
 numclus = 2
 # Create Micron DLA API
 sf = microndla.MDLA()
+sf.SetFlag('nclusters', str(numclus))
 sf.SetFlag('imgs_per_cluster', '16')
 sf.SetFlag('mvbatch', '1')
 # Generate instructions
-nresults = sf.Compile('224x224x3', 'resnet18.onnx', 'microndla.bin', numfpga, numclus)
+sf.Compile('resnet18.onnx', 'microndla.bin')
 # Init the FPGA cards
-sf.Init('microndla.bin', 'bitfile.tgz')
+sf.Init('microndla.bin')
 in1 = np.random.rand(32, 3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
-# Create a location for the output
-output = np.ndarray(nresults, dtype=np.float32)
-sf.Run(input_img, output) # Run
+output = sf.Run(input_img)
 ```
 
 # 6. Tutorial - PutInput and GetResult
@@ -566,7 +536,7 @@ This will result in a deadlock, because PutInput on the second object will wait 
 
 <img src="docs/pics/Double Buffer Illustration.jpg" width="900" height="240"/>
 
-Examples using PutInput and GetOutput are located in [examples/python/](examples/python/).
+Examples using PutInput and GetOutput are located in [examples/python_api/](examples/python_api/).
 
 * pollingdemo.py : is an example of non-blocking mode. The program will poll GetResult until it returns the output.
 
@@ -615,31 +585,18 @@ torch.onnx.export(modelConv, inV, "net_conv.onnx")
 ```
 
 Now we need to run this model using CPU with Pytorch. You can run this model by adding the following:
-
 ```python
-# this will call the forward function in the Conv class that you defined above
 outhw = modelConv(inV)
 result_pyt = outhw.view(-1)
-# convert a tensor to numpy. We will use this to compare the results
 result_pyt = result_pyt.detach().numpy()
 ```
+
 Now we need to run this model using the accelerator with the SDK.
 ```python
-# pass the model's onnx file to Compile to generate the accelerator's instructions.
-# the instructions, quantized weights and metadata need to run on the
-# accelerator are stored in 'net_conv.bin'
-outsize = sf.Compile(
-        '{:d}x{:d}x{:d}'.format(w, w, i),
-        'net_conv.onnx', 'net_conv.bin', 1, 1)
-
-# start the FPGA system. If a bitfile path is given then it
-# will load the bitfile into the FPGA.
-# you only need to load the bitfile once after powering up the system.
-sf.Init("./net_conv.bin", "")
-
+sf.Compile('net_conv.onnx', 'net_conv.bin')
+sf.Init("./net_conv.bin")
 in_1 = np.ascontiguousarray(inV)
-result = np.ascontiguousarray(np.ndarray((1, 1, outsize), dtype=np.float32))
-sf.Run(in_1, result) # run the model on accelerator
+result = sf.Run(in_1)
 ```
 The results from the accelerator are in `result` and the results from the CPU are in `result_pyt`. We could print all values of both vectors to compare. A better approach is to have an error metric. The following code calculates the relative mean error and the max error.
 ```python
@@ -672,59 +629,7 @@ A debug option won't affect the compiler, it will only print more information. T
 
 You can use `SetFlag('debug', 'b')` to print the basic prints. The debug code `'b'` stands for basic. Debug codes and option codes are letters (case-sensetive). For a complete list of letters refer to [here](docs/Codes.md).
 
-Always put the `SetFlag()` after creating the Micron DLA object. You should see something similar to the following print.
-
-```
-================================================================
-ie_compile: Parse the model and compile into DLA instructions
-Input model read is net_conv.onnx
-DLA binary write to net_conv.bin
------------------------------------------------------------
-type conv name=3 id=0 in=(Z1,H16,W16,P256) out=(Z1,H14,W14,P256)
-k=(Z1,H3,W3) stride=(Z1,H1,W1) dilation=(Z1,H1,W1)
-pad=(Z0,Ze0,T0,B0,R0,L0) opad=(Z0,H0,W0) 0->1
-End of ie_compile. It took 0.0151 [s]
-================================================================
-================================================================
-ie_init: Initialize Micron DLA system
-DLA binary to be read is ./net_conv.bin
------------------------------------------------------------
-Using FPGA 0x511 Device 0511
-Finished setting up the FPGAs
-End of ie_init. It took 0.0436 [s]
-================================================================
-iter 0
-================================================================
-ie_putinput_internal: send input to Micron DLA
------------------------------------------------------------
-Total batchsize given is 1
-Max number of FPGAs is 1, number of FPGAs used is 1
-Max number of clusters is 2, number of clusters used is 1
-Number of clusters used per image is 1
------------------------------------------------------------
-Rearrange input and convert float to int took 1.0500 ms
------------------------------------------------------------
-Move input to main memory took 0.0880 ms
------------------------------------------------------------
-Micron DLA hardware start
-Start card 0 cluster 0
-Reset card 0 cluster 0
-data moved from main memory to DLA: 8716288 [B]
-data moved from DLA to main memory: 100352 [B]
-Micron DLA execution took 0.7160 ms
------------------------------------------------------------
-Get results back from main memory took 0.0610 ms
------------------------------------------------------------
-Ops: 231211008 (0.23 G)
-Expected Time: 0.4516 ms
-Expected Bandwidth: 0.207 GB/s
-Measured Time: 0.5519 ms
-Measured Bandwidth: 0.169 GB/s
-Efficiency: 0.818
-Time to arrange output is 9.1190 ms
-```
-
-The print does not need to be identical. We are going to explain the main parts. First, it will list all the layers that it is going to compile from the `net_conv.onnx` and produce a `net_conv.bin`.
+Always put the `SetFlag()` after creating the Micron DLA object. If will print the information about the run. First, it will list all the layers that it is going to compile from the `net_conv.onnx` and produce a `net_conv.bin`.
 
 Then `Init` will find an FPGA system, AC511 in our case. It will also show how much time it took to send the weights and instructions to the external memory in the `Init` function.
 
@@ -798,14 +703,14 @@ In this case, you can set 'V' in the options using `SetFlag` function before `Co
 
 ```python
 ie = microndla.MDLA()
-ie.SetFlag('options', 'V')
+ie.SetFlag('varfp', '1')
 #Compile to a file
-swnresults = ie.Compile('224x224x3', 'resnet18.onnx', 'save.bin')
+swnresults = ie.Compile('resnet18.onnx', 'save.bin')
 ```
 
 **Option 2**: Variable fix-point can be determined for input and output of each layer if one or more sample inputs are provided.
 
-You will need to provide a set of sample inputs (calibration data) to `Quantize` funtion. In addition to compiling the model, `Quantize` will run the model with the calibration inputs using float32 and save the variable fix-point configuration for each input/output of each layer in the model. `Quantize` will also convert the static data (weights and biases) to the appropriate fix-point representation, so no need for `ie.SetFlag('options', 'V')` in this case.
+You will need to provide a set of sample inputs (calibration data) to `Compile` funtion. In addition to compiling the model, `Compile` will run the model with the calibration inputs using float32 and save the variable fix-point configuration for each input/output of each layer in the model. `Compile` will also convert the static data (weights and biases) to the appropriate fix-point representation, so no need for `ie.SetFlag('varfp', '1')` in this case.
 
 Instead of using ie.Compile, you use `Quantize` and give an array of input data:
 
@@ -820,12 +725,12 @@ for fn in os.listdir(args.imagesdir):
 #Create and initialize the Inference Engine object
 ie = microndla.MDLA()
 #Compile to a file
-swnresults = ie.Quantize('224x224x3', 'resnet18.onnx', 'save.bin', imgs)
+swnresults = ie.Compile('resnet18.onnx', 'save.bin', samples=imgs)
 ```
 
 After that, `Init` and `Run` runs as usual using the saved variable fix-point configuration.
 
-Checkout the example [quantize.py](examples/python/quantize.py) which takes same arguments as `simpledemo.py`. The only addition is a folder with the calibration input images for calibration data.
+Checkout the example [quantize.py](examples/python_api/quantize.py) which takes same arguments as `simpledemo.py`. The only addition is a folder with the calibration input images for calibration data.
 
 # 10. Running a model from your favorite deep learning framework
 

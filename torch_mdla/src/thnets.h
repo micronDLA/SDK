@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <setjmp.h>
+#include <map>
+#include <string>
+#include <vector>
 #include "thvector.h"
 #ifdef MEMORYDEBUG
 #include "memorydebug.h"
@@ -11,9 +14,7 @@
 #include "CL/opencl.h"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace thnets {
 
 enum therror {
     ERR_OPENFILE = -1,
@@ -103,19 +104,34 @@ struct threcord {
     struct thobject value;
 };
 
+enum THDATATYPE {
+#define THN_DATA_TYPE(_name_, _size_, _onnx_enum_, _nnef_name_, _c_name_) \
+    DT_ ## _name_,
+#include "thnets.def"
+#undef THN_DATA_TYPE
+};
+
 typedef struct THNStorage
 {
-    float *data;
+    void *data;
+    enum THDATATYPE datatype;
+    char datasize;
+    long size;
     int nref, mustfree; // mustfree = 0 (allocated somewhere else), 1 (free), 2 (cuda free)
 } THNStorage;
 
+#define MAX_DIM 6 // Maximum number of supported dimensions
+
 typedef struct THNTensor
 {
-    long size[5];
-    long stride[5];
+    long size[MAX_DIM];
+    long stride[MAX_DIM];
     int nDimension;
     THNStorage *storage;
     long storageOffset;
+    int bufferid;
+    enum THDATATYPE datatype;
+    char datasize;
 #ifdef LOWP
     float sub, mult;
 #endif
@@ -172,7 +188,8 @@ struct Threshold
 struct View
 {
     int numElements, nDimension;
-    long size[5];
+    long size[MAX_DIM];
+    struct { THNTensor *data, *shape; };  // Reshape
 };
 
 struct Dropout
@@ -189,7 +206,7 @@ struct SpatialZeroPadding
 struct Reshape
 {
     int numElements, batchMode;
-    long size[5], batchsize[5];
+    long size[MAX_DIM], batchsize[MAX_DIM];
     int nsize, nbatchsize;
 };
 
@@ -208,6 +225,34 @@ struct Concat
 {
     struct network *net;
     int dimension;
+};
+
+struct Cast
+{
+    THDATATYPE to;
+};
+
+struct ConstantOfShape
+{
+    THNTensor *value;
+};
+
+struct Gather
+{
+    int axis;
+    THNTensor *data, *indices;
+};
+
+struct InstanceNormalization
+{
+    float epsilon;
+    THNTensor *scale, *bias;
+};
+
+struct LRN
+{
+    float alpha, beta, bias;
+    struct { size_t nsize; long size[MAX_DIM]; };
 };
 
 struct Sequential
@@ -229,6 +274,7 @@ struct Padding
 struct Slice
 {
     int axis, from, to;
+    struct { size_t naxes; long starts[MAX_DIM], ends[MAX_DIM], axes[MAX_DIM], steps[MAX_DIM]; };
 };
 
 struct Upsample
@@ -239,72 +285,59 @@ struct Upsample
 struct LSTM
 {
     THNTensor *W, *R, *B;
+    int activations[3];
 };
 
 struct GRU
 {
     THNTensor *W, *R, *B;
+    int activations[2];
 };
 
 struct Squeeze
 {
-    int naxes;
-    int axes[4];
+    struct { size_t naxes; int axes[MAX_DIM]; };
 };
 
+struct Tile
+{
+    struct { size_t nrepeats; long repeats[MAX_DIM]; };
+};
+
+struct Pad
+{
+    int npads;
+    long pads[MAX_DIM * 2];
+};
+
+
 enum moduletype {
-    MT_Nil,
-    MT_SpatialConvolutionMM,
-    MT_SpatialConvolutionVirtMM,
-    MT_SpatialConvolution,
-    MT_SpatialMaxPooling,
-    MT_SpatialAveragePooling,
-    MT_Linear,
-    MT_SoftMax,
-    MT_Threshold,
-    MT_View,
-    MT_Dropout,
-    MT_SpatialZeroPadding,
-    MT_Reshape,
-    MT_Normalize,
-    MT_SpatialFullConvolution,
-    MT_SpatialMaxUnpooling,
-    MT_SpatialBatchNormalization,
-    MT_Sequential,
-    MT_Concat,
-    MT_ConcatTable,
-    MT_JoinTable,
-    MT_CAddTable,
-    MT_CSubTable,
-    MT_PReLU,
-    MT_Identity,
-    MT_Padding,
-    MT_LogSoftMax,
-    MT_Slice,
-    MT_Cmax,
-    MT_Upsample,
-    MT_LSTM,
-    MT_GRU,
-    MT_Squeeze,
-    MT_Unsqueeze,
-    MT_Sigmoid,
-    MT_Tanh,
-    MT_Transpose,
-    MT_DepthwiseConvolution,
-    MT_DepthwiseTransposeConvolution,
-    MT_CMulTable,
-    MT_Elu,
-    MT_Clip
+#define THN_MODULE_TYPE(_name_) MT_ ## _name_,
+#include "thnets.def"
+#undef THN_MODULE_TYPE
 };
 
 struct network;
 
 struct module
 {
-    int type;
+    module()
+      : type(MT_UNDEFINED), updateOutput(0), nnfree(0),
+        output(0), outputs(), net(0), nnmodule(0),
+#ifdef OPENCL
+        kernel{}, clstatus(0),
+#endif // OPENCL
+        ninputs(0), noutputs(0), isoutput(0), inputs{}, outputname{}, inputnames{}
+    {
+//printf("module::module(): type:%d\n", type);
+    }
+    ~module();
+
+    moduletype type;
     THNTensor *(*updateOutput)(struct module *m, THNTensor *in);
     void (*nnfree)(struct module *m);
     THNTensor *output;
+    THNTensor *outputs[3]; // Only for LSTM and GRU that have multiple outputs
     struct network *net;
     struct nnmodule *nnmodule;
 #ifdef OPENCL
@@ -314,12 +347,14 @@ struct module
     // These are currently used only by ONNX
     // They are always present in order not to require to define ONNX
     // when including this header
-    char *outputname;
     int ninputs;
+    int noutputs;
     char isoutput;
 #define MAXMODULEINPUTS 16
     int inputs[MAXMODULEINPUTS];
+    char *outputname[MAXMODULEINPUTS];//outputname: lstm have multiple outputs
     char *inputnames[MAXMODULEINPUTS];
+    std::vector<THNTensor*> all_inputs;
     // End ONNX
     union {
         struct SpatialConvolution SpatialConvolution;
@@ -344,39 +379,55 @@ struct module
         struct LSTM LSTM;
         struct GRU GRU;
         struct Squeeze Squeeze;
+        struct Tile Tile;
+        struct Cast Cast;
+        struct ConstantOfShape ConstantOfShape;
+        struct Gather Gather;
+        struct InstanceNormalization InstanceNormalization;
+        struct LRN LRN;
+        struct Pad Pad;
     };
 };
 
-// ONNX stuff
-#ifdef ONNX
-struct network *loadonnx(const char *path);
-int onnx_isinitializer(const void *graph, int nodeidx, int inputidx);
-THNTensor *onnx_gettensor(const void *graph, int nodeidx, int inputidx);
-THNTensor *onnx_getshapetensor(const void *graph, int nodeidx, int inputidx);
-int onnx_getint(const void *graph, int nodeidx, const char *attrname, int idx);
-float onnx_getfloat(const void *graph, int nodeidx, const char *attrname, int idx);
-const char *onnx_getstring(const void *graph, int nodeidx, const char *attrname, int idx);
-void onnx_printintslist(const void *graph, int nodeidx, const char *name);
-#endif
-// End ONNX
-int getoutput(struct network *net, const char *name);
-// NNEF stuff
-#ifdef NNEF
-long* nnef_getshape(const void *graph, const void *oper, const char *attrname);
-struct network *loadnnef(const char* modelpath);
-int nnef_getint(const void *oper, const char *attrname, int idx);
-int nnef_isarray(const void *oper, const char *attrname);
-float nnef_getfloat(const void *oper, const char *attrname, int idx);
-THNTensor *nnef_gettensor(const void *graph, const void *oper, const char *attrname, bool out);
-#endif
-// End NNEF
+int getoutput(struct network *net, const std::string& name);
 
-enum {ENGINE_CPU, ENGINE_CUDA, ENGINE_OPENCL, ENGINE_OPENCLINIT, ENGINE_LOWP};
+
+enum th_engine {
+    ENGINE_CPU,
+    ENGINE_CUDA,
+    ENGINE_OPENCL,
+    ENGINE_OPENCLINIT,
+    ENGINE_LOWP,
+    ENGINE_TABLE
+};
 
 struct network
 {
-    int nelem, engine;
-    struct module *modules;
+    network(th_engine engine, int nalloc);
+    ~network();
+
+    th_engine engine;
+    int nelem, nalloc;
+    module *const modules;
+    std::string inshapes; // String describing input shapes
+    std::vector<thnets::THNTensor *> in_t;// tensors describing inputs shapes
+
+    std::string onnx_domain;                    // (ONNX only) opset domain
+    long onnx_version;                          // (ONNX only) opset version
+
+    std::map<std::string,THNTensor> tensors;    // list of tensors in the network
+    std::vector<std::string> inputs;            // list of input tensor ids
+
+    // Get network input index. Inputs are encoded as negative numbers,
+    // the first input is -1, the second -2, ...
+    // Return 0 if name is not an input.
+    int getInput(const std::string& name) const
+    {
+        for (size_t i = 0; i < inputs.size(); ++i)
+            if (inputs[i] == name)
+                return -1 - i;
+        return 0;
+    }
 };
 
 struct object2module
@@ -394,19 +445,25 @@ int TableGetBoolean(struct table *t, const char *name);
 THNTensor *TableGetTensor(struct table *t, const char *name);
 void *TableGetStorage(struct table *t, const char *name, int *nelem);
 struct nnmodule *TableGetNNModule(struct table *t, const char *name);
-void THError(const char *fmt, ...);
-THNTensor *THNTensor_new();
-THNStorage *THNStorage_new(long size);
-THNStorage *THNStorage_newwithbuffer(void *buffer);
+[[noreturn]] void THError(const char *fmt, ...);
+THNTensor *THNTensor_new(enum THDATATYPE datatype);
+THNStorage *THNStorage_new(long size, enum THDATATYPE datatype);
+THNStorage *THNStorage_newwithbuffer(void *buffer, enum THDATATYPE datatype);
 THNTensor *THNTensor_newWithStorage1d(THNStorage *storage, long storageOffset, long size0, long stride0);
 THNTensor *THNTensor_newWithStorage2d(THNStorage *storage, long storageOffset, long size0, long stride0, long size1, long stride1);
 THNTensor *THNTensor_newWithStorage3d(THNStorage *storage, long storageOffset, long size0, long stride0, long size1, long stride1, long size2, long stride2);
 THNTensor *THNTensor_newWithTensor(THNTensor *tensor);
+bool THNTensor_isZero(THNTensor *t);
+void THNTensor_defaultStrides(THNTensor *t);
 void THNTensor_transpose(THNTensor *tdst, THNTensor *tsrc, int dimension1, int dimension2);
 THNTensor *THNTensor_newTranspose(THNTensor *tensor, int dimension1_, int dimension2_);
-float *THNTensor_data(THNTensor *tensor);
+void *THNTensor_data(THNTensor *tensor);
+float *THNTensor_fdata(THNTensor *tensor);
+long *THNTensor_ldata(THNTensor *tensor);
 int THNTensor_isSameSizeAs(const THNTensor *self, const THNTensor* src);
+const std::string THNTensor_Shape(THNTensor *t);
 void THNTensor_resize(THNTensor *t, long *size, int nDimension);
+void THNTensor_resizeNoStorage(THNTensor *t, long *size, int nDimension);
 void THNTensor_resize4d(THNTensor *t, long size0, long size1, long size2, long size3);
 void THNTensor_resize3d(THNTensor *t, long size0, long size1, long size2);
 void THNTensor_resize2d(THNTensor *t, long size0, long size1);
@@ -435,6 +492,8 @@ void THNTensor_conv2Dmv(THNTensor *r_, float beta, float alpha, THNTensor *t_, T
 
 #define thfmaxf(a,b) ((a) > (b) ? (a) : (b))
 #define thfminf(a,b) ((a) < (b) ? (a) : (b))
+#define TH_MODULEIDX(a) ((a) >= 0 ? (a) & 0xffffff : (a)) // modules[].inputs[] contains the moduleidx & module output in the 8 MSBs
+#define TH_OUTIDX(a) ((a) >= 0 ? (a) >> 24  : (a))
 
 #define THInf FLT_MAX
 
@@ -446,133 +505,13 @@ void fromfp16(float *dst, const __fp16 *src, size_t len);
 int loadtorch(const char *path, struct thobject *obj, int longsize);
 int printobject(struct thobject *obj, int indent);
 int freeobject(struct thobject *obj);
-void freemodule(struct module *m);
-void freenetwork(struct network *net);
 THNTensor *forward(struct network *net, THNTensor *in);
 THNTensor *THNTensor_newFromObject(struct thobject *obj);
 struct network *Module2Network(struct nnmodule *obj);
 void printtensor(THNTensor *t);
-void blas_init();
 double th_seconds();
 
-THNTensor *nn_SpatialConvolutionMM_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_SpatialConvolution_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_SpatialMaxPooling_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_SpatialAveragePooling_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Threshold_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_View_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_SoftMax_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Linear_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Dropout_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_SpatialZeroPadding_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Reshape_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Normalize_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_SpatialFullConvolution_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_SpatialMaxUnpooling_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_SpatialBatchNormalization_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Sequential_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Concat_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_ConcatTable_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_JoinTable_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_CAddTable_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_PReLU_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Identity_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_LogSoftMax_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Slice_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Cmax_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Sigmoid_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Tanh_updateOutput(struct module *module, THNTensor *input);
-THNTensor *nn_Upsample_updateOutput(struct module *module, THNTensor *input);
-THNTensor *updateOutput_Transpose(struct module *m, THNTensor *t);
-THNTensor *updateOutput_Squeeze(struct module *m, THNTensor *t);
-THNTensor *updateOutput_Unsqueeze(struct module *m, THNTensor *t);
-
-int nnload_SpatialConvolution(struct module *mod, struct nnmodule *n);
-int nnload_SpatialMaxPooling(struct module *mod, struct nnmodule *n);
-int nnload_SpatialAveragePooling(struct module *mod, struct nnmodule *n);
-int nnload_Threshold(struct module *mod, struct nnmodule *n);
-int nnload_View(struct module *mod, struct nnmodule *n);
-int nnload_SoftMax(struct module *mod, struct nnmodule *n);
-int nnload_Linear(struct module *mod, struct nnmodule *n);
-int nnload_Dropout(struct module *mod, struct nnmodule *n);
-int nnload_SpatialZeroPadding(struct module *mod, struct nnmodule *n);
-int nnload_Reshape(struct module *mod, struct nnmodule *n);
-int nnload_Normalize(struct module *mod, struct nnmodule *n);
-int nnload_SpatialFullConvolution(struct module *mod, struct nnmodule *n);
-int nnload_SpatialMaxUnpooling(struct module *mod, struct nnmodule *n);
-int nnload_SpatialBatchNormalization(struct module *mod, struct nnmodule *n);
-int nnload_Sequential(struct module *mod, struct nnmodule *n);
-int nnload_Concat(struct module *mod, struct nnmodule *n);
-int nnload_ConcatTable(struct module *mod, struct nnmodule *n);
-int nnload_JoinTable(struct module *mod, struct nnmodule *n);
-int nnload_CAddTable(struct module *mod, struct nnmodule *n);
-int nnload_PReLU(struct module *mod, struct nnmodule *n);
-int nnload_Identity(struct module *mod, struct nnmodule *n);
-int nnload_LogSoftMax(struct module *mod, struct nnmodule *n);
-
-void thload_Conv2d(struct module *m, float* weight, float* bias,
-        int inp, int outp, int kW, int kH, int pW, int pH, int dW, int dH, int dlW, int dlH, int group);
-void thload_TransposedConv2d(struct module *m, float* weight, float* bias,
-        int inp, int outp, int kW, int kH, int pW, int pH, int dW, int dH, int opW, int opH, int group);
-void thload_Threshold(struct module *m);
-void thload_Maxpool2d(struct module *m,
-        int kW, int kH, int pW, int pH, int dW, int dH, int dlW, int dlH, bool ceil);
-void thload_Avgpool2d(struct module *m,
-        int kW, int kH, int pW, int pH, int dW, int dH, bool ceil);
-void thload_Linear(struct module *m, float* weight, float* bias, int i, int o);
-void thload_View(struct module *m);
-void thload_Sigmoid(struct module *m);
-void thload_Tanh(struct module *m);
-void thload_BatchNorm(struct module *m, float* weight, float* bias, float* run_mean, float* run_var, float eps, int len);
-void thload_Add(struct module *m);
-void thload_Sub(struct module *m);
-void thload_Concat(struct module *m, int dim);
-void thload_Upsample(struct module *m, int w_scale, int h_scale);
 void absorb_bn(struct network *net, int bnidx, struct module *convm);
-
-void nnefload_SpatialConvolution(const void *graph, struct module *m, const void *oper);
-void nnefload_SpatialConvolutionTransposed(const void *graph, struct module *m, const void *oper);
-void nnefload_Linear(const void *graph, struct module *m, const void *oper);
-void nnefload_SpatialBatchNormalization(const void *graph, struct module *m, const void *oper);
-void nnefload_SpatialMaxPooling(const void *graph, struct module *m, const void *oper);
-void nnefload_SpatialAveragePooling(const void *graph, struct module *m, const void *oper);
-void nnefload_Threshold(const void *graph, struct module *m, const void *oper);
-void nnefload_PReLU(const void *graph, struct module *m, const void *oper);
-void nnefload_Dropout(const void *graph, struct module *m, const void *oper);
-void nnefload_SoftMax(const void *graph, struct module *m, const void *oper);
-void nnefload_LogSoftMax(const void *graph, struct module *m, const void *oper);
-void nnefload_View(const void *graph, struct module *m, const void *oper);
-void nnefload_Add(const void *graph, struct module *m, const void *oper);
-void nnefload_Sub(const void *graph, struct module *m, const void *oper);
-void nnefload_Mul(const void *graph, struct module *m, const void *oper);
-void nnefload_Concat(const void *graph, struct module *m, const void *oper);
-void nnefload_Slice(const void *graph, struct module *m, const void *oper);
-void nnefload_Cmax(const void *graph, struct module *m, const void *oper);
-void nnefload_Sigmoid(const void *graph, struct module *m, const void *oper);
-void nnefload_Tanh(const void *graph, struct module *m, const void *oper);
-void nnefload_Upsample(const void *graph, struct module *m, const void *oper);
-
-void onnxload_SpatialConvolution(const void *graph, struct module *m, int nodeidx);
-void onnxload_SpatialConvolutionTransposed(const void *graph, struct module *m, int nodeidx);
-void onnxload_Linear(const void *graph, struct module *m, int nodeidx);
-void onnxload_SpatialBatchNormalization(const void *graph, struct module *m, int nodeidx);
-void onnxload_SpatialMaxPooling(const void *graph, struct module *m, int nodeidx);
-void onnxload_SpatialAveragePooling(const void *graph, struct module *m, int nodeidx);
-void onnxload_Threshold(const void *graph, struct module *m, int nodeidx);
-void onnxload_PReLU(const void *graph, struct module *m, int nodeidx);
-void onnxload_Dropout(const void *graph, struct module *m, int nodeidx);
-void onnxload_SoftMax(const void *graph, struct module *m, int nodeidx);
-void onnxload_LogSoftMax(const void *graph, struct module *m, int nodeidx);
-void onnxload_View(const void *graph, struct module *m, int nodeidx);
-void onnxload_Add(const void *graph, struct module *m, int nodeidx);
-void onnxload_Sub(const void *graph, struct module *m, int nodeidx);
-void onnxload_Mul(const void *graph, struct module *m, int nodeidx);
-void onnxload_Concat(const void *graph, struct module *m, int nodeidx);
-void onnxload_Slice(const void *graph, struct module *m, int nodeidx);
-void onnxload_Cmax(const void *graph, struct module *m, int nodeidx);
-void onnxload_Sigmoid(const void *graph, struct module *m, int nodeidx);
-void onnxload_Tanh(const void *graph, struct module *m, int nodeidx);
-void onnxload_Upsample(const void *graph, struct module *m, int nodeidx);
 
 /* High level API */
 
@@ -587,6 +526,7 @@ typedef struct thnetwork
 
 void THInit();
 THNETWORK *THLoadNetwork(const char *path);
+THNETWORK *THSimplify(THNETWORK *network);
 THNTensor *THForward(THNETWORK *net, THNTensor *in);
 void THMakeSpatial(THNETWORK *network, int size);
 int THProcessFloat(THNETWORK *network, float *data, int batchsize, int width, int height, int nplanes, float **result, int *outwidth, int *outheight);
@@ -621,6 +561,23 @@ void transform_mem(struct module newmod, int col, int row, int plane, int outp);
 float* transform_mem_input(float* in1, int col, int row, int plane);
 #endif
 
-#ifdef __cplusplus
-}
-#endif
+}  // namespace thnets
+
+void thload_Conv2d(struct thnets::module *m, float* weight, float* bias,
+        int inp, int outp, int kW, int kH, int pW, int pH, int dW, int dH, int dlW, int dlH, int group);
+void thload_TransposedConv2d(struct thnets::module *m, float* weight, float* bias,
+        int inp, int outp, int kW, int kH, int pW, int pH, int dW, int dH, int opW, int opH, int group);
+void thload_Threshold(struct thnets::module *m);
+void thload_Maxpool2d(struct thnets::module *m,
+        int kW, int kH, int pW, int pH, int dW, int dH, int dlW, int dlH, bool ceil);
+void thload_Avgpool2d(struct thnets::module *m,
+        int kW, int kH, int pW, int pH, int dW, int dH, bool ceil);
+void thload_Linear(struct thnets::module *m, float* weight, float* bias, int i, int o);
+void thload_View(struct thnets::module *m);
+void thload_Sigmoid(struct thnets::module *m);
+void thload_Tanh(struct thnets::module *m);
+void thload_BatchNorm(struct thnets::module *m, float* weight, float* bias, float* run_mean, float* run_var, float eps, int len);
+void thload_Add(struct thnets::module *m);
+void thload_Sub(struct thnets::module *m);
+void thload_Concat(struct thnets::module *m, int dim);
+void thload_Upsample(struct thnets::module *m, int w_scale, int h_scale);

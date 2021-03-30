@@ -11,7 +11,7 @@
 #ifndef _IE_API_H_INCLUDED_
 #define _IE_API_H_INCLUDED_
 
-static const char *microndla_version = "2020.2.0";
+static const char *microndla_version = "2021.1.0";
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@ int IECOMPILER_API set_external_wait(void *cmemo, bool (*wait_ext) (int));
 /*!
 Allow to pass externally created thnets net into node list
 */
-void IECOMPILER_API ext_thnets2lst(void *cmemo,  void* nett, char* image, int limit);
+void IECOMPILER_API ext_thnets2lst(void *cmemo,  void* nett, char* image, int limit, int batch);
 
 /*!
 Create an Inference Engine object
@@ -56,95 +56,99 @@ void IECOMPILER_API *ie_create();
 /*
 All-in-one: Compile a network, Initialize FPGA, and Run accelerator
     @param cmemo        pointer to an Inference Engine object object.  May be null.
-    @param image        image file or image size in the format WxHxP or WxHxPxB or WxHxDxPxB, multiple inputs separated by semi-colon
     @param modelpath    path to the onnx file
-    @param fbitfile     path to bitfile with FPGA code (part of the SDK)
-    @param numcard      number of FPGAs to use
-    @param numclus      number of clusters to use
-    @param input        input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
-    @param output       output data in [P, H, W] order, one pointer per input
+    @param inshapes     shape of the inputs in the form size0xsize1xsize2...; more inputs are separated by semi-colon; this parameter is optional as the shapes of the inputs can be obtained from the model file
+    @param input        input data, one pointer per input
+    @param output       output data, one pointer per output
     @return -1 (error), 0 (pass)
 */
-int IECOMPILER_API ie_go(void *cmemo, const char *image, const char *modelpath, const char *fbitfile, int numcard, int numclus, const float * const *input, float **output);
+int IECOMPILER_API ie_go(void *cmemo, const char *modelpath, const char *inshapes, const float * const *input, float **output);
 
-/*
+/*!
+Compile a network and produce a .bin file with everything that is needed to execute in hardware.
+const float * const *input, const uint64_t *input_elements, unsigned ninputs
 Run static quantization of inputs, weight and outputs over a calibration dataset
     @param cmemo        pointer to an Inference Engine object.   May be null
-    @param image        image file or image size in the format WxHxP or WxHxPxB or WxHxDxPxB, multiple inputs separated by semi-colon
     @param modelpath    path to the onnx file
     @param outbin       path to output .bin file
-    @param swoutsize    output size (including the layers run in software) assuming batch 1, in number of elements, one per output
-    @param noutputs     number of returned output arrays
-    @param numcard      number of FPGAs to use
-    @param numclus      number of clusters to use
-    @param input        input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
-    @param num_inputs   number of inputs in the calibration dataset
-    @return -1 (error), 0 (pass)
+    @param inshapes     shape of the inputs in the form size0xsize1xsize2...; more inputs are separated by semi-colon; this parameter is optional as the shapes of the inputs can be obtained from the model file
+    @param noutputs     number of returned outputs
+    @param noutdims     returns a pointer to noutputs values with the dimensions of each output
+    @param outshapes    returns a pointer to noutputs pointers to the shapes of each output
+    @param input            pointers to the calibration dataset
+    @param input_elements   size of the input in number of elements, one per input
+    @param ninputs          number of inputs, must be a multiple of the inputs expected by the network
+    @return context object
 */
-void IECOMPILER_API *ie_quantize(void *cmemo, const char *image, const char *modelpath, const char* outbin,
-                    uint64_t *swoutsize, int *noutputs, int numcard, int numclus, float **input, int num_inputs);
+void IECOMPILER_API *ie_compile_vfp(void *cmemo, const char *modelpath, const char* outbin, const char *inshapes,
+                    unsigned *noutputs, unsigned **noutdims, uint64_t ***outshapes,
+                    const float * const *inputs, const uint64_t *input_elements, unsigned ninputs);
 
 /*!
 Compile a network and produce a .bin file with everything that is needed to execute in hardware.
 If the model contains some layers that cannot be run in hardware, they will be run in software.
 In this case, ie_compile is necessary, ie_init with a previously generated bin file is not enough
     @param cmemo        pointer to an Inference Engine object.   May be null
-    @param image        image file or image size in the format WxHxP or WxHxPxB or WxHxDxPxB, multiple inputs separated by semi-colon
     @param modelpath    path to the onnx file
     @param outbin       path to output .bin file
-    @param swoutsize    output size (including the layers run in software) assuming batch 1, in number of elements, one per output
-    @param noutputs     number of returned output arrays
-    @param numcard      number of FPGAs to use
-    @param numclus      number of clusters to use
+    @param inshapes     shape of the inputs in the form size0xsize1xsize2...; more inputs are separated by semi-colon; this parameter is optional as the shapes of the inputs can be obtained from the model file
+    @param noutputs     number of returned outputs
+    @param noutdims     returns a pointer to noutputs values with the dimensions of each output
+    @param outshapes    returns a pointer to noutputs pointers to the shapes of each output
     @return context object
 */
-void IECOMPILER_API *ie_compile(void *cmemo, const char *image, const char *modelpath, const char *outbin,
-                     uint64_t *swoutsize, int *noutputs, int numcard, int numclus);
-
+void IECOMPILER_API *ie_compile(void *cmemo, const char *modelpath, const char *outbin, const char *inshapes, unsigned *noutputs, unsigned **noutdims, uint64_t ***outshapes);
 /*!
 Load a .bin file into the hardware and initialize it
-    @param cmemo        pointer to an Inference Engine object.   May be null
-    @param fbitfile     path to bitfile with FPGA code (part of the SDK)
+    @param cmemo        pointer to an Inference Engine object, may be null
     @param inbin        path to .bin file generated by ie_compile
     @param outsize      output size assuming batch 1, in number of elements, one per output
     @param noutputs     returns number of outputs
     @param cmemp        copy the FPGA info to this cmem (copies pico)
+    @param noutputs     number of returned outputs
+    @param noutdims     returns a pointer to noutputs values with the dimensions of each output
+    @param outshapes    returns a pointer to noutputs pointers to the shapes of each output
+    @param cmemp        pointer to another Inference Engine object already initialized with another network, may be null
     @return context object
 */
-void IECOMPILER_API *ie_init(void *cmemo, const char *fbitfile, const char *inbin, uint64_t *outsize, int *noutputs, void *cmemp);
+void IECOMPILER_API *ie_init(void *cmemo, const char *inbin, unsigned *noutputs, unsigned **noutdims, uint64_t ***outshapes, void *cmemp);
 
 /*!
 Run hardware
 It does the steps sequentially. putInput, compute, getResult
     @param cmemo            pointer to an Inference Engine object
-    @param input            input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
+    @param input            pointers to input data
     @param input_elements   size of the input in number of elements, one per input
-    @param output           output data in [P, H, W] order, one pointer per input
+    @param ninputs          number of inputs
+    @param output           pointers to memory buffers where the output will be saved
     @param output_elements  size allocated for output in number of elements, one per output
+    @param noutputs         number of outputs
     @return -1 (error), 0 (pass)
 */
-int IECOMPILER_API ie_run(void *cmemo, const float * const *input, const uint64_t *input_elements, float **output, uint64_t *output_elements);
+int IECOMPILER_API ie_run(void *cmemo, const float * const *input, const uint64_t *input_elements, unsigned ninputs, float **output, uint64_t *output_elements, unsigned noutputs);
 
 /*!
 Send input to the hardware and start Micron DLA hardware
     @param cmemo            pointer to an Inference Engine object
-    @param input            input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
+    @param input            pointers to input data
     @param input_elements   size of the input in number of elements, one per input
+    @param ninputs          number of inputs
     @param userparam        user defined parameter useful to associate inputs and outputs
     @return -1 (error), 0 (pass)
 */
-int IECOMPILER_API ie_putinput(void *cmemo, const float * const *input, const uint64_t *input_elements, void *userparam);
+int IECOMPILER_API ie_putinput(void *cmemo, const float * const *input, const uint64_t *input_elements, unsigned ninputs, void *userparam);
 
 /*!
 Get an output from the hardware. If the blockingmode flag was set then it will wait for Micron DLA hardware to finish, otherwise it will return -1
 in case the output is not ready
     @param cmemo            pointer to an Inference Engine object
-    @param output           output data in [P, H, W] order, one pointer per input
+    @param output           pointers to memory buffers where the output will be saved
     @param output_elements  size allocated for output in number of elements, one per output
+    @param noutputs         number of outputs
     @param userparam        userparam associated to the input
     @return -1 (error), 0 (pass)
 */
-int IECOMPILER_API ie_getresult(void *cmemo, float **output, uint64_t *output_elements, void **userparam);
+int IECOMPILER_API ie_getresult(void *cmemo, float **output, uint64_t *output_elements, unsigned noutputs, void **userparam);
 
 /*!
 Set flags for the compiler
@@ -157,36 +161,41 @@ int IECOMPILER_API ie_setflag(void *cmemo, const char *name, const char *value);
 
 /*!
 Get various info about the hardware
-    @param cmemo    pointer to an Inference Engine object
-    @param name     name of the info to fetch
-    @param value    pointer to the returned value
-    @return -1 (error), 0 (pass)
+    @param cmemo     pointer to an Inference Engine object
+    @param name      name of the info to fetch
+    @param value     pointer to the returned value
+    @param valuesize size of the memory buffer pointed to by value
+    @return -1 (error), returns the type of value returned, 0 nothing, 1 string, 2 bool, 3 int, 4 int64, 5 float
 */
-int IECOMPILER_API ie_getinfo(void *cmemo, const char *name, void *value);
+int IECOMPILER_API ie_getinfo(void *cmemo, const char *name, void *value, size_t valuesize);
 
 /*!
 Run software Micron DLA emulator
 This runs the model in software using the same data precision of the accelerator
     @param cmemo            pointer to an Inference Engine object
-    @param input            input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
+    @param input            pointers to input data
     @param input_elements   size of the input in number of elements, one per input
-    @param output           output data in [P, H, W] order, one pointer per input
+    @param ninputs          number of inputs
+    @param output           pointers to memory buffers where the output will be saved
     @param output_elements  size allocated for output in number of elements, one per output
+    @param noutputs         number of outputs
     @return -1 (error), 0 (pass)
 */
-int IECOMPILER_API ie_run_sim(void *cmemo, const float * const *input, const uint64_t *input_elements, float **output, uint64_t *output_elements);
+int IECOMPILER_API ie_run_sw(void *cmemo, const float * const *input, const uint64_t *input_elements, unsigned ninputs, float **output, uint64_t *output_elements, unsigned noutputs);
 
 /*!
 Run the model with thnets
 args:
     @param cmemo            pointer to an Inference Engine object
-    @param input            input data in [P, H, W] order, one pointer per input (in case of multiple inputs)
+    @param input            pointers to input data
     @param input_elements   size of the input in number of elements, one per input
-    @param output           output data in [P, H, W] order, one pointer per input
+    @param ninputs          number of inputs
+    @param output           pointers to memory buffers where the output will be saved
     @param output_elements  size allocated for output in number of elements, one per output
+    @param noutputs         number of outputs
     @return -1 (error), 0 (pass)
 */
-int IECOMPILER_API thnets_run_sim(void *cmemo, const float * const *input, const unsigned *input_elements, float **output, unsigned *output_elements);
+int IECOMPILER_API ie_run_thnets(void *cmemo, const float * const *input, const uint64_t *input_elements, unsigned ninputs, float **output, uint64_t *output_elements, unsigned noutputs);
 
 /*!
 Free FPGA instance
@@ -361,7 +370,7 @@ static inline void *ie_safecreate()
     char version[10];
     void *cmemo = ie_create();
 
-    if(ie_getinfo(cmemo, "version", version))
+    if(ie_getinfo(cmemo, "version", version, 10) != 1)
     {
         fprintf(stderr, "Wrong libmicrondla.so version\n");
         exit(-1);

@@ -31,14 +31,14 @@ def ieprocess(image_file, network_file):
 	ie = microndla.MDLA()
 
 	#Compile to a file
-	swnresults = ie.Compile("{:d}x{:d}x{:d}".format(224,224,3), network_file, 'save.bin')
+	ie.Compile(network_file, 'save.bin')
 
 	#Init fpga
-	nresults = ie.Init('save.bin', '')
+	ie.Init('save.bin')
 
 	#Create the storage for the result and run one inference
-	result = np.ndarray(swnresults,dtype=np.float32)
-	ie.Run(img, result)
+	result = ie.Run(img)
+	result = np.squeeze(result, axis=0)
 
 	#Convert to numpy and print top-5
 	idxs = (-result).argsort()
