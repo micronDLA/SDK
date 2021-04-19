@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = '2020.1'
+__version__ = '2021.1'
 
 setup(name='microndla',
     version=__version__,
