@@ -70,9 +70,7 @@ This SDK folder contains:
 
 Request pico-computing installer and docker images in [here](https://picocomputing.zendesk.com/hc/en-us). We will reply your request with the files you need for installation.
 
-There are 2 ways to setup:
- 1. install [pico-computing](#pico-computing) and use the [docker image](#docker-image)
- 2. install [pico-computing](#pico-computing) and do [manual installation of SDK](#manual-installation)
+Then follow [pico-computing](#pico-computing) installation
 
 ## System requirements
 
@@ -117,7 +115,10 @@ lsmod | grep -i pico
     pico                 3493888  12
 ```
 
-## Docker Image
+## Docker Image (optional)
+
+If you want to use MDLA with docker, then you need to install [pico-computing](#pico-computing) and [docker](https://docs.docker.com/get-docker/).
+
 To start a docker with the Micron DLA SDK you can either download prebuilt images or build them yourself. The benefit of custom building the image is that you can adjust the OS packages you want installed at build time. The trade-off is waiting through the build process of about 15-30min (depending on network and CPU speed).
 
 ### Load prebuilt Image.
