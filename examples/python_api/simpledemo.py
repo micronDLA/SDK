@@ -39,13 +39,10 @@ for i in range(3):
 
 #Create and initialize the Inference Engine object
 ie = microndla.MDLA()
-# ie.SetFlag('debug','bw')
+#ie.SetFlag('debug','bw')
 
 #Compile to a file
-ie.Compile(args.modelpath, 'save.bin')
-
-#Init fpga
-ie.Init('save.bin')
+ie.Compile(args.modelpath)
 
 #Create the storage for the result and run one inference
 result = ie.Run(img)

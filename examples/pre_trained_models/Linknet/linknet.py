@@ -66,12 +66,11 @@ class LinknetDLA:
         #self.dla.SetFlag('debug', 'b')
         self.height, self.width, self.channels = input_img.shape
         # Compile the NN and generate instructions <save.bin> for MDLA
-        self.dla.Compile(model_path, 'save.bin', "1x{:d}x{:d}x{:d}".format(self.channels, self.height, self.width))
+        self.dla.Compile(model_path)
         print('{}{}{}'.format(CP_C, 'Successfully generated binaries for MDLA', CP_0))
         # Send the generated instructions to MDLA
         # Send the bitfile to the FPGA only during the first run
         # Otherwise bitfile is an empty string
-        self.dla.Init('save.bin')
         print('\n{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_0))
         print('{:-<80}'.format(''))
 

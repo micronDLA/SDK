@@ -52,10 +52,7 @@ ie = microndla.MDLA()
 #ie.SetFlag('debug','bw')
 
 #Compile to a file
-swnresults = ie.Compile(args.modelpath, 'save.bin')
-
-#Init fpga
-ie.Init('save.bin')
+swnresults = ie.Compile(args.modelpath)
 
 categories = None
 if args.categories != '':

@@ -47,9 +47,8 @@ if args.verbose:
     sf.SetFlag('debug', 'b')#debug options
 
 # Compile to generate binary
-sf.Compile('net_conv.onnx', 'net_conv.bin')
+sf.Compile('net_conv.onnx')
 
-sf.Init("./net_conv.bin")
 in_1 = np.ascontiguousarray(inVec1)
 result = sf.Run(in_1)
 

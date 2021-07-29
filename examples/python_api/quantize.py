@@ -55,10 +55,7 @@ ie = microndla.MDLA()
 #ie.SetFlag('debug','bw')
 
 #Compile to a file
-ie.Compile(args.modelpath, 'save.bin', samples = imgs)
-
-#Init fpga
-ie.Init('save.bin')
+ie.Compile(args.modelpath, samples = imgs)
 
 #Create the storage for the result and run one inference
 result = ie.Run(img)

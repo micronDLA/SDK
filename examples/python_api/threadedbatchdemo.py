@@ -85,10 +85,7 @@ ie.SetFlag('imgs_per_cluster', str(args.batch))
 ie.SetFlag('nfpgas', str(args.nfpgas))
 ie.SetFlag('nclusters', str(args.nclusters))
 #Compile to a file
-ie.Compile(args.modelpath, 'save.bin')
-
-#Init fpga
-ie.Init('save.bin')
+ie.Compile(args.modelpath)
 
 batchsize = args.nfpgas * args.nclusters * args.batch
 thread = threading.Thread(target = GetResult)

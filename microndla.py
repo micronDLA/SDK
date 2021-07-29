@@ -53,11 +53,11 @@ class MDLA:
         self.ie_loadmulti.restype = c_void_p
 
         self.ie_compile_vfp = f.ie_compile_vfp
-        self.ie_compile_vfp.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_uint), POINTER(POINTER(c_uint)), POINTER(POINTER(POINTER(c_ulonglong))), POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint]
+        self.ie_compile_vfp.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_uint), POINTER(POINTER(c_uint)), POINTER(POINTER(POINTER(c_ulonglong))), POINTER(POINTER(c_float)), POINTER(c_ulonglong), c_uint, c_void_p]
         self.ie_compile_vfp.restype = c_void_p
 
         self.ie_compile = f.ie_compile
-        self.ie_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_uint), POINTER(POINTER(c_uint)), POINTER(POINTER(POINTER(c_ulonglong)))]
+        self.ie_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p, POINTER(c_uint), POINTER(POINTER(c_uint)), POINTER(POINTER(POINTER(c_ulonglong))), c_void_p]
         self.ie_compile.restype = c_void_p
 
         self.ie_init = f.ie_init
@@ -155,8 +155,8 @@ class MDLA:
     # Yshift: number of rational bits for output when converting to int
     # Ygshift: number of ration bits for gradient when converting to int (used only in external gradient calculation)
     # rate: learning rate; if 0, gradient will be calculated externally; if > 0, it will be the learning rate with LMS loss calculated internally
-    def TrainlinearStart(self, batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate, nclusters=1):
-        self.trainlinear_start(self.handle, A.shape[1], A.shape[0], batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate, nclusters)
+    def TrainlinearStart(self, batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate):
+        self.trainlinear_start(self.handle, A.shape[1], A.shape[0], batchsize, A, b, Ashift, Xshift, Yshift, Ygshift, rate)
 
     # Pass training data to main memory so that MDLA can access it
     # All training data can be stored in memory at different indexes only at the beginning, so it won't be required
@@ -236,17 +236,22 @@ class MDLA:
 
     def CreateResults(self, noutputs, noutdims, outshapes):
         self.results = []
+        no_rearrange = self.GetInfo('no_rearrange')
+        if no_rearrange == 2:
+            dt = np.int16
+        else:
+            dt = np.float32
         for i in range(noutputs.value):
             if noutdims[i] == 1:
-                r = np.ndarray((outshapes[i][0]), dtype=np.float32)
+                r = np.ndarray((outshapes[i][0]), dtype=dt)
             elif noutdims[i] == 2:
-                r = np.ndarray((outshapes[i][0], outshapes[i][1]), dtype=np.float32)
+                r = np.ndarray((outshapes[i][0], outshapes[i][1]), dtype=dt)
             elif noutdims[i] == 3:
-                r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2]), dtype=np.float32)
+                r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2]), dtype=dt)
             elif noutdims[i] == 4:
-                r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2], outshapes[i][3]), dtype=np.float32)
+                r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2], outshapes[i][3]), dtype=dt)
             elif noutdims[i] == 5:
-                r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2], outshapes[i][3], outshapes[i][4]), dtype=np.float32)
+                r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2], outshapes[i][3], outshapes[i][4]), dtype=dt)
             self.results.append(r)
         if noutputs.value == 1:
             self.results = self.results[0]
@@ -259,18 +264,31 @@ class MDLA:
     #        This parameter is normally inferred from the model file, it can be overridden in case we
     #        want to change some input dimension
     # samples: a list of images in numpy float32 format used to choose the proper quantization for variable-fixed-point
-    def Compile(self, modelpath, outfile, inshapes = None, samples = None):
+    def Compile(self, modelpath, inshapes = None, samples = None, MDLA = None, outfile = None):
         noutputs = c_uint()
         noutdims = pointer(c_uint())
         outshapes = pointer(pointer(c_ulonglong()))
+        no_rearrange = self.GetInfo('no_inarrange')
+        if no_rearrange == 2:
+            self.indt = np.int16
+        else:
+            self.indt = np.float32
+        if MDLA is not None:
+            handle = MDLA.handle
+        else:
+            handle = POINTER(c_void_p)()
+        if outfile is None:
+            outfile = c_char_p()
+        else:
+            outfile = bytes(outfile, 'ascii')
         if samples is None:
-            self.handle = self.ie_compile(self.handle, bytes(self.GetONNX(modelpath), 'ascii'), bytes(outfile, 'ascii'), \
-                bytes(inshapes, 'ascii') if inshapes is not None else None, byref(noutputs), byref(noutdims), byref(outshapes))
+            self.handle = self.ie_compile(self.handle, bytes(self.GetONNX(modelpath), 'ascii'), outfile, \
+                bytes(inshapes, 'ascii') if inshapes is not None else None, byref(noutputs), byref(noutdims), byref(outshapes), handle)
         else:
             imgs, sizes, nimgs, keepalive = self.inparams(samples)
-            self.handle = self.ie_compile_vfp(self.handle, bytes(self.GetONNX(modelpath), 'ascii'), bytes(outfile, 'ascii'), \
+            self.handle = self.ie_compile_vfp(self.handle, bytes(self.GetONNX(modelpath), 'ascii'), outfile, \
                 bytes(inshapes, 'ascii') if inshapes is not None else None, byref(noutputs), byref(noutdims), byref(outshapes),
-                imgs, sizes, nimgs)
+                imgs, sizes, nimgs, handle)
         if self.handle == None:
             raise Exception('Init failed')
         self.CreateResults(noutputs, noutdims, outshapes)
@@ -287,17 +305,18 @@ class MDLA:
             ret += (outsize[i],)
         return ret
 
-    #returns the context obj
-    def get_handle(self):
-        return self.handle
     #initialization routines for Micron DLA hardware
     # infile: model binary file path
     # cmem: another MDLA obj to be combined with this MDLA run
-    def Init(self, infile, cmem = None):
+    def Init(self, infile, MDLA = None):
         noutputs = c_uint()
         noutdims = pointer(c_uint())
         outshapes = pointer(pointer(c_ulonglong()))
-        self.handle = self.ie_init(self.handle, bytes(infile, 'ascii'), byref(noutputs), byref(noutdims), byref(outshapes), cmem)
+        if MDLA is not None:
+            handle = MDLA.handle
+        else:
+            handle = POINTER(c_void_p)()
+        self.handle = self.ie_init(self.handle, bytes(infile, 'ascii'), byref(noutputs), byref(noutdims), byref(outshapes), handle)
         if self.handle == None:
             raise Exception('Init failed')
         self.CreateResults(noutputs, noutdims, outshapes)
@@ -311,8 +330,12 @@ class MDLA:
     # name: string with the flag name
     # value: to be assigned to the flag
     # currently available options are listed in Codes.md
-    def SetFlag(self, name, value):
-        if name == 'hwversion':
+    def SetFlag(self, name, value=''):
+        if isinstance(name, dict):
+            for k in name.keys():
+                self.SetFlag(k, name[k])
+            return
+        elif name == 'hwversion':
             rc = self.ie_setflag(self.handle, bytes(name, 'ascii'), value)
         else:
             rc = self.ie_setflag(self.handle, bytes(name, 'ascii'), bytes(str(value), 'ascii'))
@@ -341,19 +364,11 @@ class MDLA:
 
     def outparams(self, results):
         if type(results) == np.ndarray:
-            if results.dtype != np.float32:
-                raise Exception('Output must be float32')
-            if not results.flags['C_CONTIGUOUS']:
-                raise Exception('Output must be a contiguous array')
             return byref(results.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(results.size)), 1
         elif type(results) == tuple or type(results) == list:
             cresults = (POINTER(c_float) * len(results))()
             csizes = (c_ulonglong * len(results))()
             for i in range(len(results)):
-                if results[i].dtype != np.float32:
-                    raise Exception('Output must be float32')
-                if not results[i].flags['C_CONTIGUOUS']:
-                    raise Exception('Output must be a contiguous array')
                 cresults[i] = results[i].ctypes.data_as(POINTER(c_float))
                 csizes[i] = results[i].size
             return cresults, csizes, len(results)
@@ -362,7 +377,7 @@ class MDLA:
 
     def inparams(self, images):
         if type(images) == np.ndarray:
-            keepalive = np.ascontiguousarray(images.astype(np.float32))
+            keepalive = np.ascontiguousarray(images.astype(self.indt))
             return byref(keepalive.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(images.size)), 1, keepalive
         elif type(images) == tuple or type(images) == list:
             if type(images[0]) == tuple or type(images[0]) == list:
@@ -372,7 +387,7 @@ class MDLA:
                 for i in range(len(images)):
                     n = len(images[0])
                     for j in range(n):
-                        cf = np.ascontiguousarray(images[i][j].astype(np.float32))
+                        cf = np.ascontiguousarray(images[i][j].astype(self.indt))
                         keepalive.append(cf)
                         cimages[i*n + j] = cf.ctypes.data_as(POINTER(c_float))
                         csizes[i*n + j] = images[i][j].size
@@ -382,7 +397,7 @@ class MDLA:
                 keepalive = []
                 csizes = (c_ulonglong * len(images))()
                 for i in range(len(images)):
-                    cf = np.ascontiguousarray(images[i].astype(np.float32))
+                    cf = np.ascontiguousarray(images[i].astype(self.indt))
                     keepalive.append(cf)
                     cimages[i] = cf.ctypes.data_as(POINTER(c_float))
                     csizes[i] = images[i].size

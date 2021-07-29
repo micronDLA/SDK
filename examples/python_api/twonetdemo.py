@@ -45,21 +45,22 @@ for i in range(2):
         img[i][j] = (img[i][j] - stat_mean[j])/stat_std[j]
 
 #Create and initialize the Inference Engine object
+nclus = 2
 ie = microndla.MDLA()
-# ie.SetFlag('debug','bw')
+ie2 = microndla.MDLA()
+ie.SetFlag({'nclusters': nclus, 'clustersbatchmode': 1})
+ie2.SetFlag({'nclusters': nclus, 'firstcluster': nclus, 'clustersbatchmode': 1})
 
 #Compile to a file
-ie.Compile(args.modelpath1, 'save1.bin')
-ie.Compile(args.modelpath2, 'save2.bin')
-ie.Loadmulti(('save1.bin', 'save2.bin'))
-
-#Init fpga
-ie.Init('')
+ie.Compile(args.modelpath1)
+ie2.Compile(args.modelpath2, MDLA=ie)
 
 #Create the storage for the result and run one inference
-result = ie.Run((img[0], img[1]))
-result[0] = np.squeeze(result[0], axis=0)
-result[1] = np.squeeze(result[1], axis=0)
+ie.PutInput(img[0], None)
+ie2.PutInput(img[1], None)
+r1, _ = ie.GetResult()
+r2, _ = ie2.GetResult()
+result = [np.squeeze(r1, axis=0), np.squeeze(r2, axis=0)]
 
 #Convert to numpy and print top-5
 print('')

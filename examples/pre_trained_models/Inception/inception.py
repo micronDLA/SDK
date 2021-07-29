@@ -39,18 +39,14 @@ class InceptionDLA:
 
         self.dla.SetFlag('nfpgas', str(numfpga))
         self.dla.SetFlag('nclusters', str(numclus))
-        if bitfile and bitfile != '':
-            self.dla.SetFlag('bitfile', bitfile)
-            print('{}{}{}'.format(CP_C, 'Finished loading bitfile on FPGA', CP_0))
         #self.dla.SetFlag('debug', 'b')                     # Uncomment it to see detailed output from compiler
         # Compile the NN and generate instructions <save.bin> for MDLA
         sz = "{:d}x{:d}x{:d}x{:d}".format(self.batch, self.channels, self.height, self.width)
-        self.dla.Compile(model_path, 'save.bin', sz)
+        self.dla.Compile(model_path)
         print('{}{}{}!!!'.format(CP_C, 'Successfully generated binaries for MDLA', CP_0))
         # Send the generated instructions to MDLA
         # Send the bitfile to the FPGA only during the first run
         # Otherwise bitfile is an empty string
-        self.dla.Init('save.bin')
         print('{}{}{}!!!'.format(CP_G, 'MDLA initialization complete', CP_0))
         print('{:-<80}'.format(''))
 
