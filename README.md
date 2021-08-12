@@ -49,6 +49,10 @@ This SDK folder contains:
   * [Multiple FPGAs with different models <a name="two"></a>](#multiple-fpgas-with-different-models)
   * [Multiple Clusters with input batching <a name="three"></a>](#multiple-clusters-with-input-batching)
   * [Multiple Clusters without input batching <a name="four"></a>](#multiple-clusters-without-input-batching)
+  * [Multiple Clusters with different models <a name="five"></a>](#multiple-clusters-with-different-models)
+  * [All Clusters with different models in sequence <a name="six"></a>](#all-clusters-with-different-models-in-sequence)
+  * [Multiple Clusters with even bigger batches <a name="seven"></a>](#multiple-clusters-with-even-bigger-batches)
+  * [Batching using MVs <a name="four"></a>](#batching-using-mvs)
 - [6. Tutorial - PutInput and GetResult](#6-tutorial---putinput-and-getresult) : tutorial for using PutInput and GetOutput
 - [7. Tutorial - Writing tests](#7-tutorial---writing-tests) : Tutorial on running tests
 - [8. Tutorial - Debugging](#8-tutorial---debugging) : Tutorial on debugging and printing
@@ -502,6 +506,9 @@ ie2.Compile('alexnet.onnx', MDLA=ie)
 result0 = ie.Run(img0)
 result1 = ie2.Run(img1)
 ```
+
+<img src="docs/pics/2clus2seqmodel.png" width="600" height="550"/>
+
 
 ## Multiple Clusters with even bigger batches
 
