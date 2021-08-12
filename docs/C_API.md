@@ -37,15 +37,18 @@ Frees the network
 ******
 ## void *ie_compile
 
-Parse an ONNX model and generate Inference Engine instructions
+Parse an ONNX/NNEF model and generate Inference Engine instructions
 
 ***Parameters:***
+
+void IECOMP char *modelpath, const char *outbin, const char *inshapes, unsigned *noutputs, unsigned **noutdims, uint64_t ***outshapes, void *cmemp);
+
 
 `void *cmemo`: pointer to an Inference Engine object, may be 0
 
 `const char *modelpath`: path to a model file in ONNX format
 
-`const char* outbin`: path to a file where a model in the Inference Engine ready format will be saved
+`const char* outbin`: path to a file where a model in the Inference Engine ready format will be saved. If this param is used then Init call is needed afterwards
 
 `const char *inshapes`: shape of the inputs in the form size0xsize1xsize2...; more inputs are separated by semi-colon; this parameter is optional as the shapes of the inputs can be obtained from the model file
 
@@ -54,6 +57,8 @@ Parse an ONNX model and generate Inference Engine instructions
 `unsigned **noutdims`: returns a pointer to noutputs values with the dimensions of each output
 
 `uint64_t ***outshapes`: returns a pointer to noutputs pointers to the shapes of each output
+
+`void *cmemp`: MDLA object to link together so that models can be load into memory together
 
 ***Return value:*** pointer to the Inference Engine object or 0 in case of error
 
@@ -85,22 +90,9 @@ choosing the proper quantization for variable-fixed point, available with the VF
 
 `unsigned ninputs`: number of inputs, must be a multiple of the inputs expected by the network
 
+`void *cmemp`: MDLA object to link together so that models can be load into memory together
+
 ***Return value:*** pointer to the Inference Engine object or 0 in case of error
-
-******
-## void *ie_loadmulti
-
-Loads multiple bitfiles without initializing hardware
-
-***Parameters:***
-
-`void *cmemo`: pointer to an Inference Engine object
-
-`const char* const *inbins`: array of pathnames to the bitfiles to load
-
-`unsigned count`: number of bitfiles to load
-
-***Return value:*** pointer to an Inference Engine object to pass to ie_init
 
 ******
 ## void *ie_init

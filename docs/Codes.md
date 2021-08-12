@@ -147,6 +147,7 @@ following characters:
 
 **no_rearrange**: Skip output rearrangement
 
+**heterogeneous**: Run DLA-unsupported layers on CPU also in the middle of the network
 
 *****
 ## GetInfo

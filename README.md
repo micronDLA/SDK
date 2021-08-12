@@ -355,20 +355,16 @@ numclus = 1
 # Create Micron DLA API
 sf = microndla.MDLA()
 # Generate instructions
-sf.SetFlag('nfpgas', str(numfpga))
-sf.SetFlag('nclusters', str(numclus))
-sf.Compile('resnet18.onnx', 'microndla.bin')
-# Init the FPGA cards
-sf.Init('microndla.bin')
+sf.SetFlag({'nfpgas': str(numfpga), 'nclusters': str(numclus)})
+sf.Compile('resnet18.onnx')
 in1 = np.random.rand(2, 3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
 # Create a location for the output
 output = sf.Run(input_img)
 ```
 
-`sf.Compile` will parse the model from model.onnx and save the generated Micron DLA instructions in microndla.bin. Here numfpga=2, so instructions for two FPGAs are created.
+`sf.Compile` will parse the model from model.onnx and save the generated Micron DLA instructions. Here numfpga=2, so instructions for two FPGAs are created.
 `nresults` is the output size of the model.onnx for one input image (no batching).
-`sf.Init` will initialize the FPGAs. It will send the instructions and model parameters to each FPGA's main memory.
 The expected output size of `sf.Run` is twice `nresults`, because numfpga=2 and two input images are processed. `input_img` is two images concatenated.
 The diagram below shows this type of execution:
 
@@ -387,13 +383,9 @@ sf1 = microndla.MDLA()
 # Create second Micron DLA API
 sf2 = microndla.MDLA()
 # Generate instructions for model1
-sf1.Compile('resnet50.onnx', 'microndla1.bin')
+sf1.Compile('resnet50.onnx')
 # Generate instructions for model2
-sf2.Compile('resnet18.onnx', 'microndla2.bin')
-# Init the FPGA 1 with model 1
-sf1.Init('microndla1.bin')
-# Init the FPGA 2 with model 2
-sf2.Init('microndla2.bin')
+sf2.Compile('resnet18.onnx')
 in1 = np.random.rand(3, 224, 224).astype(np.float32)
 in2 = np.random.rand(3, 224, 224).astype(np.float32)
 input_img1 = np.ascontiguousarray(in1)
@@ -423,9 +415,7 @@ numclus = 2
 sf = microndla.MDLA()
 # Generate instructions
 sf.SetFlag('nclusters', str(numclus))
-sf.Compile('resnet18.onnx', 'microndla.bin')
-# Init the FPGA cards
-sf.Init('microndla.bin')
+sf.Compile('resnet18.onnx')
 in1 = np.random.rand(2, 3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
 output = sf.Run(input_img)
@@ -447,12 +437,9 @@ numfpga = 1
 numclus = 2
 # Create Micron DLA API
 sf = microndla.MDLA()
-sf.SetFlag('nclusters', str(numclus))
-self.dla.SetFlag('clustersbatchmode', '1')
+sf.SetFlag({'nclusters': str(numclus), 'clustersbatchmode': '1'})
 # Generate instructions
-sf.Compile('resnet18.onnx', 'microndla.bin')
-# Init the FPGA cards
-sf.Init('microndla.bin')
+sf.Compile('resnet18.onnx')
 in1 = np.random.rand(3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
 output = sf.Run(input_img)
@@ -464,6 +451,57 @@ Now the output size is not twice of `nresults` because you expect output for one
 The diagram below shows this type of execution:
 
 <img src="docs/pics/2clus1img.png" width="600" height="550"/>
+
+## Multiple Clusters with different models
+The following example shows how to run different models using different clusters in parallel. 
+Currently, a cluster for each model is allowed. But different number of cluster per model is not allowed. For example, 3 clusters for a model and then 1 cluster for another.
+The example code is in [here](./examples/python_api/twonetdemo.py)
+
+```python
+import microndla
+import numpy as np
+nclus = 2
+img0 = np.random.rand(3, 224, 224).astype(np.float32)
+img1 = np.random.rand(3, 224, 224).astype(np.float32)
+ie = microndla.MDLA()
+ie2 = microndla.MDLA()
+ie.SetFlag({'nclusters': nclus, 'clustersbatchmode': 1})
+ie2.SetFlag({'nclusters': nclus, 'firstcluster': nclus, 'clustersbatchmode': 1})
+ie.Compile('resnet18.onnx')
+ie2.Compile('alexnet.onnx', MDLA=ie)
+ie.PutInput(img0, None)
+ie2.PutInput(img1, None)
+result0, _ = ie.GetResult()
+result1, _ = ie2.GetResult()
+```
+In the code, you create one MDLA object for each model and compile them. For the first model, use 2 clusters together. 
+For the second model, assign the remaining 2 clusters to it. Use `firstcluster` flag to tell `Compile` which cluster is the first cluster it is going to use.
+In this example, first model uses clusters 0 and 1 and second model uses clusters 2 and 3. 
+In `Compile`, pass the previous MDLA object to link them together so that they get loaded into memory in one go. 
+In this case, you must use `PutInput` and `GetResult` paradigm (this [section](#6-tutorial---putinput-and-getresult)), you cannot use `Run`.
+
+<img src="docs/pics/2clus2model.png" width="600" height="550"/>
+
+## All Clusters with different models in sequence
+
+This example shows how to load multiple models and run them in a sequence using all clusters. This is similar to previous example, the only different 
+all clusters is used for each model. It uses same principle of creating different MDLA objects for each model and link different MDLAs in `Compile`.
+
+```python
+import microndla
+import numpy as np
+nclus = 2
+img0 = np.random.rand(3, 224, 224).astype(np.float32)
+img1 = np.random.rand(3, 224, 224).astype(np.float32)
+ie = microndla.MDLA()
+ie2 = microndla.MDLA()
+ie.SetFlag({'nclusters': nclus, 'clustersbatchmode': 1})
+ie2.SetFlag({'nclusters': nclus, 'clustersbatchmode': 1})
+ie.Compile('resnet18.onnx')
+ie2.Compile('alexnet.onnx', MDLA=ie)
+result0 = ie.Run(img0)
+result1 = ie2.Run(img1)
+```
 
 ## Multiple Clusters with even bigger batches
 
@@ -477,12 +515,9 @@ numfpga = 1
 numclus = 2
 # Create Micron DLA API
 sf = microndla.MDLA()
-sf.SetFlag('nclusters', str(numclus))
-sf.SetFlag('imgs_per_cluster', '16')
+sf.SetFlag({'nclusters': str(numclus), 'imgs_per_cluster': '16'})
 # Generate instructions
-sf.Compile('resnet18.onnx', 'microndla.bin')
-# Init the FPGA cards
-sf.Init('microndla.bin')
+sf.Compile('resnet18.onnx')
 in1 = np.random.rand(32, 3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
 output = sf.Run(input_img) # Run
@@ -502,13 +537,9 @@ numfpga = 1
 numclus = 2
 # Create Micron DLA API
 sf = microndla.MDLA()
-sf.SetFlag('nclusters', str(numclus))
-sf.SetFlag('imgs_per_cluster', '16')
-sf.SetFlag('mvbatch', '1')
+sf.SetFlag({'nclusters': str(numclus), 'imgs_per_cluster': '16', 'mvbatch': '1'})
 # Generate instructions
-sf.Compile('resnet18.onnx', 'microndla.bin')
-# Init the FPGA cards
-sf.Init('microndla.bin')
+sf.Compile('resnet18.onnx')
 in1 = np.random.rand(32, 3, 224, 224).astype(np.float32)
 input_img = np.ascontiguousarray(in1)
 output = sf.Run(input_img)
@@ -594,8 +625,7 @@ result_pyt = result_pyt.detach().numpy()
 
 Now we need to run this model using the accelerator with the SDK.
 ```python
-sf.Compile('net_conv.onnx', 'net_conv.bin')
-sf.Init("./net_conv.bin")
+sf.Compile('net_conv.onnx')
 in_1 = np.ascontiguousarray(inV)
 result = sf.Run(in_1)
 ```
@@ -630,9 +660,7 @@ A debug option won't affect the compiler, it will only print more information. T
 
 You can use `SetFlag('debug', 'b')` to print the basic prints. The debug code `'b'` stands for basic. Debug codes and option codes are letters (case-sensetive). For a complete list of letters refer to [here](docs/Codes.md).
 
-Always put the `SetFlag()` after creating the Micron DLA object. If will print the information about the run. First, it will list all the layers that it is going to compile from the `net_conv.onnx` and produce a `net_conv.bin`.
-
-Then `Init` will find an FPGA system, AC511 in our case. It will also show how much time it took to send the weights and instructions to the external memory in the `Init` function.
+Always put the `SetFlag()` after creating the Micron DLA object. If will print the information about the run. First, it will list all the layers that it is going to compile from the `net_conv.onnx`.
 
 Then `Run` will rearrange in the input tensor and load it into the external memory. It will print the time it took and other properties of the run, such as number of FPGAs and clusters used.
 
@@ -706,7 +734,7 @@ In this case, you can set 'V' in the options using `SetFlag` function before `Co
 ie = microndla.MDLA()
 ie.SetFlag('varfp', '1')
 #Compile to a file
-swnresults = ie.Compile('resnet18.onnx', 'save.bin')
+swnresults = ie.Compile('resnet18.onnx')
 ```
 
 **Option 2**: Variable fix-point can be determined for input and output of each layer if one or more sample inputs are provided.
@@ -726,7 +754,7 @@ for fn in os.listdir(args.imagesdir):
 #Create and initialize the Inference Engine object
 ie = microndla.MDLA()
 #Compile to a file
-swnresults = ie.Compile('resnet18.onnx', 'save.bin', samples=imgs)
+swnresults = ie.Compile('resnet18.onnx', samples=imgs)
 ```
 
 After that, `Init` and `Run` runs as usual using the saved variable fix-point configuration.
@@ -784,11 +812,9 @@ mnist = tf.keras.datasets.mnist
 x_train, x_test = x_train / 255.0, x_test / 255.0
 
 ie = microndla.MDLA()
-swnresults = ie.Compile('28x28x1', 'mnist', 'save.bin')
-ie.Init('save.bin', '')
-result = np.ndarray(swnresults, dtype=np.float32)
+ie.Compile('mnist.onnx')
 for i in range(0, 10):
-    ie.Run(x_test[i].astype(np.float32), result)
+    result = ie.Run(x_test[i].astype(np.float32))
     print(y_test[i], np.argmax(result))
 
 ```
