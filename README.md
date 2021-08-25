@@ -35,7 +35,7 @@ This SDK folder contains:
   * [System requirements](#system-requirements)
   * [Pico computing](#pico-computing)
   * [Docker Image](#docker-image)
-  * [Manual Installation](#manual-installation)
+  * [Python package Install](#python-package-install)
 - [2. Getting started with Deep Learning](#2-getting-started-with-deep-learning) : general information about deep learning
   * [Introduction](#introduction)
   * [PyTorch: Deep Learning framework](#pytorch-deep-learning-framework)
@@ -119,7 +119,9 @@ lsmod | grep -i pico
     pico                 3493888  12
 ```
 
-## Docker Image (optional)
+## Docker Image 
+
+This step is optinal if you want to run as a docker image
 
 If you want to use MDLA with docker, then you need to install [pico-computing](#pico-computing) and [docker](https://docs.docker.com/get-docker/).
 
@@ -179,6 +181,17 @@ root@d80174ce2995:/home/mdla#
 ```
 
 Run the example code provided. Check sections [3](#3-getting-started-inference-on-micron-dla-hardware) and [4](#4-getting-started-inference-on-micron-dla-hardware-with-c).
+
+## Python package Install (optional)
+
+You can also install as a python package
+
+`git clone https://github.com/FWDNXT/SDK`
+
+Then inside SDK folder do
+
+`python3 setup.py install --user`
+
 
 # 2. Getting started with Deep Learning
 

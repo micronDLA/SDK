@@ -6,6 +6,8 @@ from ctypes import *
 import numpy as np
 from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
+from .onnx_util import onnx_concat
+
 try:
     f = CDLL("./libmicrondla.so")
 except:
@@ -265,6 +267,9 @@ class MDLA:
     #        want to change some input dimension
     # samples: a list of images in numpy float32 format used to choose the proper quantization for variable-fixed-point
     def Compile(self, modelpath, inshapes = None, samples = None, MDLA = None, outfile = None):
+        if isinstance(modelpath, list) and all(isinstance(elem, str) for elem in modelpath):
+            onnx_concat(modelpath, "tmp.onnx")
+            modelpath = 'tmp.onnx'
         noutputs = c_uint()
         noutdims = pointer(c_uint())
         outshapes = pointer(pointer(c_ulonglong()))
