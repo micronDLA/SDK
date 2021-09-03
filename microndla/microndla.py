@@ -15,7 +15,7 @@ except:
 
 libc = CDLL("libc.so.6")
 
-curversion = '2021.1.0'
+curversion = '2021.2.0'
 
 #Allows None to be passed instead of a ndarray
 def wrapped_ndptr(*args, **kwargs):
