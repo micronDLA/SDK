@@ -118,6 +118,8 @@ lspci | grep -i pico
 lsmod | grep -i pico
     pico                 3493888  12
 ```
+After installing pico-computing, run install.sh to install the MDLA SDK
+
 
 ## Docker Image 
 
