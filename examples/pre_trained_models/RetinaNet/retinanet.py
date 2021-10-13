@@ -57,10 +57,8 @@ class RetinaNetDLA:
             self.dla.SetFlag('bitfile', bitfile)
         self.dla.SetFlag('nclusters', str(numclus))
         sz = '{:1}x{:d}x{:d}x{:d}'.format(1, c, h, w)
-        self.dla.Compile(model_path, 'save.bin', sz)
+        self.dla.Compile(model_path)
 
-        # Init fpga with compiled machine code
-        self.dla.Init('save.bin')
 
         # Model has 10 outputs that each need to be reshaped to the following sizes
         self.output_shapes = [

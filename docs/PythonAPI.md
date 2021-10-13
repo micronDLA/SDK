@@ -5,17 +5,19 @@ The python API for Micron DLA has these functions:
 ******
 ## Compile
 
-Compiles a network and produce .bin file with everything that is needed to execute
+Compiles a ONNX/NNEF network and produce .bin file with everything that is needed to execute
 
 ***Parameters:***
 
 **modelpath**: path to a model file in ONNX format.
 
-**outfile**: path to a file where a model in Micron DLA ready format will be saved.
+**outfile**: path to a file where a model in Micron DLA ready format will be saved. If this param is used then Init call is needed afterwards
 
 **inshapes**: it is an optional string with shape information in the form of size0xsize1x...sizeN. In case of multiple inputs, shapes are semi-colon separated. This parameter is normally inferred from the model file, it can be overridden in case we want to change some input dimension
 
 **samples**: a list of images in numpy float32 format used to choose the proper quantization for variable-fixed-point
+
+**MDLA**: MDLA object to link together so that models can be load into memory together
 
 ***Return value:*** List of the output nodes names returned by the network
 
@@ -28,7 +30,7 @@ Loads a bitfile on an FPGA if necessary and prepares to run Micron DLA hardware.
 
 **infile**: model binary file path. .bin file created by Compile
 
-**cmem**: another MDLA obj to be combined with this MDLA run.
+**MDLA**: another MDLA obj to be combined with this MDLA run.
 
 ******
 ## SetFlag
@@ -71,17 +73,6 @@ Get an output from a buffer. If the blocking flag was set then it will wait for 
 ***Return value:***:  Output tensor or list of output tensors and the `userobj` that was associated with this
 buffer in the PutInput function call.
 
-
-******
-## Loadmulti
-
-Loads multiple bitfiles without initializing hardware.
-
-***Parameters:***
-
-**Bins**: list of paths to the bitfiles to load.
-
-***Return value:*** None.
 
 ******
 ## PutInput

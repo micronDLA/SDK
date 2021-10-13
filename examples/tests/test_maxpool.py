@@ -44,9 +44,8 @@ if args.verbose:
     sf.SetFlag('debug', 'b')#debug options
 
 # Compile to generate binary
-sf.Compile('net_maxpool.onnx', 'net_maxpool.bin')
+sf.Compile('net_maxpool.onnx')
 
-sf.Init("./net_maxpool.bin")
 in_1 = np.ascontiguousarray(inVec1)
 result = sf.Run(in_1)
 

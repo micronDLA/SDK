@@ -79,10 +79,7 @@ ie = microndla.MDLA()
 #ie.SetFlag('debug','bw')
 
 #Compile to a file
-ie.Compile(args.modelpath, 'save.bin')
-
-#Init fpga
-ie.Init('save.bin')
+ie.Compile(args.modelpath)
 
 thread = threading.Thread(target = GetResult)
 thread.start()

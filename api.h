@@ -11,7 +11,7 @@
 #ifndef _IE_API_H_INCLUDED_
 #define _IE_API_H_INCLUDED_
 
-static const char *microndla_version = "2021.1.0";
+static const char *microndla_version = "2021.2.0";
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@ int IECOMPILER_API set_external_wait(void *cmemo, bool (*wait_ext) (int));
 /*!
 Allow to pass externally created thnets net into node list
 */
-void IECOMPILER_API ext_thnets2lst(void *cmemo,  void* nett, char* image, int limit, int batch);
+void IECOMPILER_API ext_thnets2lst(void *cmemo,  void* nett, char* image, int batch);
 
 /*!
 Create an Inference Engine object
@@ -82,7 +82,7 @@ Run static quantization of inputs, weight and outputs over a calibration dataset
 */
 void IECOMPILER_API *ie_compile_vfp(void *cmemo, const char *modelpath, const char* outbin, const char *inshapes,
                     unsigned *noutputs, unsigned **noutdims, uint64_t ***outshapes,
-                    const float * const *inputs, const uint64_t *input_elements, unsigned ninputs);
+                    const float * const *inputs, const uint64_t *input_elements, unsigned ninputs, void *cmemp);
 
 /*!
 Compile a network and produce a .bin file with everything that is needed to execute in hardware.
@@ -97,7 +97,7 @@ In this case, ie_compile is necessary, ie_init with a previously generated bin f
     @param outshapes    returns a pointer to noutputs pointers to the shapes of each output
     @return context object
 */
-void IECOMPILER_API *ie_compile(void *cmemo, const char *modelpath, const char *outbin, const char *inshapes, unsigned *noutputs, unsigned **noutdims, uint64_t ***outshapes);
+void IECOMPILER_API *ie_compile(void *cmemo, const char *modelpath, const char *outbin, const char *inshapes, unsigned *noutputs, unsigned **noutdims, uint64_t ***outshapes, void *cmemp);
 /*!
 Load a .bin file into the hardware and initialize it
     @param cmemo        pointer to an Inference Engine object, may be null

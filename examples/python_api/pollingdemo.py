@@ -55,10 +55,7 @@ ie = microndla.MDLA()
 ie.SetFlag('blockingmode','0')
 
 #Compile to a file
-ie.Compile(args.modelpath, 'save.bin')
-
-#Init fpga
-ie.Init('save.bin')
+ie.Compile(args.modelpath)
 
 categories = None
 if args.categories != '':

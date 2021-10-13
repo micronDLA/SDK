@@ -31,22 +31,17 @@ class Resnet34_18DLA:
 
         # Initialize 1 Micron DLA
         self.dla = microndla.MDLA()
+        self.dla2 = microndla.MDLA()
         # Run the network in batch mode (one image on all clusters)
-        self.dla.SetFlag('clustersbatchmode', '0')
 
         self.batch, self.height, self.width, self.channels = input_img.shape
 
         # Compile the NN and generate instructions <save.bin> for MDLA
-        self.dla.SetFlag('nfpgas', str(numfpga))
-        self.dla.SetFlag('nclusters', str(numclus))
+        self.dla.SetFlag({'nclusters': numclus, 'clustersbatchmode': 1})
+        self.dla2.SetFlag({'nclusters': numclus, 'clustersbatchmode': 1, 'firstcluster': numclus})
         #self.dla.SetFlag('debug', 'bw')             # Comment it out to see detailed output from compiler
-        if bitfile and bitfile != '':
-            self.dla.SetFlag('bitfile', bitfile)
-            print('{}{}{}!!!'.format(CP_C, 'Finished loading bitfile on FPGA', CP_0))
-        self.dla.Compile(model_path1, 'save.bin')
-        self.dla.Compile(model_path2, 'save2.bin')
-        self.dla.Loadmulti(('save.bin', 'save2.bin'))
-        self.dla.Init('')
+        self.dla.Compile(model_path1)
+        self.dla2.Compile(model_path2)
 
         print('{}{}{}!!!'.format(CP_C, 'Successfully generated binaries for MDLA', CP_0))
 
@@ -85,6 +80,11 @@ class Resnet34_18DLA:
         x2 = np.ascontiguousarray(img2)
 
         dla_output = self.dla.Run((x1, x2))
-        y = dla_output
+        dla.PutInput(x1, None)
+        dla2.PutInput(x2, None)
+        r1, _ = dla.GetResult()
+        r2, _ = dla2.GetResult()
+
+        y = [r1, r2]
 
         return y[0], y[1]

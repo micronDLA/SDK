@@ -62,10 +62,11 @@ int main(int argc, char **argv)
     
     void* sf_handle = ie_safecreate();
     sprintf(s, "%d", nclus);
+    ie_setflag(sf_handle, "debug", "bw");
     ie_setflag(sf_handle, "nclusters", s);
     sprintf(s, "%d", nfpgas);
     ie_setflag(sf_handle, "nfpgas", s);
-    ie_compile(sf_handle, modelpath, outbin, inshapes, &noutputs, &noutdims, &outshapes);
+    ie_compile(sf_handle, modelpath, outbin, inshapes, &noutputs, &noutdims, &outshapes, 0);
     ie_free(sf_handle);
     printf("done\n");
     return 0;

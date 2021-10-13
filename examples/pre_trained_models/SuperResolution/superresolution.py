@@ -20,13 +20,9 @@ class SuperResolutionDLA:
 
         self.dla.SetFlag('nclusters', str(numclus))
         self.dla.SetFlag('nfpgas', str(numfpga))
-        if bitfile and bitfile != '':
-            self.dla.SetFlag('bitfile', bitfile)
         #self.dla.SetFlag('debug', 'b')             # Comment it out for detailed output from compiler
-        self.dla.Compile(model_path, 'save.bin')    # Compile the NN and generate instructions <save.bin> for MDLA
+        self.dla.Compile(model_path)    # Compile the NN and generate instructions <save.bin> for MDLA
         print('\nSuccesfully generated binaries for MDLA')
-        self.dla.Init('save.bin')                   # Send instruction to FPGA and load bitfile if necessary
-        print('MDLA initialization complete\n')
 
     def __call__(self, input_img):
         return self.forward(input_img)

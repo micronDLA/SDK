@@ -31,10 +31,7 @@ def ieprocess(image_file, network_file):
 	ie = microndla.MDLA()
 
 	#Compile to a file
-	ie.Compile(network_file, 'save.bin')
-
-	#Init fpga
-	ie.Init('save.bin')
+	ie.Compile(network_file)
 
 	#Create the storage for the result and run one inference
 	result = ie.Run(img)

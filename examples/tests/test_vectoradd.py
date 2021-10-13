@@ -37,9 +37,8 @@ if args.verbose:
     sf.SetFlag('debug', 'b')#debug options
 
 # Compile to generate binary
-sf.Compile('net_vector_add.onnx', 'net_vector_add.bin')
+sf.Compile('net_vector_add.onnx')
 
-sf.Init("./net_vector_add.bin")
 in_1 = np.ascontiguousarray(inVec1)
 in_2 = np.ascontiguousarray(inVec2)
 

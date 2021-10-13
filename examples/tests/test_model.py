@@ -30,9 +30,8 @@ if args.profile >= 1:
         sf.SetFlag('options', 'Ls')#profile all layer in the model
 
 # Compile and Run on MDLA
-sf.Compile(args.model, 'save.bin')
+sf.Compile(args.model)
 
-sf.Init("./save.bin")
 in_1 = np.ascontiguousarray(image)
 result = sf.Run(in_1)
 

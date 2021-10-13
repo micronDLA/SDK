@@ -36,9 +36,8 @@ if args.verbose:
     sf.SetFlag('debug', 'b')#debug options
 
 # Compile to generate binary
-sf.Compile('net_matrix_vector.onnx', 'net_matrix_vector.bin')
+sf.Compile('net_matrix_vector.onnx')
 
-sf.Init("./net_matrix_vector.bin")
 in_1 = np.ascontiguousarray(inVec1)
 result = sf.Run(in_1)
 result = np.squeeze(result)

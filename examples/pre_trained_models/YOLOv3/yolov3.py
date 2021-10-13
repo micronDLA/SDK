@@ -21,8 +21,7 @@ class YOLOv3:
         self.dla.SetFlag('nfpgas', str(numfpga))
         if bitfile and bitfile != '':
             self.dla.SetFlag('bitfile', bitfile)
-        self.dla.Compile(model_path, 'save.bin')
-        self.dla.Init('save.bin')
+        self.dla.Compile(model_path)
 
         self.cfg   = yolov3_cfg
         self.grids = []

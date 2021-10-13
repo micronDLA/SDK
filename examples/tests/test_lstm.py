@@ -51,13 +51,10 @@ result_pyt = result_pyt.detach().numpy()
 
 #Create and initialize the Inference Engine object
 ie = microndla.MDLA()
-ie.SetFlag('debug','bw')
+#ie.SetFlag('debug','bw')
 
 #Compile to a file
-ie.Compile('model.onnx', 'model.bin')
-
-#Init fpga
-ie.Init('model.bin')
+ie.Compile('model.onnx')
 
 np.random.seed(1)
 img = inputs.numpy().transpose(1, 0, 2)

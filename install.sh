@@ -1,6 +1,11 @@
 #!/bin/bash
 accept_eula=''
 
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
+
 print_usage() {
   printf "Usage: $0 [ -a Accept EULA ]"
 }
@@ -33,6 +38,7 @@ then
 		apt-get update
 		apt-get -y install python3-pip
 		pip3 install --upgrade numpy
+		pip3 install onnx==1.8.1
 		# Protobuf
 		ldconfig -p | grep libprotobuf.so.17 >/dev/null
 		if [ $? -eq 0 ]; then
@@ -91,6 +97,8 @@ then
 			ldconfig
 		fi
 		ldconfig
+		pip3 install --upgrade numpy
+		pip3 install onnx==1.8.1
 		echo 'Installation finished'
 	fi
 else
