@@ -16,4 +16,5 @@ setup(name='microndla',
     install_requires=[
     "numpy>=1.14.2",
     "Pillow>=5.0",
+    "onnx>=1.10.1",
 ])
