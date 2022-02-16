@@ -238,7 +238,8 @@ The program will process an image and return the top-5 classifications of the im
 categorization task will output a probability vector. Each element of the vector contains the probability to its correspondent
 category that is listed in a categories file.
 In this tutorial you will need:
-* One of the [pre-trained models](http://fwdnxt.com/models/)
+# TODO: Get model lin for customer, or change example to use one available to customer.
+* One of the [pre-trained models](https://boartifactory.micron.com/ui/native/mdla-generic-dev-virtual/models)
 * [Input image](./test-files): located in /test-files/
 * [Categories file](./test-files/categories.txt): located in /test-files/
 * [simpledemo.py](./examples/python_api/simpledemo.py): located in /examples/python_api/
@@ -295,6 +296,10 @@ You can run the network on hardware with this command, which will find the FPGA 
 
 `python3 simpledemo.py <onnx file> <picture> -c <categories file.txt>`
 
+e.g., if you have the fwdnxt models in the same directory as SDK:
+
+`python3 simpledemo.py ../../../model/alexnet.onnx ../../test-files/dog.jpg -c ../../test-files/categories.txt`
+
 If you used the example image with alexnet, the demo will output:
 
 ```
@@ -339,12 +344,20 @@ To run the demo, first run the following commands:
 ```
 cd <sdk folder>/examples/c_api
 make
-./compile -m <model.onnx> -i 224x224x3 -o instructions.bin
+./compile <model.onnx> -i 224x224x3 -o instructions.bin
 ```
+
+e.g.,
+
+`./compile ../../../model/alexnet.onnx -i 1x3x224x224 -o instructions.bin`
+
 Where `-i` is the input sizes: width x height x channels.
 After creating the `instructions.bin`, you can run the network on the DLA with this command, which will find the FPGA card that was loaded with the DLA:
 
 `./simpledemo -i <picturefile> -c <categoriesfile> -s ./instructions.bin`
+
+# TODO: Currently the C examples are outdated (compile now doesn't save .bin files - it
+#       needs to be changed to combine compile and run into one C program)..
 
 If you used the example image with alexnet, the demo will output:
 
