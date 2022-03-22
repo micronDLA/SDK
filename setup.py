@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = '2021.2'
+__version__ = '2022.1'
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -17,4 +17,5 @@ setup(name='microndla',
     "numpy>=1.14.2",
     "Pillow>=5.0",
     "onnx>=1.8.1",
+    "onnx-simplifier",
 ])

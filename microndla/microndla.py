@@ -7,6 +7,7 @@ import numpy as np
 from numpy.ctypeslib import as_ctypes
 from numpy.ctypeslib import ndpointer
 from .onnx_util import onnx_concat
+from .onnx_optim import onnx_optim
 
 try:
     f = CDLL("./libmicrondla.so")
@@ -15,7 +16,7 @@ except:
 
 libc = CDLL("libc.so.6")
 
-curversion = '2021.2.0'
+curversion = '2022.1.0'
 
 #Allows None to be passed instead of a ndarray
 def wrapped_ndptr(*args, **kwargs):
@@ -141,6 +142,8 @@ class MDLA:
 
         self.trainlinear_end = f.ie_trainlinear_end
         self.trainlinear_end.argtypes = [c_void_p]
+
+        self.indt = np.float32
         v = self.GetInfo('version')
         if v != curversion:
             print('Wrong libmicrondla.so found, expecting', curversion, 'and found', v, 'quitting')
@@ -266,9 +269,12 @@ class MDLA:
     #        This parameter is normally inferred from the model file, it can be overridden in case we
     #        want to change some input dimension
     # samples: a list of images in numpy float32 format used to choose the proper quantization for variable-fixed-point
-    def Compile(self, modelpath, inshapes = None, samples = None, MDLA = None, outfile = None):
+    def Compile(self, modelpath, inshapes = None, samples = None, MDLA = None, outfile = None, simplify=False):
         if isinstance(modelpath, list) and all(isinstance(elem, str) for elem in modelpath):
             onnx_concat(modelpath, "tmp.onnx")
+            modelpath = 'tmp.onnx'
+        if simplify:
+            onnx_optim(modelpath, "tmp.onnx")
             modelpath = 'tmp.onnx'
         noutputs = c_uint()
         noutdims = pointer(c_uint())
@@ -351,8 +357,8 @@ class MDLA:
     # name: string with the info name that is going to be returned
     # currently available options are listed in Codes.md
     def GetInfo(self, name):
-        return_val = create_string_buffer(200)
-        rc = self.ie_getinfo(self.handle, bytes(name, 'ascii'), byref(return_val), 200)
+        return_val = create_string_buffer(10000)
+        rc = self.ie_getinfo(self.handle, bytes(name, 'ascii'), byref(return_val), 10000)
         if rc == 0:
             return
         if rc == 1:

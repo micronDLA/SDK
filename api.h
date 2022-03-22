@@ -11,7 +11,7 @@
 #ifndef _IE_API_H_INCLUDED_
 #define _IE_API_H_INCLUDED_
 
-static const char *microndla_version = "2021.2.0";
+static const char *microndla_version = "2022.1.0";
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
