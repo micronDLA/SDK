@@ -144,6 +144,7 @@ class MDLA:
         self.trainlinear_end.argtypes = [c_void_p]
 
         self.indt = np.float32
+
         v = self.GetInfo('version')
         if v != curversion:
             print('Wrong libmicrondla.so found, expecting', curversion, 'and found', v, 'quitting')
