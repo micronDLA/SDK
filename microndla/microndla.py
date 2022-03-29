@@ -144,7 +144,6 @@ class MDLA:
         self.trainlinear_end.argtypes = [c_void_p]
 
         self.indt = np.float32
-
         v = self.GetInfo('version')
         if v != curversion:
             print('Wrong libmicrondla.so found, expecting', curversion, 'and found', v, 'quitting')
@@ -241,7 +240,7 @@ class MDLA:
         self.ie_loadmulti(self.handle, b, len(bins))
 
     def CreateResults(self, noutputs, noutdims, outshapes):
-        self.results = []
+        self.resultstemplate = []
         no_rearrange = self.GetInfo('no_rearrange')
         if no_rearrange == 2:
             dt = np.int16
@@ -258,9 +257,7 @@ class MDLA:
                 r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2], outshapes[i][3]), dtype=dt)
             elif noutdims[i] == 5:
                 r = np.ndarray((outshapes[i][0], outshapes[i][1], outshapes[i][2], outshapes[i][3], outshapes[i][4]), dtype=dt)
-            self.results.append(r)
-        if noutputs.value == 1:
-            self.results = self.results[0]
+            self.resultstemplate.append(r)
 
     #compile a network and produce .bin file with everything that is needed to execute
     # modelpath: path to a model file in ONNX format.
@@ -374,18 +371,18 @@ class MDLA:
             return cast(return_val, POINTER(c_float))[0]
         raise Exception(rc)
 
-    def outparams(self, results):
-        if type(results) == np.ndarray:
-            return byref(results.ctypes.data_as(POINTER(c_float))), pointer(c_ulonglong(results.size)), 1
-        elif type(results) == tuple or type(results) == list:
-            cresults = (POINTER(c_float) * len(results))()
-            csizes = (c_ulonglong * len(results))()
-            for i in range(len(results)):
-                cresults[i] = results[i].ctypes.data_as(POINTER(c_float))
-                csizes[i] = results[i].size
-            return cresults, csizes, len(results)
-        else:
-            raise Exception('Output must be ndarray or tuple to ndarrays')
+    def outparams(self):
+        results = []
+        cresults = (POINTER(c_float) * len(self.resultstemplate))()
+        csizes = (c_ulonglong * len(self.resultstemplate))()
+        for i in range(len(self.resultstemplate)):
+            result = np.ndarray(self.resultstemplate[i].shape, self.resultstemplate[i].dtype)
+            results.append(result)
+            cresults[i] = result.ctypes.data_as(POINTER(c_float))
+            csizes[i] = result.size
+        if len(results) == 1:
+            results = results[0]
+        return results, cresults, csizes, len(self.resultstemplate)
 
     def inparams(self, images):
         if type(images) == np.ndarray:
@@ -424,11 +421,11 @@ class MDLA:
     # result: model's output tensor
     def Run(self, images):
         imgs, sizes, nimgs, keepalive = self.inparams(images)
-        r, rs, nresults = self.outparams(self.results)
+        results, r, rs, nresults = self.outparams()
         rc = self.ie_run(self.handle, imgs, sizes, nimgs, r, rs, nresults)
         if rc != 0:
             raise Exception(rc)
-        return self.results
+        return results
 
     #Put an input into shared memory and start Micron DLA hardware
     # image: input to the model as a numpy array of type float32
@@ -455,7 +452,7 @@ class MDLA:
     # result: model's output tensor
     def GetResult(self):
         userobj = c_void_p()
-        r, rs, nresults = self.outparams(self.results)
+        results, r, rs, nresults = self.outparams()
         rc = self.ie_getresult(self.handle, r, rs, nresults, byref(userobj))
         if rc == -99:
             return None
@@ -463,7 +460,7 @@ class MDLA:
             raise Exception(rc)
         retuserobj = self.userobjs[userobj.value]
         del self.userobjs[userobj.value]
-        return self.results, retuserobj.value
+        return results, retuserobj.value
 
     #Run software Micron DLA emulator
     # image: input to the model as a numpy array of type float32
@@ -471,11 +468,11 @@ class MDLA:
     # result: models output tensor
     def Run_sw(self, images):
         imgs, sizes, nimgs, keepalive = self.inparams(images)
-        r, rs, nresults = self.outparams(self.results)
+        results, r, rs, nresults = self.outparams()
         rc = self.ie_run_sw(self.handle, imgs, sizes, nimgs, r, rs, nresults)
         if rc != 0:
             raise Exception(rc)
-        return self.results
+        return results
 
     #Run model with thnets
     # image: input to the model as a numpy array of type float32
@@ -483,11 +480,11 @@ class MDLA:
     # result: models output tensor as a preallocated numpy array of type float32
     def Run_th(self, images):
         imgs, sizes, nimgs, keepalive = self.inparams(images)
-        r, rs, nresults = self.outparams(self.results)
+        results, r, rs, nresults = self.outparams()
         rc = self.ie_run_thnets(self.handle, imgs, sizes, nimgs, r, rs, nresults)
         if rc != 0:
             raise Exception(rc)
-        return self.results
+        return results
 
     #Read data from an address in shared memory
     # addr: address in shared memory where to read data from
