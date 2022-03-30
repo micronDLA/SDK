@@ -253,7 +253,7 @@ torchvision package and also from networks in the pth format.
 
 `python3 genonnx.py resnet18`
 
-This command will download a pre-trained alexnet network and create a file called alexnet.onnx
+This command will download a pre-trained resnet18 network and create a file called resnet18.onnx
 
 For more information about onnx please visit [https://onnx.ai/](https://onnx.ai/)
 
