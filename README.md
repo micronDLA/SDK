@@ -188,7 +188,7 @@ Run the example code provided. Check sections [3](#3-getting-started-inference-o
 
 You can also install as a python package
 
-`git clone https://github.com/FWDNXT/SDK`
+`git clone https://github.com/micronDLA/SDK`
 
 Then inside SDK folder do
 
